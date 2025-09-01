@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "pm2": "^6.0.9",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "wrangler": "^3.0.0"
+    "wrangler": "^3.114.14"
   },
   "author": "Hollywood Pro",
   "license": "MIT"

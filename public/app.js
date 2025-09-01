@@ -5,6 +5,9 @@ let currentUser = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
+    // CRITICAL FIX: Always show login screen first, then validate session
+    showLoginScreen();
+    
     if (sessionId) {
         validateSession();
     }
@@ -171,6 +174,12 @@ function logout() {
     document.getElementById('login-screen').classList.remove('hidden');
     
     showNotification('Logged out successfully', 'info');
+}
+
+// UI Navigation functions
+function showLoginScreen() {
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
 }
 
 // Dashboard functions

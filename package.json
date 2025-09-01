@@ -1,0 +1,21 @@
+{
+  "name": "strivetrack",
+  "version": "1.0.0",
+  "description": "StriveTrack - Elite Fitness Platform",
+  "main": "functions/_middleware.js",
+  "scripts": {
+    "dev": "wrangler pages dev public --compatibility-date=2023-08-07 --d1=DB --r2=MEDIA_BUCKET",
+    "deploy": "wrangler pages deploy public",
+    "deploy:dev": "wrangler pages deploy public --env development",
+    "deploy:prod": "wrangler pages deploy public --env production"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "author": "Hollywood Pro",
+  "license": "MIT"
+}

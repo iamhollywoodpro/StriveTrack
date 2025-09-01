@@ -1,0 +1,37 @@
+name = "strivetrack"
+main = "functions/_middleware.js"
+compatibility_date = "2023-08-07"
+
+[env.development]
+name = "strivetrack-dev"
+
+[env.production]
+name = "strivetrack"
+
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "strivetrack-dev"
+database_id = "b497cf67-d4c1-4cb5-b60a-aa574fe5b9cb"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "strivetrack"
+database_id = "b497cf67-d4c1-4cb5-b60a-aa574fe5b9cb"
+
+[[env.development.r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "strivetrack-media-dev"
+
+[[env.production.r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "strivetrack-media"
+
+[env.development.vars]
+ADMIN_EMAIL = "iamhollywoodpro@protonmail.com"
+ADMIN_PASSWORD = "password123"
+ENVIRONMENT = "development"
+
+[env.production.vars]
+ADMIN_EMAIL = "iamhollywoodpro@protonmail.com"
+ADMIN_PASSWORD = "password123"
+ENVIRONMENT = "production"

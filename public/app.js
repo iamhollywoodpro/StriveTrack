@@ -4309,6 +4309,24 @@ window.testNotifications = function() {
     console.log('✅ Three notifications sent. Each should auto-dismiss after 3 seconds.');
 };
 
+// Immediate click test - attach to page load
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Adding click test to document...');
+    document.addEventListener('click', function(event) {
+        console.log('👆 CLICK DETECTED:', event.target);
+        console.log('👆 Target classes:', event.target.className);
+        console.log('👆 Closest habit-day-cell:', event.target.closest('.habit-day-cell'));
+        
+        if (event.target.closest('.habit-day-cell')) {
+            console.log('🎯 HABIT DAY CELL CLICKED!');
+            console.log('📍 Cell data:', {
+                habitId: event.target.closest('.habit-day-cell').dataset.habitId,
+                date: event.target.closest('.habit-day-cell').dataset.date
+            });
+        }
+    });
+});
+
 // Test function for the new simple habit system
 window.testSimpleHabits = async function() {
     console.log('🧪 Testing simple habits system...');
@@ -4829,43 +4847,52 @@ function setupHabitEventListeners() {
         uploadProgressCard.addEventListener('click', showMediaUploadModal);
     }
 
-    // Simple and reliable habit toggle system
+    // ULTRA SIMPLE habit toggle system - no complex logic
     document.addEventListener('click', function(event) {
-        // Handle habit day toggle
-        if (event.target.closest('.habit-day-cell')) {
-            const cell = event.target.closest('.habit-day-cell');
-            const habitId = cell.dataset.habitId;
-            const date = cell.dataset.date;
+        console.log('🖱️ Global click handler triggered');
+        
+        // Check for habit day cell click
+        const habitCell = event.target.closest('.habit-day-cell');
+        if (habitCell) {
+            console.log('🎯 HABIT CELL CLICKED!');
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const habitId = habitCell.getAttribute('data-habit-id') || habitCell.dataset.habitId;
+            const date = habitCell.getAttribute('data-date') || habitCell.dataset.date;
+            
+            console.log('📊 Extracted data:', { habitId, date });
             
             if (habitId && date) {
-                console.log('🎯 Simple habit toggle:', habitId, date);
+                console.log('✅ Calling simpleToggleHabit');
                 simpleToggleHabit(habitId, date);
-                return;
+            } else {
+                console.error('❌ Missing habitId or date:', { habitId, date });
+                alert('Missing habit data: habitId=' + habitId + ', date=' + date);
             }
+            return;
         }
         
-        // Handle complete habit button
-        if (event.target.closest('.complete-habit-btn')) {
-            const btn = event.target.closest('.complete-habit-btn');
-            const habitId = btn.dataset.habitId;
-            
+        // Complete button
+        const completeBtn = event.target.closest('.complete-habit-btn');
+        if (completeBtn) {
+            console.log('✅ Complete button clicked');
+            const habitId = completeBtn.getAttribute('data-habit-id') || completeBtn.dataset.habitId;
             if (habitId) {
-                console.log('✅ Simple habit complete:', habitId);
                 simpleCompleteHabit(habitId);
-                return;
             }
+            return;
         }
         
-        // Handle delete habit button  
-        if (event.target.closest('.delete-habit-btn')) {
-            const btn = event.target.closest('.delete-habit-btn');
-            const habitId = btn.dataset.habitId;
-            
+        // Delete button  
+        const deleteBtn = event.target.closest('.delete-habit-btn');
+        if (deleteBtn) {
+            console.log('🗑️ Delete button clicked');
+            const habitId = deleteBtn.getAttribute('data-habit-id') || deleteBtn.dataset.habitId;
             if (habitId) {
-                console.log('🗑️ Simple habit delete:', habitId);
                 deleteHabit(habitId);
-                return;
             }
+            return;
         }
     });
     
@@ -5304,24 +5331,33 @@ function createHabitCard(habit) {
     `;
 }
 
-// Simple and reliable habit toggle function
+// ULTRA SIMPLE habit toggle function
 async function simpleToggleHabit(habitId, date) {
-    console.log('🚀 Starting simple habit toggle:', habitId, date);
+    console.log('🚀🚀🚀 TOGGLE HABIT CALLED 🚀🚀🚀');
+    console.log('📊 Params:', { habitId, date, sessionId });
+    
+    // Show immediate feedback
+    alert('Toggle called for habit: ' + habitId + ' on date: ' + date);
     
     if (!sessionId) {
-        console.error('❌ No session ID');
-        showNotification('Please log in first', 'error');
+        alert('ERROR: No session ID!');
         return;
     }
     
     if (!habitId || !date) {
-        console.error('❌ Missing habit ID or date');
-        showNotification('Invalid habit data', 'error');
+        alert('ERROR: Missing habitId or date!');
         return;
     }
     
     try {
-        console.log('📡 Making API request...');
+        console.log('📡 Making fetch request...');
+        
+        const requestBody = {
+            habit_id: habitId,
+            date: date
+        };
+        
+        console.log('📤 Request body:', requestBody);
         
         const response = await fetch('/api/habits/toggle', {
             method: 'POST',
@@ -5329,39 +5365,27 @@ async function simpleToggleHabit(habitId, date) {
                 'Content-Type': 'application/json',
                 'x-session-id': sessionId
             },
-            body: JSON.stringify({
-                habit_id: habitId,
-                date: date
-            })
+            body: JSON.stringify(requestBody)
         });
         
-        console.log('📊 API Response Status:', response.status);
+        console.log('📨 Response received:', response.status, response.ok);
         
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error('❌ API Error:', errorData);
-            showNotification('Failed to toggle habit: ' + errorData, 'error');
-            return;
-        }
-        
-        const result = await response.json();
-        console.log('✅ API Success:', result);
-        
-        // Show success message
-        if (result.completed) {
-            showNotification('✅ Habit completed for ' + date + '!', 'success');
+        if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Success result:', result);
+            alert('SUCCESS: ' + result.message);
+            
+            // Force UI refresh
+            location.reload();
         } else {
-            showNotification('Habit unchecked for ' + date, 'info');
+            const errorText = await response.text();
+            console.error('❌ Error response:', errorText);
+            alert('ERROR: ' + errorText);
         }
-        
-        // Reload habits to update UI
-        console.log('🔄 Reloading habits to update UI...');
-        await loadHabits();
-        console.log('✅ UI should now be updated');
         
     } catch (error) {
-        console.error('💥 Network Error:', error);
-        showNotification('Network error: ' + error.message, 'error');
+        console.error('💥 Network error:', error);
+        alert('NETWORK ERROR: ' + error.message);
     }
 }
 

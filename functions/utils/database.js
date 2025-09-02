@@ -39,7 +39,7 @@ export async function updateUserPoints(userId, points, env) {
 }
 
 export async function getUserHabits(userId, env) {
-    return await env.DB.prepare(`
+    const result = await env.DB.prepare(`
         SELECT h.*, 
                COUNT(hc.id) as total_completions,
                COUNT(CASE WHEN date(hc.completed_at) = date('now') THEN 1 END) as today_completed
@@ -49,6 +49,7 @@ export async function getUserHabits(userId, env) {
         GROUP BY h.id
         ORDER BY h.created_at DESC
     `).bind(userId).all();
+    return result.results || [];
 }
 
 export async function createHabit(habitData, env) {
@@ -56,15 +57,16 @@ export async function createHabit(habitData, env) {
     
     const habitId = uuidv4();
     await env.DB.prepare(`
-        INSERT INTO habits (id, user_id, name, description, target_frequency, color)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO habits (id, user_id, name, description, target_frequency, color, weekly_target)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `).bind(
         habitId, 
         habitData.user_id, 
         habitData.name, 
         habitData.description || '', 
         habitData.target_frequency || 1,
-        habitData.color || '#667eea'
+        habitData.color || '#667eea',
+        habitData.weekly_target || 7
     ).run();
     
     return habitId;
@@ -96,90 +98,41 @@ export async function markHabitComplete(habitId, userId, notes, env) {
 }
 
 export async function getUserMedia(userId, env) {
-    return await env.DB.prepare(`
+    const result = await env.DB.prepare(`
         SELECT * FROM media_uploads 
         WHERE user_id = ? 
         ORDER BY uploaded_at DESC
     `).bind(userId).all();
+    return result.results || [];
 }
 
 export async function getAllMedia(env) {
-    return await env.DB.prepare(`
+    const result = await env.DB.prepare(`
         SELECT m.*, u.email as user_email
         FROM media_uploads m
         JOIN users u ON m.user_id = u.id
         ORDER BY m.uploaded_at DESC
     `).all();
+    return result.results || [];
 }
 
 export async function getUserAchievements(userId, env) {
-    return await env.DB.prepare(`
+    const result = await env.DB.prepare(`
         SELECT a.*, ua.earned_at
         FROM achievements a
         LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
         ORDER BY ua.earned_at DESC, a.points ASC
     `).bind(userId).all();
+    return result.results || [];
 }
 
 export async function checkAndAwardAchievements(userId, env) {
-    const user = await getUserById(userId, env);
-    const achievements = await env.DB.prepare('SELECT * FROM achievements').all();
-    const newlyEarned = [];
-    
-    for (const achievement of achievements) {
-        // Check if user already has this achievement
-        const existing = await env.DB.prepare(
-            'SELECT id FROM user_achievements WHERE user_id = ? AND achievement_id = ?'
-        ).bind(userId, achievement.id).first();
-        
-        if (existing) continue;
-        
-        let qualified = false;
-        
-        switch (achievement.requirement_type) {
-            case 'habits_created':
-                const habitCount = await env.DB.prepare(
-                    'SELECT COUNT(*) as count FROM habits WHERE user_id = ?'
-                ).bind(userId).first();
-                qualified = habitCount.count >= achievement.requirement_value;
-                break;
-                
-            case 'total_completions':
-                const completionCount = await env.DB.prepare(
-                    'SELECT COUNT(*) as count FROM habit_completions WHERE user_id = ?'
-                ).bind(userId).first();
-                qualified = completionCount.count >= achievement.requirement_value;
-                break;
-                
-            case 'media_uploads':
-                const mediaCount = await env.DB.prepare(
-                    'SELECT COUNT(*) as count FROM media_uploads WHERE user_id = ?'
-                ).bind(userId).first();
-                qualified = mediaCount.count >= achievement.requirement_value;
-                break;
-                
-            case 'total_points':
-                qualified = user.points >= achievement.requirement_value;
-                break;
-        }
-        
-        if (qualified) {
-            const { v4: uuidv4 } = await import('uuid');
-            const userAchievementId = uuidv4();
-            
-            await env.DB.prepare(`
-                INSERT INTO user_achievements (id, user_id, achievement_id)
-                VALUES (?, ?, ?)
-            `).bind(userAchievementId, userId, achievement.id).run();
-            
-            // Award achievement points
-            if (achievement.points > 0) {
-                await updateUserPoints(userId, achievement.points, env);
-            }
-            
-            newlyEarned.push(achievement);
-        }
+    // Import and use the enhanced achievement system
+    try {
+        const { checkAndAwardAchievements: enhancedCheck } = await import('./achievements.js');
+        return await enhancedCheck(userId, 'general', {}, env);
+    } catch (error) {
+        console.error('Enhanced achievement check error:', error);
+        return [];
     }
-    
-    return newlyEarned;
 }

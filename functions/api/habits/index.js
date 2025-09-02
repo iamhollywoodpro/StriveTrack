@@ -37,7 +37,7 @@ export async function onRequestPost(context) {
         
         const user = authResult;
         const body = await request.json();
-        const { name, description, target_frequency, color } = body;
+        const { name, description, target_frequency, color, weekly_target } = body;
         
         if (!name || name.trim() === '') {
             return new Response(JSON.stringify({ 
@@ -53,7 +53,8 @@ export async function onRequestPost(context) {
             name: name.trim(),
             description: description?.trim() || '',
             target_frequency: target_frequency || 1,
-            color: color || '#667eea'
+            color: color || '#667eea',
+            weekly_target: weekly_target || 7
         };
         
         const habitId = await createHabit(habitData, env);

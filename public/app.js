@@ -1062,7 +1062,7 @@ function displayMedia(media) {
 
 async function loadMediaPreview(mediaId, containerId, isVideo = false) {
     try {
-        const response = await fetch(`/api/media/${mediaId}/view`, {
+        const response = await fetch(`/api/media/file/${mediaId}`, {
             headers: { 'x-session-id': sessionId }
         });
         
@@ -1100,7 +1100,7 @@ async function showEnhancedMediaModal(media) {
     const content = document.getElementById('media-modal-content');
     
     try {
-        const response = await fetch(`/api/media/${media.id}/view`, {
+        const response = await fetch(`/api/media/file/${media.id}`, {
             headers: { 'x-session-id': sessionId }
         });
         
@@ -1202,10 +1202,10 @@ async function showComparisonModal(comparison) {
     
     try {
         // Load both before and after media
-        const beforeResponse = await fetch(`/api/media/${comparison.before.id}/view`, {
+        const beforeResponse = await fetch(`/api/media/file/${comparison.before.id}`, {
             headers: { 'x-session-id': sessionId }
         });
-        const afterResponse = await fetch(`/api/media/${comparison.after.id}/view`, {
+        const afterResponse = await fetch(`/api/media/file/${comparison.after.id}`, {
             headers: { 'x-session-id': sessionId }
         });
         
@@ -2393,7 +2393,7 @@ function displayAdminMedia(media) {
 
 async function loadAdminMediaImage(mediaId, containerId) {
     try {
-        const response = await fetch(`/api/admin/media/${mediaId}/view`, {
+        const response = await fetch(`/api/media/file/${mediaId}`, {
             headers: { 'x-session-id': sessionId }
         });
         

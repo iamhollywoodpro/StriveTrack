@@ -1,4 +1,9 @@
+var __create = Object.create;
 var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
   get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
@@ -6,9 +11,34 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
   if (typeof require !== "undefined") return require.apply(this, arguments);
   throw Error('Dynamic require of "' + x + '" is not supported');
 });
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __commonJS = (cb, mod) => function __require2() {
+  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 
-// .wrangler/tmp/bundle-8PQozf/checked-fetch.js
-var urls = /* @__PURE__ */ new Set();
+// ../.wrangler/tmp/bundle-LlQkIK/checked-fetch.js
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
     (typeof request === "string" ? new Request(request, init) : request).url
@@ -24,85 +54,22 @@ function checkURL(request, init) {
     }
   }
 }
-__name(checkURL, "checkURL");
-globalThis.fetch = new Proxy(globalThis.fetch, {
-  apply(target, thisArg, argArray) {
-    const [request, init] = argArray;
-    checkURL(request, init);
-    return Reflect.apply(target, thisArg, argArray);
-  }
-});
-
-// .wrangler/tmp/pages-T5aod5/functionsWorker-0.7951196037819064.mjs
-var __create = Object.create;
-var __defProp2 = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
-var __require2 = /* @__PURE__ */ ((x) => typeof __require !== "undefined" ? __require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: /* @__PURE__ */ __name((a, b) => (typeof __require !== "undefined" ? __require : a)[b], "get")
-}) : x)(function(x) {
-  if (typeof __require !== "undefined") return __require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
-var __esm = /* @__PURE__ */ __name((fn, res) => /* @__PURE__ */ __name(function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-}, "__init"), "__esm");
-var __commonJS = /* @__PURE__ */ __name((cb, mod) => /* @__PURE__ */ __name(function __require22() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-}, "__require2"), "__commonJS");
-var __export = /* @__PURE__ */ __name((target, all) => {
-  for (var name in all)
-    __defProp2(target, name, { get: all[name], enumerable: true });
-}, "__export");
-var __copyProps = /* @__PURE__ */ __name((to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp2(to, key, { get: /* @__PURE__ */ __name(() => from[key], "get"), enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-}, "__copyProps");
-var __toESM = /* @__PURE__ */ __name((mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-)), "__toESM");
-function checkURL2(request, init) {
-  const url = request instanceof URL ? request : new URL(
-    (typeof request === "string" ? new Request(request, init) : request).url
-  );
-  if (url.port && url.port !== "443" && url.protocol === "https:") {
-    if (!urls2.has(url.toString())) {
-      urls2.add(url.toString());
-      console.warn(
-        `WARNING: known issue with \`fetch()\` requests to custom HTTPS ports in published Workers:
- - ${url.toString()} - the custom port will be ignored when the Worker is published using the \`wrangler deploy\` command.
-`
-      );
-    }
-  }
-}
-__name(checkURL2, "checkURL");
-var urls2;
+var urls;
 var init_checked_fetch = __esm({
-  "../.wrangler/tmp/bundle-55ecqU/checked-fetch.js"() {
-    urls2 = /* @__PURE__ */ new Set();
-    __name2(checkURL2, "checkURL");
+  "../.wrangler/tmp/bundle-LlQkIK/checked-fetch.js"() {
+    urls = /* @__PURE__ */ new Set();
+    __name(checkURL, "checkURL");
     globalThis.fetch = new Proxy(globalThis.fetch, {
       apply(target, thisArg, argArray) {
         const [request, init] = argArray;
-        checkURL2(request, init);
+        checkURL(request, init);
         return Reflect.apply(target, thisArg, argArray);
       }
     });
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/rng.js
 function rng() {
   if (!getRandomValues) {
     getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
@@ -112,43 +79,45 @@ function rng() {
   }
   return getRandomValues(rnds8);
 }
-__name(rng, "rng");
-var getRandomValues;
-var rnds8;
+var getRandomValues, rnds8;
 var init_rng = __esm({
   "../node_modules/uuid/dist/esm-browser/rng.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     rnds8 = new Uint8Array(16);
-    __name2(rng, "rng");
+    __name(rng, "rng");
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/regex.js
 var regex_default;
 var init_regex = __esm({
   "../node_modules/uuid/dist/esm-browser/regex.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     regex_default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/validate.js
 function validate(uuid) {
   return typeof uuid === "string" && regex_default.test(uuid);
 }
-__name(validate, "validate");
 var validate_default;
 var init_validate = __esm({
   "../node_modules/uuid/dist/esm-browser/validate.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_regex();
-    __name2(validate, "validate");
+    __name(validate, "validate");
     validate_default = validate;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/stringify.js
 function unsafeStringify(arr, offset = 0) {
   return byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]];
 }
-__name(unsafeStringify, "unsafeStringify");
 function stringify(arr, offset = 0) {
   const uuid = unsafeStringify(arr, offset);
   if (!validate_default(uuid)) {
@@ -156,23 +125,23 @@ function stringify(arr, offset = 0) {
   }
   return uuid;
 }
-__name(stringify, "stringify");
-var byteToHex;
-var stringify_default;
+var byteToHex, stringify_default;
 var init_stringify = __esm({
   "../node_modules/uuid/dist/esm-browser/stringify.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_validate();
     byteToHex = [];
     for (let i = 0; i < 256; ++i) {
       byteToHex.push((i + 256).toString(16).slice(1));
     }
-    __name2(unsafeStringify, "unsafeStringify");
-    __name2(stringify, "stringify");
+    __name(unsafeStringify, "unsafeStringify");
+    __name(stringify, "stringify");
     stringify_default = stringify;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/v1.js
 function v1(options, buf, offset) {
   let i = buf && offset || 0;
   const b = buf || new Array(16);
@@ -221,24 +190,21 @@ function v1(options, buf, offset) {
   }
   return buf || unsafeStringify(b);
 }
-__name(v1, "v1");
-var _nodeId;
-var _clockseq;
-var _lastMSecs;
-var _lastNSecs;
-var v1_default;
+var _nodeId, _clockseq, _lastMSecs, _lastNSecs, v1_default;
 var init_v1 = __esm({
   "../node_modules/uuid/dist/esm-browser/v1.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_rng();
     init_stringify();
     _lastMSecs = 0;
     _lastNSecs = 0;
-    __name2(v1, "v1");
+    __name(v1, "v1");
     v1_default = v1;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/parse.js
 function parse(uuid) {
   if (!validate_default(uuid)) {
     throw TypeError("Invalid UUID");
@@ -263,17 +229,18 @@ function parse(uuid) {
   arr[15] = v & 255;
   return arr;
 }
-__name(parse, "parse");
 var parse_default;
 var init_parse = __esm({
   "../node_modules/uuid/dist/esm-browser/parse.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_validate();
-    __name2(parse, "parse");
+    __name(parse, "parse");
     parse_default = parse;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/v35.js
 function stringToBytes(str) {
   str = unescape(encodeURIComponent(str));
   const bytes = [];
@@ -282,7 +249,6 @@ function stringToBytes(str) {
   }
   return bytes;
 }
-__name(stringToBytes, "stringToBytes");
 function v35(name, version2, hashfunc) {
   function generateUUID(value, namespace, buf, offset) {
     var _namespace;
@@ -311,7 +277,6 @@ function v35(name, version2, hashfunc) {
     return unsafeStringify(bytes);
   }
   __name(generateUUID, "generateUUID");
-  __name2(generateUUID, "generateUUID");
   try {
     generateUUID.name = name;
   } catch (err) {
@@ -320,21 +285,21 @@ function v35(name, version2, hashfunc) {
   generateUUID.URL = URL2;
   return generateUUID;
 }
-__name(v35, "v35");
-var DNS;
-var URL2;
+var DNS, URL2;
 var init_v35 = __esm({
   "../node_modules/uuid/dist/esm-browser/v35.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_stringify();
     init_parse();
-    __name2(stringToBytes, "stringToBytes");
+    __name(stringToBytes, "stringToBytes");
     DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
     URL2 = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
-    __name2(v35, "v35");
+    __name(v35, "v35");
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/md5.js
 function md5(bytes) {
   if (typeof bytes === "string") {
     const msg = unescape(encodeURIComponent(bytes));
@@ -345,7 +310,6 @@ function md5(bytes) {
   }
   return md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), bytes.length * 8));
 }
-__name(md5, "md5");
 function md5ToHexEncodedArray(input) {
   const output = [];
   const length32 = input.length * 32;
@@ -357,11 +321,9 @@ function md5ToHexEncodedArray(input) {
   }
   return output;
 }
-__name(md5ToHexEncodedArray, "md5ToHexEncodedArray");
 function getOutputLength(inputLength8) {
   return (inputLength8 + 64 >>> 9 << 4) + 14 + 1;
 }
-__name(getOutputLength, "getOutputLength");
 function wordsToMd5(x, len) {
   x[len >> 5] |= 128 << len % 32;
   x[getOutputLength(len) - 1] = len;
@@ -445,7 +407,6 @@ function wordsToMd5(x, len) {
   }
   return [a, b, c, d];
 }
-__name(wordsToMd5, "wordsToMd5");
 function bytesToWords(input) {
   if (input.length === 0) {
     return [];
@@ -457,62 +418,55 @@ function bytesToWords(input) {
   }
   return output;
 }
-__name(bytesToWords, "bytesToWords");
 function safeAdd(x, y) {
   const lsw = (x & 65535) + (y & 65535);
   const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
   return msw << 16 | lsw & 65535;
 }
-__name(safeAdd, "safeAdd");
 function bitRotateLeft(num, cnt) {
   return num << cnt | num >>> 32 - cnt;
 }
-__name(bitRotateLeft, "bitRotateLeft");
 function md5cmn(q, a, b, x, s, t) {
   return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b);
 }
-__name(md5cmn, "md5cmn");
 function md5ff(a, b, c, d, x, s, t) {
   return md5cmn(b & c | ~b & d, a, b, x, s, t);
 }
-__name(md5ff, "md5ff");
 function md5gg(a, b, c, d, x, s, t) {
   return md5cmn(b & d | c & ~d, a, b, x, s, t);
 }
-__name(md5gg, "md5gg");
 function md5hh(a, b, c, d, x, s, t) {
   return md5cmn(b ^ c ^ d, a, b, x, s, t);
 }
-__name(md5hh, "md5hh");
 function md5ii(a, b, c, d, x, s, t) {
   return md5cmn(c ^ (b | ~d), a, b, x, s, t);
 }
-__name(md5ii, "md5ii");
 var md5_default;
 var init_md5 = __esm({
   "../node_modules/uuid/dist/esm-browser/md5.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(md5, "md5");
-    __name2(md5ToHexEncodedArray, "md5ToHexEncodedArray");
-    __name2(getOutputLength, "getOutputLength");
-    __name2(wordsToMd5, "wordsToMd5");
-    __name2(bytesToWords, "bytesToWords");
-    __name2(safeAdd, "safeAdd");
-    __name2(bitRotateLeft, "bitRotateLeft");
-    __name2(md5cmn, "md5cmn");
-    __name2(md5ff, "md5ff");
-    __name2(md5gg, "md5gg");
-    __name2(md5hh, "md5hh");
-    __name2(md5ii, "md5ii");
+    __name(md5, "md5");
+    __name(md5ToHexEncodedArray, "md5ToHexEncodedArray");
+    __name(getOutputLength, "getOutputLength");
+    __name(wordsToMd5, "wordsToMd5");
+    __name(bytesToWords, "bytesToWords");
+    __name(safeAdd, "safeAdd");
+    __name(bitRotateLeft, "bitRotateLeft");
+    __name(md5cmn, "md5cmn");
+    __name(md5ff, "md5ff");
+    __name(md5gg, "md5gg");
+    __name(md5hh, "md5hh");
+    __name(md5ii, "md5ii");
     md5_default = md5;
   }
 });
-var v3;
-var v3_default;
+
+// ../node_modules/uuid/dist/esm-browser/v3.js
+var v3, v3_default;
 var init_v3 = __esm({
   "../node_modules/uuid/dist/esm-browser/v3.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_v35();
     init_md5();
@@ -520,11 +474,12 @@ var init_v3 = __esm({
     v3_default = v3;
   }
 });
-var randomUUID;
-var native_default;
+
+// ../node_modules/uuid/dist/esm-browser/native.js
+var randomUUID, native_default;
 var init_native = __esm({
   "../node_modules/uuid/dist/esm-browser/native.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
     native_default = {
@@ -532,6 +487,8 @@ var init_native = __esm({
     };
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/v4.js
 function v4(options, buf, offset) {
   if (native_default.randomUUID && !buf && !options) {
     return native_default.randomUUID();
@@ -549,19 +506,20 @@ function v4(options, buf, offset) {
   }
   return unsafeStringify(rnds);
 }
-__name(v4, "v4");
 var v4_default;
 var init_v4 = __esm({
   "../node_modules/uuid/dist/esm-browser/v4.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_native();
     init_rng();
     init_stringify();
-    __name2(v4, "v4");
+    __name(v4, "v4");
     v4_default = v4;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/sha1.js
 function f(s, x, y, z) {
   switch (s) {
     case 0:
@@ -574,11 +532,9 @@ function f(s, x, y, z) {
       return x ^ y ^ z;
   }
 }
-__name(f, "f");
 function ROTL(x, n) {
   return x << n | x >>> 32 - n;
 }
-__name(ROTL, "ROTL");
 function sha1(bytes) {
   const K = [1518500249, 1859775393, 2400959708, 3395469782];
   const H = [1732584193, 4023233417, 2562383102, 271733878, 3285377520];
@@ -635,23 +591,23 @@ function sha1(bytes) {
   }
   return [H[0] >> 24 & 255, H[0] >> 16 & 255, H[0] >> 8 & 255, H[0] & 255, H[1] >> 24 & 255, H[1] >> 16 & 255, H[1] >> 8 & 255, H[1] & 255, H[2] >> 24 & 255, H[2] >> 16 & 255, H[2] >> 8 & 255, H[2] & 255, H[3] >> 24 & 255, H[3] >> 16 & 255, H[3] >> 8 & 255, H[3] & 255, H[4] >> 24 & 255, H[4] >> 16 & 255, H[4] >> 8 & 255, H[4] & 255];
 }
-__name(sha1, "sha1");
 var sha1_default;
 var init_sha1 = __esm({
   "../node_modules/uuid/dist/esm-browser/sha1.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(f, "f");
-    __name2(ROTL, "ROTL");
-    __name2(sha1, "sha1");
+    __name(f, "f");
+    __name(ROTL, "ROTL");
+    __name(sha1, "sha1");
     sha1_default = sha1;
   }
 });
-var v5;
-var v5_default;
+
+// ../node_modules/uuid/dist/esm-browser/v5.js
+var v5, v5_default;
 var init_v5 = __esm({
   "../node_modules/uuid/dist/esm-browser/v5.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_v35();
     init_sha1();
@@ -659,46 +615,51 @@ var init_v5 = __esm({
     v5_default = v5;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/nil.js
 var nil_default;
 var init_nil = __esm({
   "../node_modules/uuid/dist/esm-browser/nil.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     nil_default = "00000000-0000-0000-0000-000000000000";
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/version.js
 function version(uuid) {
   if (!validate_default(uuid)) {
     throw TypeError("Invalid UUID");
   }
   return parseInt(uuid.slice(14, 15), 16);
 }
-__name(version, "version");
 var version_default;
 var init_version = __esm({
   "../node_modules/uuid/dist/esm-browser/version.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_validate();
-    __name2(version, "version");
+    __name(version, "version");
     version_default = version;
   }
 });
+
+// ../node_modules/uuid/dist/esm-browser/index.js
 var esm_browser_exports = {};
 __export(esm_browser_exports, {
-  NIL: /* @__PURE__ */ __name(() => nil_default, "NIL"),
-  parse: /* @__PURE__ */ __name(() => parse_default, "parse"),
-  stringify: /* @__PURE__ */ __name(() => stringify_default, "stringify"),
-  v1: /* @__PURE__ */ __name(() => v1_default, "v1"),
-  v3: /* @__PURE__ */ __name(() => v3_default, "v3"),
-  v4: /* @__PURE__ */ __name(() => v4_default, "v4"),
-  v5: /* @__PURE__ */ __name(() => v5_default, "v5"),
-  validate: /* @__PURE__ */ __name(() => validate_default, "validate"),
-  version: /* @__PURE__ */ __name(() => version_default, "version")
+  NIL: () => nil_default,
+  parse: () => parse_default,
+  stringify: () => stringify_default,
+  v1: () => v1_default,
+  v3: () => v3_default,
+  v4: () => v4_default,
+  v5: () => v5_default,
+  validate: () => validate_default,
+  version: () => version_default
 });
 var init_esm_browser = __esm({
   "../node_modules/uuid/dist/esm-browser/index.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_v1();
     init_v3();
@@ -711,6 +672,8 @@ var init_esm_browser = __esm({
     init_parse();
   }
 });
+
+// utils/auth.js
 async function getCurrentUser(request, env) {
   const sessionId = request.headers.get("x-session-id");
   if (!sessionId) {
@@ -732,7 +695,6 @@ async function getCurrentUser(request, env) {
     points: session.points
   };
 }
-__name(getCurrentUser, "getCurrentUser");
 async function requireAuth(request, env) {
   const user = await getCurrentUser(request, env);
   if (!user) {
@@ -743,7 +705,6 @@ async function requireAuth(request, env) {
   }
   return user;
 }
-__name(requireAuth, "requireAuth");
 async function requireAdmin(request, env) {
   const user = await getCurrentUser(request, env);
   if (!user) {
@@ -760,7 +721,6 @@ async function requireAdmin(request, env) {
   }
   return user;
 }
-__name(requireAdmin, "requireAdmin");
 async function createSession(userId, env) {
   const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
   const sessionId = uuidv4();
@@ -772,28 +732,27 @@ async function createSession(userId, env) {
     `).bind(sessionId, userId, expiresAt.toISOString()).run();
   return sessionId;
 }
-__name(createSession, "createSession");
 async function deleteSession(sessionId, env) {
   if (!sessionId) return;
   await env.DB.prepare("DELETE FROM sessions WHERE id = ?").bind(sessionId).run();
 }
-__name(deleteSession, "deleteSession");
 async function cleanupExpiredSessions(env) {
   await env.DB.prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')").run();
 }
-__name(cleanupExpiredSessions, "cleanupExpiredSessions");
 var init_auth = __esm({
   "utils/auth.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(getCurrentUser, "getCurrentUser");
-    __name2(requireAuth, "requireAuth");
-    __name2(requireAdmin, "requireAdmin");
-    __name2(createSession, "createSession");
-    __name2(deleteSession, "deleteSession");
-    __name2(cleanupExpiredSessions, "cleanupExpiredSessions");
+    __name(getCurrentUser, "getCurrentUser");
+    __name(requireAuth, "requireAuth");
+    __name(requireAdmin, "requireAdmin");
+    __name(createSession, "createSession");
+    __name(deleteSession, "deleteSession");
+    __name(cleanupExpiredSessions, "cleanupExpiredSessions");
   }
 });
+
+// api/media/file/[id].js
 async function onRequestGet(context) {
   const { request, env, params } = context;
   try {
@@ -831,15 +790,16 @@ async function onRequestGet(context) {
     return new Response("Internal server error", { status: 500 });
   }
 }
-__name(onRequestGet, "onRequestGet");
 var init_id = __esm({
   "api/media/file/[id].js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestGet, "onRequestGet");
+    __name(onRequestGet, "onRequestGet");
   }
 });
+
+// api/media/[id]/delete.js
 async function onRequestDelete(context) {
   const { request, env, params } = context;
   try {
@@ -894,21 +854,22 @@ async function onRequestDelete(context) {
     });
   }
 }
-__name(onRequestDelete, "onRequestDelete");
 var init_delete = __esm({
   "api/media/[id]/delete.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestDelete, "onRequestDelete");
+    __name(onRequestDelete, "onRequestDelete");
   }
 });
+
+// utils/achievements.js
 var achievements_exports = {};
 __export(achievements_exports, {
-  checkAndAwardAchievements: /* @__PURE__ */ __name(() => checkAndAwardAchievements, "checkAndAwardAchievements"),
-  checkNutritionAchievements: /* @__PURE__ */ __name(() => checkNutritionAchievements, "checkNutritionAchievements"),
-  checkVideoAchievements: /* @__PURE__ */ __name(() => checkVideoAchievements, "checkVideoAchievements"),
-  createUserReminders: /* @__PURE__ */ __name(() => createUserReminders, "createUserReminders")
+  checkAndAwardAchievements: () => checkAndAwardAchievements,
+  checkNutritionAchievements: () => checkNutritionAchievements,
+  checkVideoAchievements: () => checkVideoAchievements,
+  createUserReminders: () => createUserReminders
 });
 async function checkAndAwardAchievements(userId, actionType, actionData, env) {
   try {
@@ -1141,7 +1102,6 @@ async function checkAndAwardAchievements(userId, actionType, actionData, env) {
     return [];
   }
 }
-__name(checkAndAwardAchievements, "checkAndAwardAchievements");
 async function getUserStats(userId, env) {
   const result = await env.DB.prepare(`
         SELECT 
@@ -1164,7 +1124,6 @@ async function getUserStats(userId, env) {
     total_media: 0
   };
 }
-__name(getUserStats, "getUserStats");
 async function unlockAchievement(userId, achievementId, env) {
   try {
     const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
@@ -1185,7 +1144,6 @@ async function unlockAchievement(userId, achievementId, env) {
     return false;
   }
 }
-__name(unlockAchievement, "unlockAchievement");
 async function checkWeeklyBeforeAfter(userId, env) {
   const now = /* @__PURE__ */ new Date();
   const weekStart = new Date(now);
@@ -1211,7 +1169,6 @@ async function checkWeeklyBeforeAfter(userId, env) {
   }
   return false;
 }
-__name(checkWeeklyBeforeAfter, "checkWeeklyBeforeAfter");
 async function getMorningCompletions(userId, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as count FROM habit_completions 
@@ -1220,11 +1177,9 @@ async function getMorningCompletions(userId, env) {
     `).bind(userId).first();
   return result?.count || 0;
 }
-__name(getMorningCompletions, "getMorningCompletions");
 async function checkWeekendStreaks(userId, targetStreaks, env) {
   return false;
 }
-__name(checkWeekendStreaks, "checkWeekendStreaks");
 async function checkHabitVariety(userId, targetCategories, env) {
   const habits = await env.DB.prepare(`
         SELECT name FROM habits WHERE user_id = ?
@@ -1243,11 +1198,9 @@ async function checkHabitVariety(userId, targetCategories, env) {
   });
   return categories.size >= targetCategories;
 }
-__name(checkHabitVariety, "checkHabitVariety");
 async function checkRecurringAchievements(userId, actionType, actionData, env) {
   return [];
 }
-__name(checkRecurringAchievements, "checkRecurringAchievements");
 async function checkVideoAchievements(db, userId) {
   const unlockedAchievements = [];
   try {
@@ -1285,7 +1238,6 @@ async function checkVideoAchievements(db, userId) {
   }
   return unlockedAchievements;
 }
-__name(checkVideoAchievements, "checkVideoAchievements");
 async function checkNutritionAchievements(db, userId) {
   const unlockedAchievements = [];
   try {
@@ -1329,7 +1281,6 @@ async function checkNutritionAchievements(db, userId) {
   }
   return unlockedAchievements;
 }
-__name(checkNutritionAchievements, "checkNutritionAchievements");
 async function checkVideoConsistency(db, userId, weeks) {
   const result = await db.prepare(`
         SELECT COUNT(DISTINCT week_number) as consistent_weeks
@@ -1338,7 +1289,6 @@ async function checkVideoConsistency(db, userId, weeks) {
     `).bind(userId, weeks * 7).first();
   return result.consistent_weeks >= weeks;
 }
-__name(checkVideoConsistency, "checkVideoConsistency");
 async function getNutritionStreakStats(db, userId) {
   const recentDays = await db.prepare(`
         SELECT log_date, macro_balance_score, met_calorie_goal, met_protein_goal, 
@@ -1374,7 +1324,6 @@ async function getNutritionStreakStats(db, userId) {
     macro_perfect_days: macroPerfectDays
   };
 }
-__name(getNutritionStreakStats, "getNutritionStreakStats");
 async function unlockAchievementIfNotEarned(db, userId, achievementId) {
   const existing = await db.prepare(`
         SELECT id FROM user_achievements 
@@ -1396,7 +1345,6 @@ async function unlockAchievementIfNotEarned(db, userId, achievementId) {
     `).bind(achievement.points, userId).run();
   return achievement;
 }
-__name(unlockAchievementIfNotEarned, "unlockAchievementIfNotEarned");
 async function createUserReminders(userId, env) {
   try {
     const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
@@ -1459,7 +1407,6 @@ async function createUserReminders(userId, env) {
     return [];
   }
 }
-__name(createUserReminders, "createUserReminders");
 async function checkFriendsCount(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as friend_count 
@@ -1468,7 +1415,6 @@ async function checkFriendsCount(userId, requiredCount, env) {
     `).bind(userId, userId).first();
   return result.friend_count >= requiredCount;
 }
-__name(checkFriendsCount, "checkFriendsCount");
 async function checkWeeklyRank(userId, maxRank, env) {
   const weekStart = getWeekStart(/* @__PURE__ */ new Date());
   const result = await env.DB.prepare(`
@@ -1488,7 +1434,6 @@ async function checkWeeklyRank(userId, maxRank, env) {
     `).bind(weekStart, userId, weekStart).first();
   return result.rank <= maxRank;
 }
-__name(checkWeeklyRank, "checkWeeklyRank");
 async function checkConsecutiveTopRanking(userId, requiredWeeks, env) {
   let consecutiveWeeks = 0;
   const currentDate = /* @__PURE__ */ new Date();
@@ -1504,7 +1449,6 @@ async function checkConsecutiveTopRanking(userId, requiredWeeks, env) {
   }
   return false;
 }
-__name(checkConsecutiveTopRanking, "checkConsecutiveTopRanking");
 async function checkStatsViews(userId, requiredViews, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as view_count 
@@ -1513,7 +1457,6 @@ async function checkStatsViews(userId, requiredViews, env) {
     `).bind(userId).first();
   return result.view_count >= requiredViews;
 }
-__name(checkStatsViews, "checkStatsViews");
 async function checkProgressViews(userId, requiredViews, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as view_count 
@@ -1522,7 +1465,6 @@ async function checkProgressViews(userId, requiredViews, env) {
     `).bind(userId).first();
   return result.view_count >= requiredViews;
 }
-__name(checkProgressViews, "checkProgressViews");
 async function checkLeaderboardViews(userId, requiredViews, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as view_count 
@@ -1531,7 +1473,6 @@ async function checkLeaderboardViews(userId, requiredViews, env) {
     `).bind(userId).first();
   return result.view_count >= requiredViews;
 }
-__name(checkLeaderboardViews, "checkLeaderboardViews");
 async function checkRoutineConsistency(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT date(created_at)) as consistent_days
@@ -1547,7 +1488,6 @@ async function checkRoutineConsistency(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.consistent_days >= requiredDays;
 }
-__name(checkRoutineConsistency, "checkRoutineConsistency");
 async function checkMorningHabitStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as morning_days
@@ -1563,7 +1503,6 @@ async function checkMorningHabitStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.morning_days >= requiredDays;
 }
-__name(checkMorningHabitStreak, "checkMorningHabitStreak");
 async function checkEveningHabitStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as evening_days
@@ -1579,7 +1518,6 @@ async function checkEveningHabitStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.evening_days >= requiredDays;
 }
-__name(checkEveningHabitStreak, "checkEveningHabitStreak");
 async function checkWeekendConsistency(userId, requiredWeekends, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as weekend_count
@@ -1594,7 +1532,6 @@ async function checkWeekendConsistency(userId, requiredWeekends, env) {
     `).bind(userId).first();
   return result.weekend_count >= requiredWeekends;
 }
-__name(checkWeekendConsistency, "checkWeekendConsistency");
 async function checkMonthlyVideoComparisons(userId, requiredMonths, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT strftime('%Y-%m', created_at)) as month_count
@@ -1605,7 +1542,6 @@ async function checkMonthlyVideoComparisons(userId, requiredMonths, env) {
     `).bind(userId).first();
   return result.month_count >= requiredMonths;
 }
-__name(checkMonthlyVideoComparisons, "checkMonthlyVideoComparisons");
 async function checkDescribedUploads(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as described_count
@@ -1616,7 +1552,6 @@ async function checkDescribedUploads(userId, requiredCount, env) {
     `).bind(userId).first();
   return result.described_count >= requiredCount;
 }
-__name(checkDescribedUploads, "checkDescribedUploads");
 async function checkWeeklyPhotoStreak(userId, requiredWeeks, env) {
   let consecutiveWeeks = 0;
   const currentDate = /* @__PURE__ */ new Date();
@@ -1639,7 +1574,6 @@ async function checkWeeklyPhotoStreak(userId, requiredWeeks, env) {
   }
   return false;
 }
-__name(checkWeeklyPhotoStreak, "checkWeeklyPhotoStreak");
 async function checkWeeklyVideoStreak(userId, requiredWeeks, env) {
   let consecutiveWeeks = 0;
   const currentDate = /* @__PURE__ */ new Date();
@@ -1662,7 +1596,6 @@ async function checkWeeklyVideoStreak(userId, requiredWeeks, env) {
   }
   return false;
 }
-__name(checkWeeklyVideoStreak, "checkWeeklyVideoStreak");
 async function checkProgressDayStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT date(created_at)) as upload_days
@@ -1672,7 +1605,6 @@ async function checkProgressDayStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.upload_days >= requiredDays;
 }
-__name(checkProgressDayStreak, "checkProgressDayStreak");
 async function checkMacroPerfectStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT MAX(consecutive_days) as max_streak
@@ -1688,7 +1620,6 @@ async function checkMacroPerfectStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.max_streak >= requiredDays;
 }
-__name(checkMacroPerfectStreak, "checkMacroPerfectStreak");
 async function checkHydrationStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as hydration_days
@@ -1699,7 +1630,6 @@ async function checkHydrationStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.hydration_days >= requiredDays;
 }
-__name(checkHydrationStreak, "checkHydrationStreak");
 async function checkCustomRecipes(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT food_name) as recipe_count
@@ -1708,7 +1638,6 @@ async function checkCustomRecipes(userId, requiredCount, env) {
     `).bind(userId).first();
   return result.recipe_count >= requiredCount;
 }
-__name(checkCustomRecipes, "checkCustomRecipes");
 async function checkNutritionTrackingStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT date(created_at)) as tracking_days
@@ -1718,7 +1647,6 @@ async function checkNutritionTrackingStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.tracking_days >= requiredDays;
 }
-__name(checkNutritionTrackingStreak, "checkNutritionTrackingStreak");
 async function checkBalancedMacroStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as balanced_days
@@ -1731,7 +1659,6 @@ async function checkBalancedMacroStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.balanced_days >= requiredDays;
 }
-__name(checkBalancedMacroStreak, "checkBalancedMacroStreak");
 async function checkDailyChallengesCompleted(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as completed_count
@@ -1741,7 +1668,6 @@ async function checkDailyChallengesCompleted(userId, requiredCount, env) {
     `).bind(userId).first();
   return result.completed_count >= requiredCount;
 }
-__name(checkDailyChallengesCompleted, "checkDailyChallengesCompleted");
 async function checkPerfectChallengeWeek(userId, requiredWeeks, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as perfect_weeks
@@ -1758,7 +1684,6 @@ async function checkPerfectChallengeWeek(userId, requiredWeeks, env) {
     `).bind(getWeekStart(/* @__PURE__ */ new Date()).toISOString(), (/* @__PURE__ */ new Date()).toISOString(), userId).first();
   return result.perfect_weeks >= requiredWeeks;
 }
-__name(checkPerfectChallengeWeek, "checkPerfectChallengeWeek");
 async function checkWeeklyGoalsCompleted(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as goals_completed
@@ -1773,7 +1698,6 @@ async function checkWeeklyGoalsCompleted(userId, requiredCount, env) {
     `).bind(userId).first();
   return result.goals_completed >= requiredCount;
 }
-__name(checkWeeklyGoalsCompleted, "checkWeeklyGoalsCompleted");
 async function checkSimultaneousStreaks(userId, requiredStreaks, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as active_streaks
@@ -1787,11 +1711,9 @@ async function checkSimultaneousStreaks(userId, requiredStreaks, env) {
     `).bind(userId).first();
   return result.active_streaks >= requiredStreaks;
 }
-__name(checkSimultaneousStreaks, "checkSimultaneousStreaks");
 async function checkStreakComeback(userId, requiredCount, env) {
   return false;
 }
-__name(checkStreakComeback, "checkStreakComeback");
 async function checkLoginStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT date(created_at)) as login_days
@@ -1802,7 +1724,6 @@ async function checkLoginStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.login_days >= requiredDays;
 }
-__name(checkLoginStreak, "checkLoginStreak");
 async function checkSingleHabitStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT MAX(streak_days) as max_streak
@@ -1816,7 +1737,6 @@ async function checkSingleHabitStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.max_streak >= requiredDays;
 }
-__name(checkSingleHabitStreak, "checkSingleHabitStreak");
 async function checkMultiHabitStreaks(userId, requiredStreaks, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as active_streaks
@@ -1831,7 +1751,6 @@ async function checkMultiHabitStreaks(userId, requiredStreaks, env) {
     `).bind(userId).first();
   return result.active_streaks >= requiredStreaks;
 }
-__name(checkMultiHabitStreaks, "checkMultiHabitStreaks");
 async function checkYearlyConsistency(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT date(created_at)) as active_days
@@ -1841,7 +1760,6 @@ async function checkYearlyConsistency(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.active_days >= requiredDays;
 }
-__name(checkYearlyConsistency, "checkYearlyConsistency");
 async function checkPerfectConsistency(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT date(created_at)) as perfect_days
@@ -1861,7 +1779,6 @@ async function checkPerfectConsistency(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.perfect_days >= requiredDays;
 }
-__name(checkPerfectConsistency, "checkPerfectConsistency");
 async function checkFeatureExploration(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT activity_type) as features_used
@@ -1872,7 +1789,6 @@ async function checkFeatureExploration(userId, requiredCount, env) {
     `).bind(userId).first();
   return result.features_used >= 4;
 }
-__name(checkFeatureExploration, "checkFeatureExploration");
 async function checkEarlyEngagement(userId, requiredDays, env) {
   const userCreated = await env.DB.prepare(`
         SELECT created_at FROM users WHERE id = ?
@@ -1889,7 +1805,6 @@ async function checkEarlyEngagement(userId, requiredDays, env) {
     `).bind(userId, createdDate.toISOString(), twoWeeksLater.toISOString()).first();
   return result.active_days >= requiredDays;
 }
-__name(checkEarlyEngagement, "checkEarlyEngagement");
 async function checkEarlyInvites(userId, requiredCount, env) {
   const userCreated = await env.DB.prepare(`
         SELECT created_at FROM users WHERE id = ?
@@ -1905,7 +1820,6 @@ async function checkEarlyInvites(userId, requiredCount, env) {
     `).bind(userId, createdDate.toISOString(), oneMonthLater.toISOString()).first();
   return result.invite_count >= requiredCount;
 }
-__name(checkEarlyInvites, "checkEarlyInvites");
 async function checkFastAchievements(userId, requiredCount, env) {
   const userCreated = await env.DB.prepare(`
         SELECT created_at FROM users WHERE id = ?
@@ -1922,7 +1836,6 @@ async function checkFastAchievements(userId, requiredCount, env) {
     `).bind(userId, createdDate.toISOString(), twoWeeksLater.toISOString()).first();
   return result.achievement_count >= requiredCount;
 }
-__name(checkFastAchievements, "checkFastAchievements");
 async function checkCommitmentStreak(userId, requiredDays, env) {
   const userCreated = await env.DB.prepare(`
         SELECT created_at FROM users WHERE id = ?
@@ -1939,14 +1852,12 @@ async function checkCommitmentStreak(userId, requiredDays, env) {
     `).bind(userId, createdDate.toISOString(), thirtyDaysLater.toISOString()).first();
   return result.login_days >= requiredDays;
 }
-__name(checkCommitmentStreak, "checkCommitmentStreak");
 function getWeekStart(date) {
   const d = new Date(date);
   const day = d.getDay();
   const diff = d.getDate() - day;
   return new Date(d.setDate(diff));
 }
-__name(getWeekStart, "getWeekStart");
 async function getUserWeeklyRank(userId, weekStart, env) {
   const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1e3);
   const result = await env.DB.prepare(`
@@ -1973,7 +1884,6 @@ async function getUserWeeklyRank(userId, weekStart, env) {
   ).first();
   return result.rank;
 }
-__name(getUserWeeklyRank, "getUserWeeklyRank");
 async function checkDailyAchievementCount(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as achievement_count
@@ -1984,7 +1894,6 @@ async function checkDailyAchievementCount(userId, requiredCount, env) {
     `).bind(userId).first();
   return result.achievement_count >= requiredCount;
 }
-__name(checkDailyAchievementCount, "checkDailyAchievementCount");
 async function checkCategoryMastery(userId, category, env) {
   const categoryAchievements = await env.DB.prepare(`
         SELECT COUNT(*) as total_in_category
@@ -1999,7 +1908,6 @@ async function checkCategoryMastery(userId, category, env) {
     `).bind(userId, category).first();
   return userCategoryAchievements.earned_in_category >= categoryAchievements.total_in_category;
 }
-__name(checkCategoryMastery, "checkCategoryMastery");
 async function checkDailyAchievementStreak(userId, requiredDays, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(DISTINCT date(ua.created_at)) as achievement_days
@@ -2009,7 +1917,6 @@ async function checkDailyAchievementStreak(userId, requiredDays, env) {
     `).bind(userId).first();
   return result.achievement_days >= requiredDays;
 }
-__name(checkDailyAchievementStreak, "checkDailyAchievementStreak");
 async function checkWeeklyAchievementStreak(userId, requiredWeeks, env) {
   let consecutiveWeeks = 0;
   const currentDate = /* @__PURE__ */ new Date();
@@ -2031,7 +1938,6 @@ async function checkWeeklyAchievementStreak(userId, requiredWeeks, env) {
   }
   return false;
 }
-__name(checkWeeklyAchievementStreak, "checkWeeklyAchievementStreak");
 async function checkTotalAchievements(userId, requiredCount, env) {
   const result = await env.DB.prepare(`
         SELECT COUNT(*) as total_achievements
@@ -2040,7 +1946,6 @@ async function checkTotalAchievements(userId, requiredCount, env) {
     `).bind(userId).first();
   return result.total_achievements >= requiredCount;
 }
-__name(checkTotalAchievements, "checkTotalAchievements");
 async function checkAchievementsInTimeframe(userId, requiredCount, env) {
   const userCreated = await env.DB.prepare(`
         SELECT created_at FROM users WHERE id = ?
@@ -2056,19 +1961,15 @@ async function checkAchievementsInTimeframe(userId, requiredCount, env) {
     `).bind(userId, createdDate.toISOString(), oneMonthLater.toISOString()).first();
   return result.achievement_count >= requiredCount;
 }
-__name(checkAchievementsInTimeframe, "checkAchievementsInTimeframe");
 async function checkSeasonalEvent(userId, requiredCount, env) {
   return false;
 }
-__name(checkSeasonalEvent, "checkSeasonalEvent");
 async function checkMonthlyChallenge(userId, requiredCount, env) {
   return false;
 }
-__name(checkMonthlyChallenge, "checkMonthlyChallenge");
 async function checkConsecutiveMonthly(userId, requiredCount, env) {
   return false;
 }
-__name(checkConsecutiveMonthly, "checkConsecutiveMonthly");
 async function checkAchievementRank(userId, percentile, env) {
   const friendsCount = await env.DB.prepare(`
         SELECT COUNT(*) as friends_count
@@ -2096,11 +1997,9 @@ async function checkAchievementRank(userId, percentile, env) {
   const percentileRank = (friendsCount.friends_count - (betterFriends?.better_count || 0)) / friendsCount.friends_count * 100;
   return percentileRank >= percentile;
 }
-__name(checkAchievementRank, "checkAchievementRank");
 async function checkAchievementLeaderboard(userId, requiredRank, env) {
   return await checkAchievementRank(userId, 100, env);
 }
-__name(checkAchievementLeaderboard, "checkAchievementLeaderboard");
 async function checkPerfectCategory(userId, requiredCount, env) {
   const categories = ["onboarding", "habits", "progress", "nutrition", "social", "consistency", "challenges", "analytics"];
   for (const category of categories) {
@@ -2109,7 +2008,6 @@ async function checkPerfectCategory(userId, requiredCount, env) {
   }
   return false;
 }
-__name(checkPerfectCategory, "checkPerfectCategory");
 async function checkCompletionist(userId, requiredCount, env) {
   const totalNonHidden = await env.DB.prepare(`
         SELECT COUNT(*) as total_achievements
@@ -2124,77 +2022,78 @@ async function checkCompletionist(userId, requiredCount, env) {
     `).bind(userId).first();
   return userAchievements.user_achievements >= totalNonHidden.total_achievements * 0.95;
 }
-__name(checkCompletionist, "checkCompletionist");
 var init_achievements = __esm({
   "utils/achievements.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(checkAndAwardAchievements, "checkAndAwardAchievements");
-    __name2(getUserStats, "getUserStats");
-    __name2(unlockAchievement, "unlockAchievement");
-    __name2(checkWeeklyBeforeAfter, "checkWeeklyBeforeAfter");
-    __name2(getMorningCompletions, "getMorningCompletions");
-    __name2(checkWeekendStreaks, "checkWeekendStreaks");
-    __name2(checkHabitVariety, "checkHabitVariety");
-    __name2(checkRecurringAchievements, "checkRecurringAchievements");
-    __name2(checkVideoAchievements, "checkVideoAchievements");
-    __name2(checkNutritionAchievements, "checkNutritionAchievements");
-    __name2(checkVideoConsistency, "checkVideoConsistency");
-    __name2(getNutritionStreakStats, "getNutritionStreakStats");
-    __name2(unlockAchievementIfNotEarned, "unlockAchievementIfNotEarned");
-    __name2(createUserReminders, "createUserReminders");
-    __name2(checkFriendsCount, "checkFriendsCount");
-    __name2(checkWeeklyRank, "checkWeeklyRank");
-    __name2(checkConsecutiveTopRanking, "checkConsecutiveTopRanking");
-    __name2(checkStatsViews, "checkStatsViews");
-    __name2(checkProgressViews, "checkProgressViews");
-    __name2(checkLeaderboardViews, "checkLeaderboardViews");
-    __name2(checkRoutineConsistency, "checkRoutineConsistency");
-    __name2(checkMorningHabitStreak, "checkMorningHabitStreak");
-    __name2(checkEveningHabitStreak, "checkEveningHabitStreak");
-    __name2(checkWeekendConsistency, "checkWeekendConsistency");
-    __name2(checkMonthlyVideoComparisons, "checkMonthlyVideoComparisons");
-    __name2(checkDescribedUploads, "checkDescribedUploads");
-    __name2(checkWeeklyPhotoStreak, "checkWeeklyPhotoStreak");
-    __name2(checkWeeklyVideoStreak, "checkWeeklyVideoStreak");
-    __name2(checkProgressDayStreak, "checkProgressDayStreak");
-    __name2(checkMacroPerfectStreak, "checkMacroPerfectStreak");
-    __name2(checkHydrationStreak, "checkHydrationStreak");
-    __name2(checkCustomRecipes, "checkCustomRecipes");
-    __name2(checkNutritionTrackingStreak, "checkNutritionTrackingStreak");
-    __name2(checkBalancedMacroStreak, "checkBalancedMacroStreak");
-    __name2(checkDailyChallengesCompleted, "checkDailyChallengesCompleted");
-    __name2(checkPerfectChallengeWeek, "checkPerfectChallengeWeek");
-    __name2(checkWeeklyGoalsCompleted, "checkWeeklyGoalsCompleted");
-    __name2(checkSimultaneousStreaks, "checkSimultaneousStreaks");
-    __name2(checkStreakComeback, "checkStreakComeback");
-    __name2(checkLoginStreak, "checkLoginStreak");
-    __name2(checkSingleHabitStreak, "checkSingleHabitStreak");
-    __name2(checkMultiHabitStreaks, "checkMultiHabitStreaks");
-    __name2(checkYearlyConsistency, "checkYearlyConsistency");
-    __name2(checkPerfectConsistency, "checkPerfectConsistency");
-    __name2(checkFeatureExploration, "checkFeatureExploration");
-    __name2(checkEarlyEngagement, "checkEarlyEngagement");
-    __name2(checkEarlyInvites, "checkEarlyInvites");
-    __name2(checkFastAchievements, "checkFastAchievements");
-    __name2(checkCommitmentStreak, "checkCommitmentStreak");
-    __name2(getWeekStart, "getWeekStart");
-    __name2(getUserWeeklyRank, "getUserWeeklyRank");
-    __name2(checkDailyAchievementCount, "checkDailyAchievementCount");
-    __name2(checkCategoryMastery, "checkCategoryMastery");
-    __name2(checkDailyAchievementStreak, "checkDailyAchievementStreak");
-    __name2(checkWeeklyAchievementStreak, "checkWeeklyAchievementStreak");
-    __name2(checkTotalAchievements, "checkTotalAchievements");
-    __name2(checkAchievementsInTimeframe, "checkAchievementsInTimeframe");
-    __name2(checkSeasonalEvent, "checkSeasonalEvent");
-    __name2(checkMonthlyChallenge, "checkMonthlyChallenge");
-    __name2(checkConsecutiveMonthly, "checkConsecutiveMonthly");
-    __name2(checkAchievementRank, "checkAchievementRank");
-    __name2(checkAchievementLeaderboard, "checkAchievementLeaderboard");
-    __name2(checkPerfectCategory, "checkPerfectCategory");
-    __name2(checkCompletionist, "checkCompletionist");
+    __name(checkAndAwardAchievements, "checkAndAwardAchievements");
+    __name(getUserStats, "getUserStats");
+    __name(unlockAchievement, "unlockAchievement");
+    __name(checkWeeklyBeforeAfter, "checkWeeklyBeforeAfter");
+    __name(getMorningCompletions, "getMorningCompletions");
+    __name(checkWeekendStreaks, "checkWeekendStreaks");
+    __name(checkHabitVariety, "checkHabitVariety");
+    __name(checkRecurringAchievements, "checkRecurringAchievements");
+    __name(checkVideoAchievements, "checkVideoAchievements");
+    __name(checkNutritionAchievements, "checkNutritionAchievements");
+    __name(checkVideoConsistency, "checkVideoConsistency");
+    __name(getNutritionStreakStats, "getNutritionStreakStats");
+    __name(unlockAchievementIfNotEarned, "unlockAchievementIfNotEarned");
+    __name(createUserReminders, "createUserReminders");
+    __name(checkFriendsCount, "checkFriendsCount");
+    __name(checkWeeklyRank, "checkWeeklyRank");
+    __name(checkConsecutiveTopRanking, "checkConsecutiveTopRanking");
+    __name(checkStatsViews, "checkStatsViews");
+    __name(checkProgressViews, "checkProgressViews");
+    __name(checkLeaderboardViews, "checkLeaderboardViews");
+    __name(checkRoutineConsistency, "checkRoutineConsistency");
+    __name(checkMorningHabitStreak, "checkMorningHabitStreak");
+    __name(checkEveningHabitStreak, "checkEveningHabitStreak");
+    __name(checkWeekendConsistency, "checkWeekendConsistency");
+    __name(checkMonthlyVideoComparisons, "checkMonthlyVideoComparisons");
+    __name(checkDescribedUploads, "checkDescribedUploads");
+    __name(checkWeeklyPhotoStreak, "checkWeeklyPhotoStreak");
+    __name(checkWeeklyVideoStreak, "checkWeeklyVideoStreak");
+    __name(checkProgressDayStreak, "checkProgressDayStreak");
+    __name(checkMacroPerfectStreak, "checkMacroPerfectStreak");
+    __name(checkHydrationStreak, "checkHydrationStreak");
+    __name(checkCustomRecipes, "checkCustomRecipes");
+    __name(checkNutritionTrackingStreak, "checkNutritionTrackingStreak");
+    __name(checkBalancedMacroStreak, "checkBalancedMacroStreak");
+    __name(checkDailyChallengesCompleted, "checkDailyChallengesCompleted");
+    __name(checkPerfectChallengeWeek, "checkPerfectChallengeWeek");
+    __name(checkWeeklyGoalsCompleted, "checkWeeklyGoalsCompleted");
+    __name(checkSimultaneousStreaks, "checkSimultaneousStreaks");
+    __name(checkStreakComeback, "checkStreakComeback");
+    __name(checkLoginStreak, "checkLoginStreak");
+    __name(checkSingleHabitStreak, "checkSingleHabitStreak");
+    __name(checkMultiHabitStreaks, "checkMultiHabitStreaks");
+    __name(checkYearlyConsistency, "checkYearlyConsistency");
+    __name(checkPerfectConsistency, "checkPerfectConsistency");
+    __name(checkFeatureExploration, "checkFeatureExploration");
+    __name(checkEarlyEngagement, "checkEarlyEngagement");
+    __name(checkEarlyInvites, "checkEarlyInvites");
+    __name(checkFastAchievements, "checkFastAchievements");
+    __name(checkCommitmentStreak, "checkCommitmentStreak");
+    __name(getWeekStart, "getWeekStart");
+    __name(getUserWeeklyRank, "getUserWeeklyRank");
+    __name(checkDailyAchievementCount, "checkDailyAchievementCount");
+    __name(checkCategoryMastery, "checkCategoryMastery");
+    __name(checkDailyAchievementStreak, "checkDailyAchievementStreak");
+    __name(checkWeeklyAchievementStreak, "checkWeeklyAchievementStreak");
+    __name(checkTotalAchievements, "checkTotalAchievements");
+    __name(checkAchievementsInTimeframe, "checkAchievementsInTimeframe");
+    __name(checkSeasonalEvent, "checkSeasonalEvent");
+    __name(checkMonthlyChallenge, "checkMonthlyChallenge");
+    __name(checkConsecutiveMonthly, "checkConsecutiveMonthly");
+    __name(checkAchievementRank, "checkAchievementRank");
+    __name(checkAchievementLeaderboard, "checkAchievementLeaderboard");
+    __name(checkPerfectCategory, "checkPerfectCategory");
+    __name(checkCompletionist, "checkCompletionist");
   }
 });
+
+// utils/streaks.js
 async function updateStreak(db, userId, streakType) {
   const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
   try {
@@ -2240,7 +2139,6 @@ async function updateStreak(db, userId, streakType) {
     return null;
   }
 }
-__name(updateStreak, "updateStreak");
 async function updateDailyChallengeProgress(db, userId, challengeType, progressAmount = 1) {
   const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
   try {
@@ -2293,15 +2191,16 @@ async function updateDailyChallengeProgress(db, userId, challengeType, progressA
     return [];
   }
 }
-__name(updateDailyChallengeProgress, "updateDailyChallengeProgress");
 var init_streaks = __esm({
   "utils/streaks.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(updateStreak, "updateStreak");
-    __name2(updateDailyChallengeProgress, "updateDailyChallengeProgress");
+    __name(updateStreak, "updateStreak");
+    __name(updateDailyChallengeProgress, "updateDailyChallengeProgress");
   }
 });
+
+// api/achievements/check.js
 async function onRequestPost({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -2388,24 +2287,25 @@ async function onRequestPost({ request, env }) {
     });
   }
 }
-__name(onRequestPost, "onRequestPost");
 var init_check = __esm({
   "api/achievements/check.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_achievements();
     init_streaks();
-    __name2(onRequestPost, "onRequestPost");
+    __name(onRequestPost, "onRequestPost");
   }
 });
+
+// ../node_modules/bcryptjs/dist/bcrypt.js
 var require_bcrypt = __commonJS({
   "../node_modules/bcryptjs/dist/bcrypt.js"(exports, module) {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     (function(global, factory) {
       if (typeof define === "function" && define["amd"])
         define([], factory);
-      else if (typeof __require2 === "function" && typeof module === "object" && module && module["exports"])
+      else if (typeof __require === "function" && typeof module === "object" && module && module["exports"])
         module["exports"] = factory();
       else
         (global["dcodeIO"] = global["dcodeIO"] || {})["bcrypt"] = factory();
@@ -2416,7 +2316,7 @@ var require_bcrypt = __commonJS({
       function random(len) {
         if (typeof module !== "undefined" && module && module["exports"])
           try {
-            return __require2("crypto")["randomBytes"](len);
+            return __require("crypto")["randomBytes"](len);
           } catch (e) {
           }
         try {
@@ -2430,7 +2330,6 @@ var require_bcrypt = __commonJS({
         return randomFallback(len);
       }
       __name(random, "random");
-      __name2(random, "random");
       var randomAvailable = false;
       try {
         random(1);
@@ -2477,7 +2376,6 @@ var require_bcrypt = __commonJS({
           });
         }
         __name(_async, "_async");
-        __name2(_async, "_async");
         if (callback) {
           if (typeof callback !== "function")
             throw Error("Illegal callback: " + typeof callback);
@@ -2514,7 +2412,6 @@ var require_bcrypt = __commonJS({
             nextTick(callback2.bind(this, Error("Illegal arguments: " + typeof s + ", " + typeof salt)));
         }
         __name(_async, "_async");
-        __name2(_async, "_async");
         if (callback) {
           if (typeof callback !== "function")
             throw Error("Illegal callback: " + typeof callback);
@@ -2543,7 +2440,6 @@ var require_bcrypt = __commonJS({
         return wrong === 0;
       }
       __name(safeStringCompare, "safeStringCompare");
-      __name2(safeStringCompare, "safeStringCompare");
       bcrypt.compareSync = function(s, hash) {
         if (typeof s !== "string" || typeof hash !== "string")
           throw Error("Illegal arguments: " + typeof s + ", " + typeof hash);
@@ -2569,7 +2465,6 @@ var require_bcrypt = __commonJS({
           }, progressCallback);
         }
         __name(_async, "_async");
-        __name2(_async, "_async");
         if (callback) {
           if (typeof callback !== "function")
             throw Error("Illegal callback: " + typeof callback);
@@ -2608,8 +2503,7 @@ var require_bcrypt = __commonJS({
         });
         return out;
       }
-      __name(stringToBytes2, "stringToBytes2");
-      __name2(stringToBytes2, "stringToBytes");
+      __name(stringToBytes2, "stringToBytes");
       var BASE64_CODE = "./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".split("");
       var BASE64_INDEX = [
         -1,
@@ -2770,7 +2664,6 @@ var require_bcrypt = __commonJS({
         return rs.join("");
       }
       __name(base64_encode, "base64_encode");
-      __name2(base64_encode, "base64_encode");
       function base64_decode(s, len) {
         var off = 0, slen = s.length, olen = 0, rs = [], c1, c2, c3, c4, o, code;
         if (len <= 0)
@@ -2809,7 +2702,6 @@ var require_bcrypt = __commonJS({
         return res;
       }
       __name(base64_decode, "base64_decode");
-      __name2(base64_decode, "base64_decode");
       var utfx = function() {
         "use strict";
         var utfx2 = {};
@@ -2817,7 +2709,7 @@ var require_bcrypt = __commonJS({
         utfx2.encodeUTF8 = function(src, dst) {
           var cp = null;
           if (typeof src === "number")
-            cp = src, src = /* @__PURE__ */ __name2(function() {
+            cp = src, src = /* @__PURE__ */ __name(function() {
               return null;
             }, "src");
           while (cp !== null || (cp = src()) !== null) {
@@ -2833,7 +2725,7 @@ var require_bcrypt = __commonJS({
           }
         };
         utfx2.decodeUTF8 = function(src, dst) {
-          var a, b, c, d, fail = /* @__PURE__ */ __name2(function(b2) {
+          var a, b, c, d, fail = /* @__PURE__ */ __name(function(b2) {
             b2 = b2.slice(0, b2.indexOf(null));
             var err = Error(b2.toString());
             err.name = "TruncatedError";
@@ -2873,7 +2765,7 @@ var require_bcrypt = __commonJS({
         utfx2.UTF8toUTF16 = function(src, dst) {
           var cp = null;
           if (typeof src === "number")
-            cp = src, src = /* @__PURE__ */ __name2(function() {
+            cp = src, src = /* @__PURE__ */ __name(function() {
               return null;
             }, "src");
           while (cp !== null || (cp = src()) !== null) {
@@ -4062,14 +3954,12 @@ var require_bcrypt = __commonJS({
         return lr;
       }
       __name(_encipher, "_encipher");
-      __name2(_encipher, "_encipher");
       function _streamtoword(data, offp) {
         for (var i = 0, word = 0; i < 4; ++i)
           word = word << 8 | data[offp] & 255, offp = (offp + 1) % data.length;
         return { key: word, offp };
       }
       __name(_streamtoword, "_streamtoword");
-      __name2(_streamtoword, "_streamtoword");
       function _key(key, P, S) {
         var offset = 0, lr = [0, 0], plen = P.length, slen = S.length, sw;
         for (var i = 0; i < plen; i++)
@@ -4080,7 +3970,6 @@ var require_bcrypt = __commonJS({
           lr = _encipher(lr, 0, P, S), S[i] = lr[0], S[i + 1] = lr[1];
       }
       __name(_key, "_key");
-      __name2(_key, "_key");
       function _ekskey(data, key, P, S) {
         var offp = 0, lr = [0, 0], plen = P.length, slen = S.length, sw;
         for (var i = 0; i < plen; i++)
@@ -4092,7 +3981,6 @@ var require_bcrypt = __commonJS({
           sw = _streamtoword(data, offp), offp = sw.offp, lr[0] ^= sw.key, sw = _streamtoword(data, offp), offp = sw.offp, lr[1] ^= sw.key, lr = _encipher(lr, 0, P, S), S[i] = lr[0], S[i + 1] = lr[1];
       }
       __name(_ekskey, "_ekskey");
-      __name2(_ekskey, "_ekskey");
       function _crypt(b, salt, rounds, callback, progressCallback) {
         var cdata = C_ORIG.slice(), clen = cdata.length, err;
         if (rounds < 4 || rounds > 31) {
@@ -4150,7 +4038,6 @@ var require_bcrypt = __commonJS({
             nextTick(next);
         }
         __name(next, "next");
-        __name2(next, "next");
         if (typeof callback !== "undefined") {
           next();
         } else {
@@ -4161,7 +4048,6 @@ var require_bcrypt = __commonJS({
         }
       }
       __name(_crypt, "_crypt");
-      __name2(_crypt, "_crypt");
       function _hash(s, salt, callback, progressCallback) {
         var err;
         if (typeof s !== "string" || typeof salt !== "string") {
@@ -4221,7 +4107,6 @@ var require_bcrypt = __commonJS({
           return res.join("");
         }
         __name(finish, "finish");
-        __name2(finish, "finish");
         if (typeof callback == "undefined")
           return finish(_crypt(passwordb, saltb, rounds));
         else {
@@ -4234,21 +4119,20 @@ var require_bcrypt = __commonJS({
         }
       }
       __name(_hash, "_hash");
-      __name2(_hash, "_hash");
       bcrypt.encodeBase64 = base64_encode;
       bcrypt.decodeBase64 = base64_decode;
       return bcrypt;
     });
   }
 });
+
+// utils/database.js
 async function getUserByEmail(email, env) {
   return await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
 }
-__name(getUserByEmail, "getUserByEmail");
 async function getUserById(id, env) {
   return await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
 }
-__name(getUserById, "getUserById");
 async function createUser(userData, env) {
   const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
   const bcrypt = await Promise.resolve().then(() => __toESM(require_bcrypt()));
@@ -4261,16 +4145,13 @@ async function createUser(userData, env) {
     `).bind(userId, userData.email, hashedPassword, role).run();
   return await getUserById(userId, env);
 }
-__name(createUser, "createUser");
 async function validatePassword(password, hash) {
   const bcrypt = await Promise.resolve().then(() => __toESM(require_bcrypt()));
   return await bcrypt.compare(password, hash);
 }
-__name(validatePassword, "validatePassword");
 async function updateUserPoints(userId, points, env) {
   await env.DB.prepare("UPDATE users SET points = points + ? WHERE id = ?").bind(points, userId).run();
 }
-__name(updateUserPoints, "updateUserPoints");
 async function getUserHabits(userId, env) {
   const result = await env.DB.prepare(`
         SELECT h.*, 
@@ -4284,7 +4165,6 @@ async function getUserHabits(userId, env) {
     `).bind(userId).all();
   return result.results || [];
 }
-__name(getUserHabits, "getUserHabits");
 async function createHabit(habitData, env) {
   const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
   const habitId = uuidv4();
@@ -4302,7 +4182,6 @@ async function createHabit(habitData, env) {
   ).run();
   return habitId;
 }
-__name(createHabit, "createHabit");
 async function markHabitComplete(habitId, userId, notes, env) {
   const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
   const existingCompletion = await env.DB.prepare(`
@@ -4320,7 +4199,6 @@ async function markHabitComplete(habitId, userId, notes, env) {
   await updateUserPoints(userId, 10, env);
   return { success: true, completionId, points: 10 };
 }
-__name(markHabitComplete, "markHabitComplete");
 async function getUserMedia(userId, env) {
   const result = await env.DB.prepare(`
         SELECT * FROM media_uploads 
@@ -4329,7 +4207,6 @@ async function getUserMedia(userId, env) {
     `).bind(userId).all();
   return result.results || [];
 }
-__name(getUserMedia, "getUserMedia");
 async function getAllMedia(env) {
   const result = await env.DB.prepare(`
         SELECT m.*, u.email as user_email
@@ -4339,7 +4216,6 @@ async function getAllMedia(env) {
     `).all();
   return result.results || [];
 }
-__name(getAllMedia, "getAllMedia");
 async function checkAndAwardAchievements2(userId, env) {
   try {
     const { checkAndAwardAchievements: enhancedCheck } = await Promise.resolve().then(() => (init_achievements(), achievements_exports));
@@ -4349,24 +4225,25 @@ async function checkAndAwardAchievements2(userId, env) {
     return [];
   }
 }
-__name(checkAndAwardAchievements2, "checkAndAwardAchievements2");
 var init_database = __esm({
   "utils/database.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(getUserByEmail, "getUserByEmail");
-    __name2(getUserById, "getUserById");
-    __name2(createUser, "createUser");
-    __name2(validatePassword, "validatePassword");
-    __name2(updateUserPoints, "updateUserPoints");
-    __name2(getUserHabits, "getUserHabits");
-    __name2(createHabit, "createHabit");
-    __name2(markHabitComplete, "markHabitComplete");
-    __name2(getUserMedia, "getUserMedia");
-    __name2(getAllMedia, "getAllMedia");
-    __name2(checkAndAwardAchievements2, "checkAndAwardAchievements");
+    __name(getUserByEmail, "getUserByEmail");
+    __name(getUserById, "getUserById");
+    __name(createUser, "createUser");
+    __name(validatePassword, "validatePassword");
+    __name(updateUserPoints, "updateUserPoints");
+    __name(getUserHabits, "getUserHabits");
+    __name(createHabit, "createHabit");
+    __name(markHabitComplete, "markHabitComplete");
+    __name(getUserMedia, "getUserMedia");
+    __name(getAllMedia, "getAllMedia");
+    __name(checkAndAwardAchievements2, "checkAndAwardAchievements");
   }
 });
+
+// api/admin/media.js
 async function onRequestGet2(context) {
   const { request, env } = context;
   try {
@@ -4392,7 +4269,6 @@ async function onRequestGet2(context) {
     });
   }
 }
-__name(onRequestGet2, "onRequestGet2");
 async function onRequestPost2(context) {
   const { request, env } = context;
   try {
@@ -4471,17 +4347,18 @@ async function onRequestPost2(context) {
     });
   }
 }
-__name(onRequestPost2, "onRequestPost2");
 var init_media = __esm({
   "api/admin/media.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
     init_database();
-    __name2(onRequestGet2, "onRequestGet");
-    __name2(onRequestPost2, "onRequestPost");
+    __name(onRequestGet2, "onRequestGet");
+    __name(onRequestPost2, "onRequestPost");
   }
 });
+
+// api/admin/users.js
 async function onRequestGet3(context) {
   const { request, env } = context;
   try {
@@ -4525,7 +4402,6 @@ async function onRequestGet3(context) {
     });
   }
 }
-__name(onRequestGet3, "onRequestGet3");
 async function onRequestDelete2(context) {
   const { request, env } = context;
   try {
@@ -4587,16 +4463,17 @@ async function onRequestDelete2(context) {
     });
   }
 }
-__name(onRequestDelete2, "onRequestDelete2");
 var init_users = __esm({
   "api/admin/users.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestGet3, "onRequestGet");
-    __name2(onRequestDelete2, "onRequestDelete");
+    __name(onRequestGet3, "onRequestGet");
+    __name(onRequestDelete2, "onRequestDelete");
   }
 });
+
+// api/auth/login.js
 async function onRequestPost3(context) {
   const { request, env } = context;
   try {
@@ -4652,16 +4529,17 @@ async function onRequestPost3(context) {
     });
   }
 }
-__name(onRequestPost3, "onRequestPost3");
 var init_login = __esm({
   "api/auth/login.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_database();
     init_auth();
-    __name2(onRequestPost3, "onRequestPost");
+    __name(onRequestPost3, "onRequestPost");
   }
 });
+
+// api/auth/logout.js
 async function onRequestPost4(context) {
   const { request, env } = context;
   try {
@@ -4685,15 +4563,16 @@ async function onRequestPost4(context) {
     });
   }
 }
-__name(onRequestPost4, "onRequestPost4");
 var init_logout = __esm({
   "api/auth/logout.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestPost4, "onRequestPost");
+    __name(onRequestPost4, "onRequestPost");
   }
 });
+
+// api/auth/register.js
 async function onRequestPost5(context) {
   const { request, env } = context;
   try {
@@ -4758,16 +4637,17 @@ async function onRequestPost5(context) {
     });
   }
 }
-__name(onRequestPost5, "onRequestPost5");
 var init_register = __esm({
   "api/auth/register.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_database();
     init_auth();
-    __name2(onRequestPost5, "onRequestPost");
+    __name(onRequestPost5, "onRequestPost");
   }
 });
+
+// api/auth/validate-session.js
 async function onRequestGet4(context) {
   const { request, env } = context;
   try {
@@ -4801,15 +4681,16 @@ async function onRequestGet4(context) {
     });
   }
 }
-__name(onRequestGet4, "onRequestGet4");
 var init_validate_session = __esm({
   "api/auth/validate-session.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestGet4, "onRequestGet");
+    __name(onRequestGet4, "onRequestGet");
   }
 });
+
+// api/challenges/daily.js
 async function onRequestGet5({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -4885,14 +4766,15 @@ async function onRequestGet5({ request, env }) {
     });
   }
 }
-__name(onRequestGet5, "onRequestGet5");
 var init_daily = __esm({
   "api/challenges/daily.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequestGet5, "onRequestGet");
+    __name(onRequestGet5, "onRequestGet");
   }
 });
+
+// api/habits/complete.js
 async function onRequestPost6(context) {
   const { request, env } = context;
   try {
@@ -4953,16 +4835,17 @@ async function onRequestPost6(context) {
     });
   }
 }
-__name(onRequestPost6, "onRequestPost6");
 var init_complete = __esm({
   "api/habits/complete.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
     init_database();
-    __name2(onRequestPost6, "onRequestPost");
+    __name(onRequestPost6, "onRequestPost");
   }
 });
+
+// api/habits/weekly.js
 async function onRequestGet6(context) {
   const { request, env } = context;
   try {
@@ -5013,7 +4896,6 @@ async function onRequestGet6(context) {
     });
   }
 }
-__name(onRequestGet6, "onRequestGet6");
 async function onRequestPost7(context) {
   const { request, env } = context;
   try {
@@ -5085,40 +4967,38 @@ async function onRequestPost7(context) {
     });
   }
 }
-__name(onRequestPost7, "onRequestPost7");
 function getCurrentWeekStart() {
   const now = /* @__PURE__ */ new Date();
   const sunday = new Date(now);
   sunday.setDate(now.getDate() - now.getDay());
   return sunday.toISOString().split("T")[0];
 }
-__name(getCurrentWeekStart, "getCurrentWeekStart");
 function getWeekStartFromDate(dateStr) {
   const date = new Date(dateStr);
   const sunday = new Date(date);
   sunday.setDate(date.getDate() - date.getDay());
   return sunday.toISOString().split("T")[0];
 }
-__name(getWeekStartFromDate, "getWeekStartFromDate");
 function getWeekEnd(weekStartStr) {
   const weekStart = new Date(weekStartStr);
   const saturday = new Date(weekStart);
   saturday.setDate(weekStart.getDate() + 6);
   return saturday.toISOString().split("T")[0];
 }
-__name(getWeekEnd, "getWeekEnd");
 var init_weekly = __esm({
   "api/habits/weekly.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestGet6, "onRequestGet");
-    __name2(onRequestPost7, "onRequestPost");
-    __name2(getCurrentWeekStart, "getCurrentWeekStart");
-    __name2(getWeekStartFromDate, "getWeekStartFromDate");
-    __name2(getWeekEnd, "getWeekEnd");
+    __name(onRequestGet6, "onRequestGet");
+    __name(onRequestPost7, "onRequestPost");
+    __name(getCurrentWeekStart, "getCurrentWeekStart");
+    __name(getWeekStartFromDate, "getWeekStartFromDate");
+    __name(getWeekEnd, "getWeekEnd");
   }
 });
+
+// api/media/enhanced.js
 function getWeekStartFromDate2(date) {
   const d = new Date(date);
   const day = d.getDay();
@@ -5127,7 +5007,6 @@ function getWeekStartFromDate2(date) {
   weekStart.setHours(0, 0, 0, 0);
   return weekStart;
 }
-__name(getWeekStartFromDate2, "getWeekStartFromDate2");
 function getWeekEndFromDate(date) {
   const weekStart = getWeekStartFromDate2(date);
   const weekEnd = new Date(weekStart);
@@ -5135,7 +5014,6 @@ function getWeekEndFromDate(date) {
   weekEnd.setHours(23, 59, 59, 999);
   return weekEnd;
 }
-__name(getWeekEndFromDate, "getWeekEndFromDate");
 async function getUserMediaEnhanced(userId, env) {
   const result = await env.DB.prepare(`
         SELECT * FROM media_uploads 
@@ -5149,7 +5027,6 @@ async function getUserMediaEnhanced(userId, env) {
   }));
   return categorizedMedia;
 }
-__name(getUserMediaEnhanced, "getUserMediaEnhanced");
 async function pairBeforeAfterMedia(media) {
   const pairs = [];
   const beforeMedia = media.filter((m) => m.media_type === "before");
@@ -5174,7 +5051,6 @@ async function pairBeforeAfterMedia(media) {
   });
   return pairs;
 }
-__name(pairBeforeAfterMedia, "pairBeforeAfterMedia");
 async function calculateMediaStats(media) {
   const totalUploads = media.length;
   const beforeCount = media.filter((m) => m.media_type === "before").length;
@@ -5203,7 +5079,6 @@ async function calculateMediaStats(media) {
     most_active_week_count: mostActiveWeek ? weeklyUploads[mostActiveWeek].total : 0
   };
 }
-__name(calculateMediaStats, "calculateMediaStats");
 async function onRequestGet7(context) {
   const { request, env } = context;
   try {
@@ -5256,7 +5131,6 @@ async function onRequestGet7(context) {
     });
   }
 }
-__name(onRequestGet7, "onRequestGet7");
 async function onRequestPost8(context) {
   const { request, env } = context;
   try {
@@ -5359,21 +5233,22 @@ async function onRequestPost8(context) {
     });
   }
 }
-__name(onRequestPost8, "onRequestPost8");
 var init_enhanced = __esm({
   "api/media/enhanced.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(getWeekStartFromDate2, "getWeekStartFromDate");
-    __name2(getWeekEndFromDate, "getWeekEndFromDate");
-    __name2(getUserMediaEnhanced, "getUserMediaEnhanced");
-    __name2(pairBeforeAfterMedia, "pairBeforeAfterMedia");
-    __name2(calculateMediaStats, "calculateMediaStats");
-    __name2(onRequestGet7, "onRequestGet");
-    __name2(onRequestPost8, "onRequestPost");
+    __name(getWeekStartFromDate2, "getWeekStartFromDate");
+    __name(getWeekEndFromDate, "getWeekEndFromDate");
+    __name(getUserMediaEnhanced, "getUserMediaEnhanced");
+    __name(pairBeforeAfterMedia, "pairBeforeAfterMedia");
+    __name(calculateMediaStats, "calculateMediaStats");
+    __name(onRequestGet7, "onRequestGet");
+    __name(onRequestPost8, "onRequestPost");
   }
 });
+
+// api/media/videos.js
 async function onRequestPost9({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -5503,7 +5378,6 @@ async function onRequestPost9({ request, env }) {
     });
   }
 }
-__name(onRequestPost9, "onRequestPost9");
 async function onRequestGet8({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -5569,22 +5443,22 @@ async function onRequestGet8({ request, env }) {
     });
   }
 }
-__name(onRequestGet8, "onRequestGet8");
 function getWeekNumber(date) {
   const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
   const pastDaysOfYear = (date - firstDayOfYear) / 864e5;
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
 }
-__name(getWeekNumber, "getWeekNumber");
 var init_videos = __esm({
   "api/media/videos.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequestPost9, "onRequestPost");
-    __name2(onRequestGet8, "onRequestGet");
-    __name2(getWeekNumber, "getWeekNumber");
+    __name(onRequestPost9, "onRequestPost");
+    __name(onRequestGet8, "onRequestGet");
+    __name(getWeekNumber, "getWeekNumber");
   }
 });
+
+// api/achievements/unlock.js
 async function onRequest(context) {
   const { request, env } = context;
   if (request.method !== "POST") {
@@ -5684,7 +5558,6 @@ async function onRequest(context) {
     });
   }
 }
-__name(onRequest, "onRequest");
 async function checkComboAchievements(userId, env) {
   try {
     const todayAchievements = await env.DB.prepare(`
@@ -5705,7 +5578,6 @@ async function checkComboAchievements(userId, env) {
     console.error("Combo achievement check error:", error);
   }
 }
-__name(checkComboAchievements, "checkComboAchievements");
 async function awardComboAchievement(userId, achievementName, count, env) {
   try {
     const existingCombo = await env.DB.prepare(`
@@ -5734,16 +5606,17 @@ async function awardComboAchievement(userId, achievementName, count, env) {
     console.error("Award combo achievement error:", error);
   }
 }
-__name(awardComboAchievement, "awardComboAchievement");
 var init_unlock = __esm({
   "api/achievements/unlock.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequest, "onRequest");
-    __name2(checkComboAchievements, "checkComboAchievements");
-    __name2(awardComboAchievement, "awardComboAchievement");
+    __name(onRequest, "onRequest");
+    __name(checkComboAchievements, "checkComboAchievements");
+    __name(awardComboAchievement, "awardComboAchievement");
   }
 });
+
+// api/leaderboards/achievements.js
 async function onRequest2(context) {
   const { request, env } = context;
   if (request.method !== "GET") {
@@ -5843,14 +5716,15 @@ async function onRequest2(context) {
     });
   }
 }
-__name(onRequest2, "onRequest2");
 var init_achievements2 = __esm({
   "api/leaderboards/achievements.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequest2, "onRequest");
+    __name(onRequest2, "onRequest");
   }
 });
+
+// api/habits/[id].js
 async function onRequestDelete3(context) {
   const { request, env, params } = context;
   try {
@@ -5895,15 +5769,16 @@ async function onRequestDelete3(context) {
     });
   }
 }
-__name(onRequestDelete3, "onRequestDelete3");
 var init_id2 = __esm({
   "api/habits/[id].js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestDelete3, "onRequestDelete");
+    __name(onRequestDelete3, "onRequestDelete");
   }
 });
+
+// api/achievements/index.js
 async function onRequestGet9(context) {
   const { request, env } = context;
   try {
@@ -6013,7 +5888,6 @@ async function onRequestGet9(context) {
     });
   }
 }
-__name(onRequestGet9, "onRequestGet9");
 async function onRequestPost10(context) {
   const { request, env } = context;
   try {
@@ -6079,16 +5953,17 @@ async function onRequestPost10(context) {
     });
   }
 }
-__name(onRequestPost10, "onRequestPost10");
 var init_achievements3 = __esm({
   "api/achievements/index.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
-    __name2(onRequestGet9, "onRequestGet");
-    __name2(onRequestPost10, "onRequestPost");
+    __name(onRequestGet9, "onRequestGet");
+    __name(onRequestPost10, "onRequestPost");
   }
 });
+
+// api/friends/index.js
 async function onRequestGet10({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -6162,7 +6037,6 @@ async function onRequestGet10({ request, env }) {
     });
   }
 }
-__name(onRequestGet10, "onRequestGet10");
 async function onRequestPost11({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -6283,15 +6157,16 @@ async function onRequestPost11({ request, env }) {
     });
   }
 }
-__name(onRequestPost11, "onRequestPost11");
 var init_friends = __esm({
   "api/friends/index.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequestGet10, "onRequestGet");
-    __name2(onRequestPost11, "onRequestPost");
+    __name(onRequestGet10, "onRequestGet");
+    __name(onRequestPost11, "onRequestPost");
   }
 });
+
+// api/habits/index.js
 async function onRequestGet11(context) {
   const { request, env } = context;
   try {
@@ -6313,7 +6188,6 @@ async function onRequestGet11(context) {
     });
   }
 }
-__name(onRequestGet11, "onRequestGet11");
 async function onRequestPost12(context) {
   const { request, env } = context;
   try {
@@ -6358,17 +6232,18 @@ async function onRequestPost12(context) {
     });
   }
 }
-__name(onRequestPost12, "onRequestPost12");
 var init_habits = __esm({
   "api/habits/index.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
     init_database();
-    __name2(onRequestGet11, "onRequestGet");
-    __name2(onRequestPost12, "onRequestPost");
+    __name(onRequestGet11, "onRequestGet");
+    __name(onRequestPost12, "onRequestPost");
   }
 });
+
+// api/leaderboards/index.js
 async function onRequestGet12({ request, env }) {
   try {
     const url = new URL(request.url);
@@ -6501,14 +6376,15 @@ async function onRequestGet12({ request, env }) {
     });
   }
 }
-__name(onRequestGet12, "onRequestGet12");
 var init_leaderboards = __esm({
   "api/leaderboards/index.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequestGet12, "onRequestGet");
+    __name(onRequestGet12, "onRequestGet");
   }
 });
+
+// api/media/index.js
 async function onRequestGet13(context) {
   const { request, env } = context;
   try {
@@ -6547,7 +6423,6 @@ async function onRequestGet13(context) {
     });
   }
 }
-__name(onRequestGet13, "onRequestGet13");
 async function onRequestPost13(context) {
   const { request, env } = context;
   try {
@@ -6634,17 +6509,18 @@ async function onRequestPost13(context) {
     });
   }
 }
-__name(onRequestPost13, "onRequestPost13");
 var init_media2 = __esm({
   "api/media/index.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
     init_auth();
     init_database();
-    __name2(onRequestGet13, "onRequestGet");
-    __name2(onRequestPost13, "onRequestPost");
+    __name(onRequestGet13, "onRequestGet");
+    __name(onRequestPost13, "onRequestPost");
   }
 });
+
+// api/nutrition/index.js
 async function onRequestPost14({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -6735,7 +6611,6 @@ async function onRequestPost14({ request, env }) {
     });
   }
 }
-__name(onRequestPost14, "onRequestPost14");
 async function onRequestGet14({ request, env }) {
   try {
     const url = new URL(request.url);
@@ -6784,7 +6659,6 @@ async function onRequestGet14({ request, env }) {
     });
   }
 }
-__name(onRequestGet14, "onRequestGet14");
 async function updateDailyNutrition(db, userId, date) {
   const totals = await db.prepare(`
         SELECT 
@@ -6842,7 +6716,6 @@ async function updateDailyNutrition(db, userId, date) {
     balanceScore
   ).run();
 }
-__name(updateDailyNutrition, "updateDailyNutrition");
 async function getNutritionStreaks(db, userId) {
   const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
   const recentDays = await db.prepare(`
@@ -6887,17 +6760,18 @@ async function getNutritionStreaks(db, userId) {
     total_tracking_days: recentDays.results?.length || 0
   };
 }
-__name(getNutritionStreaks, "getNutritionStreaks");
 var init_nutrition = __esm({
   "api/nutrition/index.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequestPost14, "onRequestPost");
-    __name2(onRequestGet14, "onRequestGet");
-    __name2(updateDailyNutrition, "updateDailyNutrition");
-    __name2(getNutritionStreaks, "getNutritionStreaks");
+    __name(onRequestPost14, "onRequestPost");
+    __name(onRequestGet14, "onRequestGet");
+    __name(updateDailyNutrition, "updateDailyNutrition");
+    __name(getNutritionStreaks, "getNutritionStreaks");
   }
 });
+
+// _middleware.js
 async function onRequest3(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
@@ -6924,7 +6798,6 @@ async function onRequest3(context) {
   });
   return response;
 }
-__name(onRequest3, "onRequest3");
 async function initializeDatabase(env) {
   try {
     const adminCheck = await env.DB.prepare(
@@ -6945,18 +6818,19 @@ async function initializeDatabase(env) {
     console.error("Error initializing admin user:", error);
   }
 }
-__name(initializeDatabase, "initializeDatabase");
 var init_middleware = __esm({
   "_middleware.js"() {
-    init_functionsRoutes_0_8772769471438859();
+    init_functionsRoutes_0_3011495980473107();
     init_checked_fetch();
-    __name2(onRequest3, "onRequest");
-    __name2(initializeDatabase, "initializeDatabase");
+    __name(onRequest3, "onRequest");
+    __name(initializeDatabase, "initializeDatabase");
   }
 });
+
+// ../.wrangler/tmp/pages-ixWYo6/functionsRoutes-0.3011495980473107.mjs
 var routes;
-var init_functionsRoutes_0_8772769471438859 = __esm({
-  "../.wrangler/tmp/pages-T5aod5/functionsRoutes-0.8772769471438859.mjs"() {
+var init_functionsRoutes_0_3011495980473107 = __esm({
+  "../.wrangler/tmp/pages-ixWYo6/functionsRoutes-0.3011495980473107.mjs"() {
     init_id();
     init_delete();
     init_check();
@@ -7233,13 +7107,21 @@ var init_functionsRoutes_0_8772769471438859 = __esm({
     ];
   }
 });
-init_functionsRoutes_0_8772769471438859();
+
+// ../.wrangler/tmp/bundle-LlQkIK/middleware-loader.entry.ts
+init_functionsRoutes_0_3011495980473107();
 init_checked_fetch();
-init_functionsRoutes_0_8772769471438859();
+
+// ../.wrangler/tmp/bundle-LlQkIK/middleware-insertion-facade.js
+init_functionsRoutes_0_3011495980473107();
 init_checked_fetch();
-init_functionsRoutes_0_8772769471438859();
+
+// ../../../../usr/lib/node_modules/wrangler/templates/pages-template-worker.ts
+init_functionsRoutes_0_3011495980473107();
 init_checked_fetch();
-init_functionsRoutes_0_8772769471438859();
+
+// ../../../../usr/lib/node_modules/wrangler/node_modules/path-to-regexp/dist.es2015/index.js
+init_functionsRoutes_0_3011495980473107();
 init_checked_fetch();
 function lexer(str) {
   var tokens = [];
@@ -7325,7 +7207,6 @@ function lexer(str) {
   return tokens;
 }
 __name(lexer, "lexer");
-__name2(lexer, "lexer");
 function parse2(str, options) {
   if (options === void 0) {
     options = {};
@@ -7336,18 +7217,18 @@ function parse2(str, options) {
   var key = 0;
   var i = 0;
   var path = "";
-  var tryConsume = /* @__PURE__ */ __name2(function(type) {
+  var tryConsume = /* @__PURE__ */ __name(function(type) {
     if (i < tokens.length && tokens[i].type === type)
       return tokens[i++].value;
   }, "tryConsume");
-  var mustConsume = /* @__PURE__ */ __name2(function(type) {
+  var mustConsume = /* @__PURE__ */ __name(function(type) {
     var value2 = tryConsume(type);
     if (value2 !== void 0)
       return value2;
     var _a2 = tokens[i], nextType = _a2.type, index = _a2.index;
     throw new TypeError("Unexpected ".concat(nextType, " at ").concat(index, ", expected ").concat(type));
   }, "mustConsume");
-  var consumeText = /* @__PURE__ */ __name2(function() {
+  var consumeText = /* @__PURE__ */ __name(function() {
     var result2 = "";
     var value2;
     while (value2 = tryConsume("CHAR") || tryConsume("ESCAPED_CHAR")) {
@@ -7355,7 +7236,7 @@ function parse2(str, options) {
     }
     return result2;
   }, "consumeText");
-  var isSafe = /* @__PURE__ */ __name2(function(value2) {
+  var isSafe = /* @__PURE__ */ __name(function(value2) {
     for (var _i = 0, delimiter_1 = delimiter; _i < delimiter_1.length; _i++) {
       var char2 = delimiter_1[_i];
       if (value2.indexOf(char2) > -1)
@@ -7363,7 +7244,7 @@ function parse2(str, options) {
     }
     return false;
   }, "isSafe");
-  var safePattern = /* @__PURE__ */ __name2(function(prefix2) {
+  var safePattern = /* @__PURE__ */ __name(function(prefix2) {
     var prev = result[result.length - 1];
     var prevText = prefix2 || (prev && typeof prev === "string" ? prev : "");
     if (prev && !prevText) {
@@ -7425,15 +7306,13 @@ function parse2(str, options) {
   }
   return result;
 }
-__name(parse2, "parse2");
-__name2(parse2, "parse");
+__name(parse2, "parse");
 function match(str, options) {
   var keys = [];
   var re = pathToRegexp(str, keys, options);
   return regexpToFunction(re, keys, options);
 }
 __name(match, "match");
-__name2(match, "match");
 function regexpToFunction(re, keys, options) {
   if (options === void 0) {
     options = {};
@@ -7447,7 +7326,7 @@ function regexpToFunction(re, keys, options) {
       return false;
     var path = m[0], index = m.index;
     var params = /* @__PURE__ */ Object.create(null);
-    var _loop_1 = /* @__PURE__ */ __name2(function(i2) {
+    var _loop_1 = /* @__PURE__ */ __name(function(i2) {
       if (m[i2] === void 0)
         return "continue";
       var key = keys[i2 - 1];
@@ -7466,17 +7345,14 @@ function regexpToFunction(re, keys, options) {
   };
 }
 __name(regexpToFunction, "regexpToFunction");
-__name2(regexpToFunction, "regexpToFunction");
 function escapeString(str) {
   return str.replace(/([.+*?=^!:${}()[\]|/\\])/g, "\\$1");
 }
 __name(escapeString, "escapeString");
-__name2(escapeString, "escapeString");
 function flags(options) {
   return options && options.sensitive ? "" : "i";
 }
 __name(flags, "flags");
-__name2(flags, "flags");
 function regexpToRegexp(path, keys) {
   if (!keys)
     return path;
@@ -7497,7 +7373,6 @@ function regexpToRegexp(path, keys) {
   return path;
 }
 __name(regexpToRegexp, "regexpToRegexp");
-__name2(regexpToRegexp, "regexpToRegexp");
 function arrayToRegexp(paths, keys, options) {
   var parts = paths.map(function(path) {
     return pathToRegexp(path, keys, options).source;
@@ -7505,12 +7380,10 @@ function arrayToRegexp(paths, keys, options) {
   return new RegExp("(?:".concat(parts.join("|"), ")"), flags(options));
 }
 __name(arrayToRegexp, "arrayToRegexp");
-__name2(arrayToRegexp, "arrayToRegexp");
 function stringToRegexp(path, keys, options) {
   return tokensToRegexp(parse2(path, options), keys, options);
 }
 __name(stringToRegexp, "stringToRegexp");
-__name2(stringToRegexp, "stringToRegexp");
 function tokensToRegexp(tokens, keys, options) {
   if (options === void 0) {
     options = {};
@@ -7566,7 +7439,6 @@ function tokensToRegexp(tokens, keys, options) {
   return new RegExp(route, flags(options));
 }
 __name(tokensToRegexp, "tokensToRegexp");
-__name2(tokensToRegexp, "tokensToRegexp");
 function pathToRegexp(path, keys, options) {
   if (path instanceof RegExp)
     return regexpToRegexp(path, keys);
@@ -7575,7 +7447,8 @@ function pathToRegexp(path, keys, options) {
   return stringToRegexp(path, keys, options);
 }
 __name(pathToRegexp, "pathToRegexp");
-__name2(pathToRegexp, "pathToRegexp");
+
+// ../../../../usr/lib/node_modules/wrangler/templates/pages-template-worker.ts
 var escapeRegex = /[.+?^${}()|[\]\\]/g;
 function* executeRequest(request) {
   const requestPath = new URL(request.url).pathname;
@@ -7626,14 +7499,13 @@ function* executeRequest(request) {
   }
 }
 __name(executeRequest, "executeRequest");
-__name2(executeRequest, "executeRequest");
 var pages_template_worker_default = {
   async fetch(originalRequest, env, workerContext) {
     let request = originalRequest;
     const handlerIterator = executeRequest(request);
     let data = {};
     let isFailOpen = false;
-    const next = /* @__PURE__ */ __name2(async (input, init) => {
+    const next = /* @__PURE__ */ __name(async (input, init) => {
       if (input !== void 0) {
         let url = input;
         if (typeof input === "string") {
@@ -7660,7 +7532,7 @@ var pages_template_worker_default = {
           },
           env,
           waitUntil: workerContext.waitUntil.bind(workerContext),
-          passThroughOnException: /* @__PURE__ */ __name2(() => {
+          passThroughOnException: /* @__PURE__ */ __name(() => {
             isFailOpen = true;
           }, "passThroughOnException")
         };
@@ -7688,16 +7560,18 @@ var pages_template_worker_default = {
     }
   }
 };
-var cloneResponse = /* @__PURE__ */ __name2((response) => (
+var cloneResponse = /* @__PURE__ */ __name((response) => (
   // https://fetch.spec.whatwg.org/#null-body-status
   new Response(
     [101, 204, 205, 304].includes(response.status) ? null : response.body,
     response
   )
 ), "cloneResponse");
-init_functionsRoutes_0_8772769471438859();
+
+// ../../../../usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
+init_functionsRoutes_0_3011495980473107();
 init_checked_fetch();
-var drainBody = /* @__PURE__ */ __name2(async (request, env, _ctx, middlewareCtx) => {
+var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
   try {
     return await middlewareCtx.next(request, env);
   } finally {
@@ -7713,7 +7587,9 @@ var drainBody = /* @__PURE__ */ __name2(async (request, env, _ctx, middlewareCtx
   }
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
-init_functionsRoutes_0_8772769471438859();
+
+// ../../../../usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts
+init_functionsRoutes_0_3011495980473107();
 init_checked_fetch();
 function reduceError(e) {
   return {
@@ -7724,8 +7600,7 @@ function reduceError(e) {
   };
 }
 __name(reduceError, "reduceError");
-__name2(reduceError, "reduceError");
-var jsonError = /* @__PURE__ */ __name2(async (request, env, _ctx, middlewareCtx) => {
+var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
   try {
     return await middlewareCtx.next(request, env);
   } catch (e) {
@@ -7737,19 +7612,22 @@ var jsonError = /* @__PURE__ */ __name2(async (request, env, _ctx, middlewareCtx
   }
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
+
+// ../.wrangler/tmp/bundle-LlQkIK/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
 ];
 var middleware_insertion_facade_default = pages_template_worker_default;
-init_functionsRoutes_0_8772769471438859();
+
+// ../../../../usr/lib/node_modules/wrangler/templates/middleware/common.ts
+init_functionsRoutes_0_3011495980473107();
 init_checked_fetch();
 var __facade_middleware__ = [];
 function __facade_register__(...args) {
   __facade_middleware__.push(...args.flat());
 }
 __name(__facade_register__, "__facade_register__");
-__name2(__facade_register__, "__facade_register__");
 function __facade_invokeChain__(request, env, ctx, dispatch, middlewareChain) {
   const [head, ...tail] = middlewareChain;
   const middlewareCtx = {
@@ -7761,7 +7639,6 @@ function __facade_invokeChain__(request, env, ctx, dispatch, middlewareChain) {
   return head(request, env, ctx, middlewareCtx);
 }
 __name(__facade_invokeChain__, "__facade_invokeChain__");
-__name2(__facade_invokeChain__, "__facade_invokeChain__");
 function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
   return __facade_invokeChain__(request, env, ctx, dispatch, [
     ...__facade_middleware__,
@@ -7769,18 +7646,16 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
   ]);
 }
 __name(__facade_invoke__, "__facade_invoke__");
-__name2(__facade_invoke__, "__facade_invoke__");
+
+// ../.wrangler/tmp/bundle-LlQkIK/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
-  static {
-    __name(this, "___Facade_ScheduledController__");
-  }
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
     this.cron = cron;
     this.#noRetry = noRetry;
   }
   static {
-    __name2(this, "__Facade_ScheduledController__");
+    __name(this, "__Facade_ScheduledController__");
   }
   #noRetry;
   noRetry() {
@@ -7797,7 +7672,7 @@ function wrapExportedHandler(worker) {
   for (const middleware of __INTERNAL_WRANGLER_MIDDLEWARE__) {
     __facade_register__(middleware);
   }
-  const fetchDispatcher = /* @__PURE__ */ __name2(function(request, env, ctx) {
+  const fetchDispatcher = /* @__PURE__ */ __name(function(request, env, ctx) {
     if (worker.fetch === void 0) {
       throw new Error("Handler does not export a fetch() function.");
     }
@@ -7806,7 +7681,7 @@ function wrapExportedHandler(worker) {
   return {
     ...worker,
     fetch(request, env, ctx) {
-      const dispatcher = /* @__PURE__ */ __name2(function(type, init) {
+      const dispatcher = /* @__PURE__ */ __name(function(type, init) {
         if (type === "scheduled" && worker.scheduled !== void 0) {
           const controller = new __Facade_ScheduledController__(
             Date.now(),
@@ -7822,7 +7697,6 @@ function wrapExportedHandler(worker) {
   };
 }
 __name(wrapExportedHandler, "wrapExportedHandler");
-__name2(wrapExportedHandler, "wrapExportedHandler");
 function wrapWorkerEntrypoint(klass) {
   if (__INTERNAL_WRANGLER_MIDDLEWARE__ === void 0 || __INTERNAL_WRANGLER_MIDDLEWARE__.length === 0) {
     return klass;
@@ -7831,7 +7705,7 @@ function wrapWorkerEntrypoint(klass) {
     __facade_register__(middleware);
   }
   return class extends klass {
-    #fetchDispatcher = /* @__PURE__ */ __name2((request, env, ctx) => {
+    #fetchDispatcher = /* @__PURE__ */ __name((request, env, ctx) => {
       this.env = env;
       this.ctx = ctx;
       if (super.fetch === void 0) {
@@ -7839,7 +7713,7 @@ function wrapWorkerEntrypoint(klass) {
       }
       return super.fetch(request);
     }, "#fetchDispatcher");
-    #dispatcher = /* @__PURE__ */ __name2((type, init) => {
+    #dispatcher = /* @__PURE__ */ __name((type, init) => {
       if (type === "scheduled" && super.scheduled !== void 0) {
         const controller = new __Facade_ScheduledController__(
           Date.now(),
@@ -7862,7 +7736,6 @@ function wrapWorkerEntrypoint(klass) {
   };
 }
 __name(wrapWorkerEntrypoint, "wrapWorkerEntrypoint");
-__name2(wrapWorkerEntrypoint, "wrapWorkerEntrypoint");
 var WRAPPED_ENTRY;
 if (typeof middleware_insertion_facade_default === "object") {
   WRAPPED_ENTRY = wrapExportedHandler(middleware_insertion_facade_default);
@@ -7870,179 +7743,9 @@ if (typeof middleware_insertion_facade_default === "object") {
   WRAPPED_ENTRY = wrapWorkerEntrypoint(middleware_insertion_facade_default);
 }
 var middleware_loader_entry_default = WRAPPED_ENTRY;
-
-// ../../../usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
-var drainBody2 = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
-  try {
-    return await middlewareCtx.next(request, env);
-  } finally {
-    try {
-      if (request.body !== null && !request.bodyUsed) {
-        const reader = request.body.getReader();
-        while (!(await reader.read()).done) {
-        }
-      }
-    } catch (e) {
-      console.error("Failed to drain the unused request body.", e);
-    }
-  }
-}, "drainBody");
-var middleware_ensure_req_body_drained_default2 = drainBody2;
-
-// ../../../usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts
-function reduceError2(e) {
-  return {
-    name: e?.name,
-    message: e?.message ?? String(e),
-    stack: e?.stack,
-    cause: e?.cause === void 0 ? void 0 : reduceError2(e.cause)
-  };
-}
-__name(reduceError2, "reduceError");
-var jsonError2 = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
-  try {
-    return await middlewareCtx.next(request, env);
-  } catch (e) {
-    const error = reduceError2(e);
-    return Response.json(error, {
-      status: 500,
-      headers: { "MF-Experimental-Error-Stack": "true" }
-    });
-  }
-}, "jsonError");
-var middleware_miniflare3_json_error_default2 = jsonError2;
-
-// .wrangler/tmp/bundle-8PQozf/middleware-insertion-facade.js
-var __INTERNAL_WRANGLER_MIDDLEWARE__2 = [
-  middleware_ensure_req_body_drained_default2,
-  middleware_miniflare3_json_error_default2
-];
-var middleware_insertion_facade_default2 = middleware_loader_entry_default;
-
-// ../../../usr/lib/node_modules/wrangler/templates/middleware/common.ts
-var __facade_middleware__2 = [];
-function __facade_register__2(...args) {
-  __facade_middleware__2.push(...args.flat());
-}
-__name(__facade_register__2, "__facade_register__");
-function __facade_invokeChain__2(request, env, ctx, dispatch, middlewareChain) {
-  const [head, ...tail] = middlewareChain;
-  const middlewareCtx = {
-    dispatch,
-    next(newRequest, newEnv) {
-      return __facade_invokeChain__2(newRequest, newEnv, ctx, dispatch, tail);
-    }
-  };
-  return head(request, env, ctx, middlewareCtx);
-}
-__name(__facade_invokeChain__2, "__facade_invokeChain__");
-function __facade_invoke__2(request, env, ctx, dispatch, finalMiddleware) {
-  return __facade_invokeChain__2(request, env, ctx, dispatch, [
-    ...__facade_middleware__2,
-    finalMiddleware
-  ]);
-}
-__name(__facade_invoke__2, "__facade_invoke__");
-
-// .wrangler/tmp/bundle-8PQozf/middleware-loader.entry.ts
-var __Facade_ScheduledController__2 = class ___Facade_ScheduledController__2 {
-  constructor(scheduledTime, cron, noRetry) {
-    this.scheduledTime = scheduledTime;
-    this.cron = cron;
-    this.#noRetry = noRetry;
-  }
-  static {
-    __name(this, "__Facade_ScheduledController__");
-  }
-  #noRetry;
-  noRetry() {
-    if (!(this instanceof ___Facade_ScheduledController__2)) {
-      throw new TypeError("Illegal invocation");
-    }
-    this.#noRetry();
-  }
-};
-function wrapExportedHandler2(worker) {
-  if (__INTERNAL_WRANGLER_MIDDLEWARE__2 === void 0 || __INTERNAL_WRANGLER_MIDDLEWARE__2.length === 0) {
-    return worker;
-  }
-  for (const middleware of __INTERNAL_WRANGLER_MIDDLEWARE__2) {
-    __facade_register__2(middleware);
-  }
-  const fetchDispatcher = /* @__PURE__ */ __name(function(request, env, ctx) {
-    if (worker.fetch === void 0) {
-      throw new Error("Handler does not export a fetch() function.");
-    }
-    return worker.fetch(request, env, ctx);
-  }, "fetchDispatcher");
-  return {
-    ...worker,
-    fetch(request, env, ctx) {
-      const dispatcher = /* @__PURE__ */ __name(function(type, init) {
-        if (type === "scheduled" && worker.scheduled !== void 0) {
-          const controller = new __Facade_ScheduledController__2(
-            Date.now(),
-            init.cron ?? "",
-            () => {
-            }
-          );
-          return worker.scheduled(controller, env, ctx);
-        }
-      }, "dispatcher");
-      return __facade_invoke__2(request, env, ctx, dispatcher, fetchDispatcher);
-    }
-  };
-}
-__name(wrapExportedHandler2, "wrapExportedHandler");
-function wrapWorkerEntrypoint2(klass) {
-  if (__INTERNAL_WRANGLER_MIDDLEWARE__2 === void 0 || __INTERNAL_WRANGLER_MIDDLEWARE__2.length === 0) {
-    return klass;
-  }
-  for (const middleware of __INTERNAL_WRANGLER_MIDDLEWARE__2) {
-    __facade_register__2(middleware);
-  }
-  return class extends klass {
-    #fetchDispatcher = /* @__PURE__ */ __name((request, env, ctx) => {
-      this.env = env;
-      this.ctx = ctx;
-      if (super.fetch === void 0) {
-        throw new Error("Entrypoint class does not define a fetch() function.");
-      }
-      return super.fetch(request);
-    }, "#fetchDispatcher");
-    #dispatcher = /* @__PURE__ */ __name((type, init) => {
-      if (type === "scheduled" && super.scheduled !== void 0) {
-        const controller = new __Facade_ScheduledController__2(
-          Date.now(),
-          init.cron ?? "",
-          () => {
-          }
-        );
-        return super.scheduled(controller);
-      }
-    }, "#dispatcher");
-    fetch(request) {
-      return __facade_invoke__2(
-        request,
-        this.env,
-        this.ctx,
-        this.#dispatcher,
-        this.#fetchDispatcher
-      );
-    }
-  };
-}
-__name(wrapWorkerEntrypoint2, "wrapWorkerEntrypoint");
-var WRAPPED_ENTRY2;
-if (typeof middleware_insertion_facade_default2 === "object") {
-  WRAPPED_ENTRY2 = wrapExportedHandler2(middleware_insertion_facade_default2);
-} else if (typeof middleware_insertion_facade_default2 === "function") {
-  WRAPPED_ENTRY2 = wrapWorkerEntrypoint2(middleware_insertion_facade_default2);
-}
-var middleware_loader_entry_default2 = WRAPPED_ENTRY2;
 export {
-  __INTERNAL_WRANGLER_MIDDLEWARE__2 as __INTERNAL_WRANGLER_MIDDLEWARE__,
-  middleware_loader_entry_default2 as default
+  __INTERNAL_WRANGLER_MIDDLEWARE__,
+  middleware_loader_entry_default as default
 };
 /*! Bundled license information:
 
@@ -8053,4 +7756,4 @@ bcryptjs/dist/bcrypt.js:
    * see: https://github.com/dcodeIO/bcrypt.js for details
    *)
 */
-//# sourceMappingURL=functionsWorker-0.7951196037819064.js.map
+//# sourceMappingURL=functionsWorker-0.44361957661585216.mjs.map

@@ -1377,7 +1377,7 @@ function createHabitElement(habit, showWeekView = false) {
     const actionButtons = `
         <div class="flex space-x-2 mt-4">
             ${habit.today_completed === 0 ? `
-                <button class="btn-primary flex-1" onclick="toggleHabitCompletion('${habit.id}')">
+                <button class="btn-primary flex-1" data-habit-id="${habit.id}" data-action="complete-habit">
                     <i class="fas fa-check mr-2"></i>
                     Mark Complete
                 </button>
@@ -1387,7 +1387,7 @@ function createHabitElement(habit, showWeekView = false) {
                     Completed Today!
                 </div>
             `}
-            <button class="btn-danger" onclick="deleteHabit('${habit.id}')">
+            <button class="btn-danger" data-habit-id="${habit.id}" data-action="delete-habit">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -1447,7 +1447,9 @@ function createWeeklyHabitElement(habit) {
         
         return `
             <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}" 
-                 onclick="toggleWeeklyHabit('${habit.id}', '${dateStr}', ${dayIndex})">
+                 data-habit-id="${habit.id}" 
+                 data-date="${dateStr}"
+                 data-action="toggle-habit">
                 <div class="text-xs text-white/70 font-medium">${dayName}</div>
                 <div class="text-lg mt-1">${isCompleted ? '✓' : '○'}</div>
                 <div class="text-xs text-white/60">${dayDate.getDate()}</div>
@@ -1464,7 +1466,7 @@ function createWeeklyHabitElement(habit) {
                     <span class="text-green-400 font-semibold">${completedCount}</span> / ${targetCount} days this week
                 </p>
             </div>
-            <button class="btn-danger" onclick="deleteHabit('${habit.id}')" title="Delete habit">
+            <button class="btn-danger" data-habit-id="${habit.id}" data-action="delete-habit" title="Delete habit">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -1501,11 +1503,11 @@ function createSimpleHabitElement(habit) {
                 </div>
             </div>
             <div class="flex space-x-2">
-                <button class="btn-primary" onclick="toggleHabitCompletion('${habit.id}')">
+                <button class="btn-primary" data-habit-id="${habit.id}" data-action="complete-habit">
                     <i class="fas fa-check mr-2"></i>
                     Complete
                 </button>
-                <button class="btn-secondary" onclick="deleteHabit('${habit.id}')" title="Delete habit">
+                <button class="btn-secondary" data-habit-id="${habit.id}" data-action="delete-habit" title="Delete habit">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -4764,27 +4766,51 @@ function setupHabitEventListeners() {
         uploadProgressCard.addEventListener('click', showMediaUploadModal);
     }
 
-    // Event delegation for habit day toggle (handles dynamically created elements)
+    // Event delegation for habit actions (handles dynamically created elements)
     document.addEventListener('click', function(event) {
-        const dayCell = event.target.closest('[data-action="toggle-habit"]');
-        if (dayCell) {
+        const element = event.target.closest('[data-action]');
+        if (element) {
             event.preventDefault();
-            const habitId = dayCell.getAttribute('data-habit-id');
-            const date = dayCell.getAttribute('data-date');
-            console.log('📱 Day cell clicked via event delegation:', habitId, date);
-            toggleHabitDay(habitId, date);
+            const action = element.getAttribute('data-action');
+            const habitId = element.getAttribute('data-habit-id');
+            
+            console.log('📱 Habit action clicked via event delegation:', action, habitId);
+            
+            if (action === 'toggle-habit') {
+                const date = element.getAttribute('data-date');
+                console.log('🔄 Toggling habit day:', habitId, date);
+                toggleHabitDay(habitId, date);
+            } else if (action === 'complete-habit') {
+                console.log('✅ Completing habit:', habitId);
+                toggleHabitCompletion(habitId);
+            } else if (action === 'delete-habit') {
+                console.log('🗑️ Deleting habit:', habitId);
+                deleteHabit(habitId);
+            }
         }
     });
     
     // Also handle touch events for mobile
     document.addEventListener('touchend', function(event) {
-        const dayCell = event.target.closest('[data-action="toggle-habit"]');
-        if (dayCell) {
+        const element = event.target.closest('[data-action]');
+        if (element) {
             event.preventDefault();
-            const habitId = dayCell.getAttribute('data-habit-id');
-            const date = dayCell.getAttribute('data-date');
-            console.log('📱 Day cell touched via event delegation:', habitId, date);
-            toggleHabitDay(habitId, date);
+            const action = element.getAttribute('data-action');
+            const habitId = element.getAttribute('data-habit-id');
+            
+            console.log('📱 Habit action touched via event delegation:', action, habitId);
+            
+            if (action === 'toggle-habit') {
+                const date = element.getAttribute('data-date');
+                console.log('🔄 Toggling habit day (touch):', habitId, date);
+                toggleHabitDay(habitId, date);
+            } else if (action === 'complete-habit') {
+                console.log('✅ Completing habit (touch):', habitId);
+                toggleHabitCompletion(habitId);
+            } else if (action === 'delete-habit') {
+                console.log('🗑️ Deleting habit (touch):', habitId);
+                deleteHabit(habitId);
+            }
         }
     });
     
@@ -4897,7 +4923,7 @@ function createDashboardHabitCard(habit) {
                         <p class="text-white/60 text-xs">${completionsThisWeek}/${habit.weekly_target || 7} this week</p>
                     </div>
                 </div>
-                <button onclick="deleteHabit('${habit.id}')" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
+                <button data-habit-id="${habit.id}" data-action="delete-habit" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -5163,7 +5189,7 @@ function createHabitCard(habit) {
                     </div>
                 </div>
                 <div class="flex flex-col items-end space-y-2">
-                    <button onclick="deleteHabit('${habit.id}')" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
+                    <button data-habit-id="${habit.id}" data-action="delete-habit" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
                         <i class="fas fa-trash"></i>
                     </button>
                     <div class="text-right">

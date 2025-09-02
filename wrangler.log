@@ -136,3 +136,6 @@ Admin account updated with correct password hash
 [wrangler:inf] POST /api/habits/toggle 500 Internal Server Error (107ms)
 ✨ Compiled Worker successfully
 ⎔ Reloading local server...
+[wrangler:inf] GET / 200 OK (72ms)
+[wrangler:inf] GET /app.js 200 OK (28ms)
+[wrangler:inf] GET /favicon.ico 200 OK (14ms)

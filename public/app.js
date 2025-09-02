@@ -4376,12 +4376,8 @@ function setupHabitEventListeners() {
 
     // Create Habit Form Submit Handler
     const createHabitForm = document.getElementById('create-habit-form');
-    console.log('🔧 Setting up form handler, form element:', createHabitForm);
     if (createHabitForm) {
         createHabitForm.addEventListener('submit', handleCreateHabit);
-        console.log('✅ Form submit listener attached to create-habit-form');
-    } else {
-        console.error('❌ create-habit-form element not found during setup!');
     }
 
     // Habit Name Input Change Handler for Emoji Preview
@@ -4406,7 +4402,6 @@ async function deleteHabit(habitId) {
     }
     
     try {
-        console.log('🗑️ Deleting habit:', habitId);
         const response = await fetch(`/api/habits/${habitId}`, {
             method: 'DELETE',
             headers: {
@@ -4521,21 +4516,15 @@ function createDashboardHabitCard(habit) {
 
 // Show Create Habit Modal
 function showCreateHabitModal() {
-    console.log('🎭 showCreateHabitModal called');
     const modal = document.getElementById('create-habit-modal');
-    console.log('🎭 Modal element:', modal);
     if (modal) {
         modal.classList.remove('hidden');
-        console.log('🎭 Modal shown, resetting form');
         // Reset form
         const form = document.getElementById('create-habit-form');
-        console.log('🎭 Form element:', form);
         if (form) {
             form.reset();
             updateEmojiPreview();
         }
-    } else {
-        console.error('❌ Modal element not found!');
     }
 }
 
@@ -4584,18 +4573,9 @@ function getCategoryColor(category) {
 }
 
 async function handleCreateHabit(e) {
-    console.log('🚀 handleCreateHabit called');
     e.preventDefault();
     
-    console.log('📝 Form target:', e.target);
     const formData = new FormData(e.target);
-    
-    // Debug form data
-    console.log('📋 FormData entries:');
-    for (let [key, value] of formData.entries()) {
-        console.log(`  ${key}: ${value}`);
-    }
-    
     const habitData = {
         name: formData.get('habit-name') || document.getElementById('habit-name').value,
         description: formData.get('habit-description') || document.getElementById('habit-description').value,
@@ -4603,9 +4583,6 @@ async function handleCreateHabit(e) {
         target_frequency: 1, // Default frequency - can be enhanced later
         color: getCategoryColor(formData.get('habit-category') || document.getElementById('habit-category').value)
     };
-    
-    console.log('💾 Habit data to send:', habitData);
-    console.log('🔑 Session ID:', sessionId);
 
     // Validate required fields
     if (!habitData.name || habitData.name.trim() === '') {
@@ -4621,7 +4598,6 @@ async function handleCreateHabit(e) {
     console.log('Creating habit with data:', habitData);
 
     try {
-        console.log('🌐 Making API request to /api/habits');
         const response = await fetch('/api/habits', {
             method: 'POST',
             headers: {
@@ -4631,12 +4607,8 @@ async function handleCreateHabit(e) {
             body: JSON.stringify(habitData)
         });
 
-        console.log('📡 Response status:', response.status);
-        console.log('📡 Response headers:', [...response.headers.entries()]);
-
         if (response.ok) {
             const result = await response.json();
-            console.log('✅ Success response:', result);
             showNotification('Habit created successfully!', 'success');
             closeModal('create-habit-modal');
             
@@ -4649,20 +4621,18 @@ async function handleCreateHabit(e) {
             checkAchievements();
         } else {
             const errorText = await response.text();
-            console.error('❌ Error response status:', response.status);
-            console.error('❌ Error response text:', errorText);
             let errorMessage = 'Failed to create habit';
             try {
                 const errorJson = JSON.parse(errorText);
                 errorMessage = errorJson.error || errorMessage;
             } catch (parseError) {
-                console.error('❌ Error parsing error response:', parseError);
+                console.error('Error parsing error response:', parseError);
             }
             showNotification(errorMessage, 'error');
         }
     } catch (error) {
-        console.error('💥 Create habit network/JS error:', error);
-        showNotification('Failed to create habit - network error', 'error');
+        console.error('Create habit error:', error);
+        showNotification('Failed to create habit', 'error');
     }
 }
 

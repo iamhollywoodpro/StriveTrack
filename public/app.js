@@ -5373,15 +5373,18 @@ async function simpleToggleHabit(habitId, date) {
             const result = await response.json();
             console.log('✅ Toggle success:', result);
             
-            // Show notification
+            // Show notification with points information
             if (result.completed) {
-                showNotification('✅ Habit completed!', 'success');
+                showNotification(`✅ Habit completed! +${result.points} points`, 'success');
             } else {
-                showNotification('⭕ Habit unchecked', 'info');
+                showNotification(`⭕ Habit unchecked! ${result.points} points`, 'info');
             }
             
             // Update the specific day cell immediately
             updateDayCellVisualState(habitId, date, result.completed);
+            
+            // CRITICAL FIX: Refresh the entire habits display to update weekly counters
+            await refreshHabitsDisplay();
             
         } else {
             const errorText = await response.text();
@@ -5392,6 +5395,25 @@ async function simpleToggleHabit(habitId, date) {
     } catch (error) {
         console.error('💥 Network error:', error);
         showNotification('Network error occurred', 'error');
+    }
+}
+
+// Function to refresh habits display after toggle to update counters
+async function refreshHabitsDisplay() {
+    console.log('🔄 Refreshing habits display...');
+    
+    try {
+        // Reload habits data from server
+        await loadHabits();
+        
+        // If we're on dashboard, reload dashboard habits too
+        if (currentView === 'dashboard') {
+            await loadDashboardHabits();
+        }
+        
+        console.log('✅ Habits display refreshed');
+    } catch (error) {
+        console.error('❌ Failed to refresh habits display:', error);
     }
 }
 

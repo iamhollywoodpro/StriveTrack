@@ -44,11 +44,17 @@ export async function onRequestPost(context) {
         let points = 0;
         
         if (existingCompletion) {
-            // Remove completion
+            // Remove completion - DEDUCT POINTS TO PREVENT CHEATING
             await env.DB.prepare(
                 'DELETE FROM habit_completions WHERE id = ?'
             ).bind(existingCompletion.id).run();
             completed = false;
+            points = -10; // Deduct points when unchecking
+            
+            // Update user points (deduct)
+            await env.DB.prepare(
+                'UPDATE users SET points = points + ? WHERE id = ?'
+            ).bind(points, user.id).run();
         } else {
             // Add completion
             const completionId = crypto.randomUUID();
@@ -90,7 +96,7 @@ export async function onRequestPost(context) {
         return new Response(JSON.stringify({
             completed,
             points,
-            message: completed ? `Habit completed! +${points} points` : 'Habit completion removed'
+            message: completed ? `Habit completed! +${points} points` : `Habit unchecked! ${points} points`
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

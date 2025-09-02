@@ -93,6 +93,50 @@ export async function createUserPreferencesTable(env) {
 }
 
 /**
+ * Create habits and habit_completions tables
+ */
+export async function createHabitsTables(env) {
+    try {
+        // Create habits table
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS habits (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                description TEXT,
+                target_frequency INTEGER DEFAULT 1,
+                color TEXT DEFAULT '#667eea',
+                weekly_target INTEGER DEFAULT 7,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        `).run();
+        
+        // Create habit_completions table
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS habit_completions (
+                id TEXT PRIMARY KEY,
+                habit_id TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                completion_date DATE NOT NULL,
+                notes TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (habit_id) REFERENCES habits (id),
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                UNIQUE(habit_id, completion_date)
+            )
+        `).run();
+        
+        console.log('✅ Habits tables created');
+        return { success: true };
+    } catch (error) {
+        console.error('❌ Failed to create habits tables:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Create coaching_relationships table for coach/trainer features
  */
 export async function createCoachingTables(env) {
@@ -152,6 +196,10 @@ export async function runAllMigrations(env) {
     // Create preferences table
     const prefsMigration = await createUserPreferencesTable(env);
     results.push({ table: 'user_preferences', ...prefsMigration });
+    
+    // Create habits tables
+    const habitsMigration = await createHabitsTables(env);
+    results.push({ table: 'habits', ...habitsMigration });
     
     // Create coaching tables
     const coachingMigration = await createCoachingTables(env);

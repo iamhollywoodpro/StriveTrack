@@ -463,6 +463,11 @@ function createRoleBasedSections(sections, features) {
             }
         }
     });
+    
+    // Setup event listeners for habit functionality after sections are created
+    setTimeout(() => {
+        setupHabitEventListeners();
+    }, 100);
 }
 
 // Generate content for each section based on user role
@@ -1211,59 +1216,18 @@ async function loadDashboardData() {
     ]);
     
     updateDashboardStats();
-}
-
-// Habits functions
-async function loadHabits() {
-    try {
-        const response = await fetch('/api/habits', {
-            headers: { 'x-session-id': sessionId }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const habits = data.habits || [];
-            displayHabits(habits);
-        }
-    } catch (error) {
-        console.error('Load habits error:', error);
-    }
-}
-
-function displayHabits(habits) {
-    const container = document.getElementById('habits-container');
-    container.innerHTML = '';
     
-    if (habits.length === 0) {
-        container.innerHTML = '<p class="text-white/70">No habits created yet. Create your first habit to get started!</p>';
-        return;
-    }
-    
-    // Load weekly data and display habits with weekly view
-    loadWeeklyHabits();
+    // Initialize habits after dashboard data is loaded
+    setTimeout(() => {
+        initializeHabits();
+    }, 100);
 }
 
-async function loadWeeklyHabits() {
-    try {
-        const response = await fetch('/api/habits/weekly', {
-            headers: { 'x-session-id': sessionId }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            displayWeeklyHabits(data.habits);
-        } else {
-            // Fallback to regular habits if weekly endpoint fails
-            loadHabits();
-        }
-    } catch (error) {
-        console.error('Load weekly habits error:', error);
-        // Fallback to regular habits
-        loadHabits();
-    }
-}
-
-function displayWeeklyHabits(habits) {
+// ==============================
+// LEGACY HABIT CODE CLEANED UP
+// ==============================
+// This section contained old habit management code that has been replaced 
+// by the comprehensive habit management system at the end of this file.
     const container = document.getElementById('habits-container');
     container.innerHTML = '';
     
@@ -1592,77 +1556,7 @@ function updateEmojiPreview() {
     habitPreviewName.textContent = `${emoji} ${name}`;
 }
 
-async function createHabit(event) {
-    event.preventDefault();
-    
-    const name = document.getElementById('habit-name').value;
-    const category = document.getElementById('habit-category').value;
-    const difficulty = document.getElementById('habit-difficulty').value;
-    const description = document.getElementById('habit-description').value;
-    const weeklyTarget = parseInt(document.getElementById('weekly-target').value);
-    
-    // Generate automatic emoji
-    const emoji = getHabitEmoji(name, category);
-    const displayName = `${emoji} ${name}`;
-    
-    try {
-        const response = await fetch('/api/habits', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId
-            },
-            body: JSON.stringify({ 
-                name: displayName, 
-                description: description || `${category} habit - ${difficulty} difficulty`,
-                weekly_target: weeklyTarget
-            })
-        });
-        
-        if (response.ok) {
-            showNotification('Habit created successfully! 🎯', 'success');
-            closeModal('create-habit-modal');
-            document.getElementById('create-habit-form').reset();
-            updateEmojiPreview(); // Reset preview
-            loadHabits();
-            loadDashboardWeeklyProgress(); // Refresh dashboard progress bars
-            updateDashboardStats();
-            
-            // Check for achievements after habit creation
-            checkAndAwardAchievements('habit_creation');
-        } else {
-            const data = await response.json();
-            showNotification(data.error || 'Failed to create habit', 'error');
-        }
-    } catch (error) {
-        console.error('Create habit error:', error);
-        showNotification('Failed to create habit', 'error');
-    }
-}
-
-async function deleteHabit(habitId) {
-    showConfirmationModal('Are you sure you want to delete this habit? This action cannot be undone.', async function() {
-        try {
-            const response = await fetch(`/api/habits/${habitId}`, {
-                method: 'DELETE',
-                headers: { 'x-session-id': sessionId }
-            });
-            
-            if (response.ok) {
-                showNotification('Habit deleted successfully', 'success');
-                loadHabits();
-                loadDashboardWeeklyProgress(); // Refresh dashboard progress bars
-                updateDashboardStats();
-            } else {
-                const data = await response.json();
-                showNotification(data.error || 'Failed to delete habit', 'error');
-            }
-        } catch (error) {
-            console.error('Delete habit error:', error);
-            showNotification('Failed to delete habit', 'error');
-        }
-    });
-}
+// Legacy createHabit and deleteHabit functions moved to comprehensive habit system
 
 // Media functions
 // Enhanced Media Upload with Modal
@@ -4444,4 +4338,508 @@ async function unlockAchievement(achievementId) {
         showNotification('Failed to unlock achievement', 'error');
     }
 }
+
+// ===============================
+// HABIT MANAGEMENT FUNCTIONALITY
+// ===============================
+
+// Habit Management System
+let habits = [];
+let currentWeekOffset = 0;
+
+// Setup additional event listeners for habit functionality
+function setupHabitEventListeners() {
+    // Create Habit Card Click Handler
+    const createHabitCard = document.getElementById('create-habit-card');
+    if (createHabitCard) {
+        createHabitCard.addEventListener('click', showCreateHabitModal);
+    }
+
+    // Create Habit Form Submit Handler
+    const createHabitForm = document.getElementById('create-habit-form');
+    if (createHabitForm) {
+        createHabitForm.addEventListener('submit', handleCreateHabit);
+    }
+
+    // Habit Name Input Change Handler for Emoji Preview
+    const habitNameInput = document.getElementById('habit-name');
+    if (habitNameInput) {
+        habitNameInput.addEventListener('input', updateEmojiPreview);
+    }
+
+    // Upload Progress Card Click Handler
+    const uploadProgressCard = document.getElementById('upload-progress-card');
+    if (uploadProgressCard) {
+        uploadProgressCard.addEventListener('click', showMediaUploadModal);
+    }
+
+    console.log('Habit event listeners set up successfully');
+}
+
+// Show Create Habit Modal
+function showCreateHabitModal() {
+    const modal = document.getElementById('create-habit-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Reset form
+        document.getElementById('create-habit-form').reset();
+        updateEmojiPreview();
+    }
+}
+
+// Update Emoji Preview based on habit name
+function updateEmojiPreview() {
+    const habitName = document.getElementById('habit-name').value.toLowerCase();
+    const habitPreviewName = document.getElementById('habit-preview-name');
+    const emojiPreview = document.getElementById('emoji-preview');
+    
+    if (!habitPreviewName || !emojiPreview) return;
+    
+    habitPreviewName.textContent = habitName || 'Your habit name';
+    
+    // Emoji selection logic based on habit name
+    let emoji = '⭐'; // default
+    
+    if (habitName.includes('water') || habitName.includes('drink') || habitName.includes('hydrat')) emoji = '💧';
+    else if (habitName.includes('run') || habitName.includes('jog') || habitName.includes('cardio')) emoji = '🏃';
+    else if (habitName.includes('walk') || habitName.includes('step')) emoji = '🚶';
+    else if (habitName.includes('gym') || habitName.includes('workout') || habitName.includes('train')) emoji = '💪';
+    else if (habitName.includes('yoga') || habitName.includes('stretch') || habitName.includes('meditat')) emoji = '🧘';
+    else if (habitName.includes('sleep') || habitName.includes('rest')) emoji = '😴';
+    else if (habitName.includes('read') || habitName.includes('book') || habitName.includes('study')) emoji = '📚';
+    else if (habitName.includes('protein') || habitName.includes('eat') || habitName.includes('meal')) emoji = '🍎';
+    else if (habitName.includes('push') || habitName.includes('pull')) emoji = '💪';
+    else if (habitName.includes('bike') || habitName.includes('cycle')) emoji = '🚴';
+    else if (habitName.includes('swim')) emoji = '🏊';
+    else if (habitName.includes('climb')) emoji = '🧗';
+    else if (habitName.includes('dance')) emoji = '💃';
+    else if (habitName.includes('vitamin') || habitName.includes('supplement')) emoji = '💊';
+    
+    emojiPreview.textContent = emoji;
+}
+
+// Handle Create Habit Form Submission
+async function handleCreateHabit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const habitData = {
+        name: formData.get('habit-name') || document.getElementById('habit-name').value,
+        category: formData.get('habit-category') || document.getElementById('habit-category').value,
+        weekly_target: parseInt(formData.get('weekly-target') || document.getElementById('weekly-target').value),
+        difficulty: formData.get('habit-difficulty') || document.getElementById('habit-difficulty').value,
+        description: formData.get('habit-description') || document.getElementById('habit-description').value
+    };
+
+    // Add emoji based on habit name
+    const habitName = habitData.name.toLowerCase();
+    let emoji = '⭐';
+    
+    if (habitName.includes('water') || habitName.includes('drink') || habitName.includes('hydrat')) emoji = '💧';
+    else if (habitName.includes('run') || habitName.includes('jog') || habitName.includes('cardio')) emoji = '🏃';
+    else if (habitName.includes('walk') || habitName.includes('step')) emoji = '🚶';
+    else if (habitName.includes('gym') || habitName.includes('workout') || habitName.includes('train')) emoji = '💪';
+    else if (habitName.includes('yoga') || habitName.includes('stretch') || habitName.includes('meditat')) emoji = '🧘';
+    else if (habitName.includes('sleep') || habitName.includes('rest')) emoji = '😴';
+    else if (habitName.includes('read') || habitName.includes('book') || habitName.includes('study')) emoji = '📚';
+    else if (habitName.includes('protein') || habitName.includes('eat') || habitName.includes('meal')) emoji = '🍎';
+    else if (habitName.includes('push') || habitName.includes('pull')) emoji = '💪';
+    else if (habitName.includes('bike') || habitName.includes('cycle')) emoji = '🚴';
+    else if (habitName.includes('swim')) emoji = '🏊';
+    else if (habitName.includes('climb')) emoji = '🧗';
+    else if (habitName.includes('dance')) emoji = '💃';
+    else if (habitName.includes('vitamin') || habitName.includes('supplement')) emoji = '💊';
+    
+    habitData.emoji = emoji;
+
+    console.log('Creating habit with data:', habitData);
+
+    try {
+        const response = await fetch('/api/habits', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(habitData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showNotification('Habit created successfully!', 'success');
+            closeModal('create-habit-modal');
+            
+            // Reload habits and dashboard data
+            await loadHabits();
+            await loadDashboardData();
+            
+            // Check for achievements
+            checkAchievements();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to create habit', 'error');
+        }
+    } catch (error) {
+        console.error('Create habit error:', error);
+        showNotification('Failed to create habit', 'error');
+    }
+}
+
+// Load and display habits
+async function loadHabits() {
+    try {
+        const response = await fetch('/api/habits', {
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            habits = data.habits || [];
+            displayHabits(habits);
+            updateHabitsStats(habits);
+        } else {
+            console.error('Failed to load habits');
+        }
+    } catch (error) {
+        console.error('Load habits error:', error);
+    }
+}
+
+// Display habits in the UI
+function displayHabits(habits) {
+    const container = document.getElementById('habits-container');
+    if (!container) return;
+    
+    if (habits.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-12 text-white/50">
+                <i class="fas fa-target text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold mb-4">No Habits Yet</h3>
+                <p class="mb-6">Create your first fitness habit to start building a healthier lifestyle!</p>
+                <button onclick="showCreateHabitModal()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create Your First Habit
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    // Group habits by category
+    const groupedHabits = habits.reduce((groups, habit) => {
+        const category = habit.category || 'general';
+        if (!groups[category]) groups[category] = [];
+        groups[category].push(habit);
+        return groups;
+    }, {});
+
+    const categoryEmojis = {
+        nutrition: '🍎',
+        cardio: '❤️',
+        strength: '💪',
+        flexibility: '🤸',
+        general: '⭐'
+    };
+
+    const categoryNames = {
+        nutrition: 'Nutrition',
+        cardio: 'Cardio',
+        strength: 'Strength Training',
+        flexibility: 'Flexibility & Recovery',
+        general: 'General Fitness'
+    };
+
+    let html = '';
+
+    Object.entries(groupedHabits).forEach(([category, categoryHabits]) => {
+        html += `
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        ${categoryEmojis[category] || '⭐'} ${categoryNames[category] || category}
+                    </h3>
+                    <div class="text-white/60 text-sm">
+                        ${categoryHabits.length} habit${categoryHabits.length !== 1 ? 's' : ''}
+                    </div>
+                </div>
+                <div class="grid gap-4">
+                    ${categoryHabits.map(habit => createHabitCard(habit)).join('')}
+                </div>
+            </div>
+        `;
+    });
+
+    // Add button to create new habit
+    html += `
+        <div class="text-center py-8 border-t border-white/10 mt-8">
+            <button onclick="showCreateHabitModal()" class="btn-primary">
+                <i class="fas fa-plus mr-2"></i>
+                Create New Habit
+            </button>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+// Create individual habit card
+function createHabitCard(habit) {
+    const weekStart = getWeekStart(currentWeekOffset);
+    const weekDays = Array.from({length: 7}, (_, i) => {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        return date;
+    });
+
+    // Calculate progress for this week
+    const completions = habit.completions || [];
+    const weekCompletions = weekDays.map(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        return completions.includes(dateStr);
+    });
+
+    const completedDays = weekCompletions.filter(Boolean).length;
+    const progressPercent = (completedDays / habit.weekly_target) * 100;
+
+    return `
+        <div class="habit-card">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="text-3xl mr-3">${habit.emoji || '⭐'}</div>
+                    <div>
+                        <h4 class="text-white font-bold text-lg">${habit.name}</h4>
+                        <div class="text-white/60 text-sm">
+                            ${habit.weekly_target} times per week • ${habit.difficulty}
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-white mb-1">
+                        ${completedDays}/${habit.weekly_target}
+                    </div>
+                    <div class="text-white/60 text-xs">This week</div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mb-4">
+                <div class="flex justify-between text-sm text-white/60 mb-2">
+                    <span>Weekly Progress</span>
+                    <span>${Math.round(progressPercent)}%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-2">
+                    <div class="progress-bar h-2 rounded-full" style="width: ${Math.min(progressPercent, 100)}%"></div>
+                </div>
+            </div>
+
+            <!-- Week Calendar -->
+            <div class="week-calendar">
+                ${weekDays.map((date, index) => {
+                    const isCompleted = weekCompletions[index];
+                    const isToday = date.toDateString() === new Date().toDateString();
+                    const isPast = date < new Date().setHours(0, 0, 0, 0);
+                    
+                    return `
+                        <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}"
+                             onclick="toggleHabitDay('${habit.id}', '${date.toISOString().split('T')[0]}')">
+                            <div class="text-xs font-medium">${date.toLocaleDateString('en', {weekday: 'short'})}</div>
+                            <div class="text-lg font-bold">${date.getDate()}</div>
+                            ${isCompleted ? '<i class="fas fa-check text-xs mt-1"></i>' : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+
+            ${habit.description ? `
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <p class="text-white/70 text-sm">${habit.description}</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+// Toggle habit completion for a specific day
+async function toggleHabitDay(habitId, date) {
+    try {
+        const response = await fetch('/api/habits/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({
+                habit_id: habitId,
+                date: date
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Show appropriate notification
+            if (result.completed) {
+                showNotification('Great job! Habit completed for today! 🎉', 'success');
+            } else {
+                showNotification('Habit unmarked for this date', 'info');
+            }
+            
+            // Reload habits and dashboard
+            await loadHabits();
+            await loadDashboardData();
+            
+            // Check for achievements
+            checkAchievements();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to update habit', 'error');
+        }
+    } catch (error) {
+        console.error('Toggle habit error:', error);
+        showNotification('Failed to update habit', 'error');
+    }
+}
+
+// Get the start of the current week (or offset week)
+function getWeekStart(offset = 0) {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // Get Monday
+    monday.setDate(monday.getDate() + (offset * 7));
+    return monday;
+}
+
+// Update habits statistics in dashboard
+function updateHabitsStats(habits) {
+    const activeHabitsEl = document.getElementById('active-habits');
+    if (activeHabitsEl) {
+        activeHabitsEl.textContent = habits.length;
+    }
+
+    // Calculate today's progress
+    const today = new Date().toISOString().split('T')[0];
+    let todayCompleted = 0;
+    let todayTotal = 0;
+
+    habits.forEach(habit => {
+        const completions = habit.completions || [];
+        todayTotal++;
+        if (completions.includes(today)) {
+            todayCompleted++;
+        }
+    });
+
+    const todayProgressEl = document.getElementById('today-progress');
+    if (todayProgressEl) {
+        todayProgressEl.textContent = `${todayCompleted}/${todayTotal}`;
+    }
+
+    // Calculate average performance (last 7 days)
+    const avgPerformanceEl = document.getElementById('average-performance');
+    if (avgPerformanceEl && habits.length > 0) {
+        let totalCompleted = 0;
+        let totalPossible = 0;
+        
+        for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            habits.forEach(habit => {
+                const completions = habit.completions || [];
+                totalPossible++;
+                if (completions.includes(dateStr)) {
+                    totalCompleted++;
+                }
+            });
+        }
+        
+        const percentage = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+        avgPerformanceEl.textContent = `${percentage}%`;
+    }
+
+    // Calculate current streak
+    const currentStreakEl = document.getElementById('current-streak');
+    if (currentStreakEl && habits.length > 0) {
+        let streak = 0;
+        const today = new Date();
+        
+        // Check backwards from today to find the longest streak
+        for (let i = 0; i < 30; i++) { // Check last 30 days
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            let dayCompleted = false;
+            habits.forEach(habit => {
+                const completions = habit.completions || [];
+                if (completions.includes(dateStr)) {
+                    dayCompleted = true;
+                }
+            });
+            
+            if (dayCompleted) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        
+        currentStreakEl.textContent = streak;
+    }
+}
+
+// Modal helper functions
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Enhanced setup function that includes habit event listeners
+function setupAllEventListeners() {
+    setupEventListeners(); // Original event listeners
+    setupHabitEventListeners(); // Habit-specific event listeners
+}
+
+// Add habits to role-based dashboard content
+function generateDefaultHabitsContent() {
+    return `
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Your Fitness Habits</h3>
+                    <p class="text-white/70">Track your daily habits and build consistency</p>
+                </div>
+                <button onclick="showCreateHabitModal()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New Habit
+                </button>
+            </div>
+        </div>
+        <div id="habits-container">
+            <div class="text-center py-12 text-white/50">
+                <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                <p>Loading your habits...</p>
+            </div>
+        </div>
+    `;
+}
+
+// Initialize habits when dashboard loads
+function initializeHabits() {
+    loadHabits();
+}
+
+// Call this after role-based dashboard is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup event listeners after DOM is loaded
+    setTimeout(() => {
+        setupAllEventListeners();
+    }, 100);
+});
 

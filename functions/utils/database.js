@@ -118,17 +118,45 @@ export async function updateUserPoints(userId, points, env) {
 }
 
 export async function getUserHabits(userId, env) {
-    const result = await env.DB.prepare(`
+    // Get habits
+    const habitsResult = await env.DB.prepare(`
         SELECT h.*, 
-               COUNT(hc.id) as total_completions,
-               COUNT(CASE WHEN date(hc.completed_at) = date('now') THEN 1 END) as today_completed
+               COUNT(hc.id) as total_completions
         FROM habits h
         LEFT JOIN habit_completions hc ON h.id = hc.habit_id
         WHERE h.user_id = ?
         GROUP BY h.id
         ORDER BY h.created_at DESC
     `).bind(userId).all();
-    return result.results || [];
+    
+    const habits = habitsResult.results || [];
+    
+    // Get completions for each habit
+    for (const habit of habits) {
+        const completionsResult = await env.DB.prepare(`
+            SELECT completion_date
+            FROM habit_completions
+            WHERE habit_id = ? AND user_id = ?
+            ORDER BY completion_date DESC
+        `).bind(habit.id, userId).all();
+        
+        habit.completions = (completionsResult.results || []).map(c => c.completion_date);
+        
+        // Parse emoji and name if stored together
+        if (habit.name && habit.name.includes(' ')) {
+            const parts = habit.name.split(' ');
+            if (parts[0].length <= 2) { // Likely an emoji
+                habit.emoji = parts[0];
+                habit.name = parts.slice(1).join(' ');
+            }
+        }
+        
+        if (!habit.emoji) {
+            habit.emoji = '⭐'; // Default emoji
+        }
+    }
+    
+    return habits;
 }
 
 export async function createHabit(habitData, env) {

@@ -1377,7 +1377,7 @@ function createHabitElement(habit, showWeekView = false) {
     const actionButtons = `
         <div class="flex space-x-2 mt-4">
             ${habit.today_completed === 0 ? `
-                <button class="btn-primary flex-1" data-habit-id="${habit.id}" data-action="complete-habit">
+                <button class="btn-primary flex-1 complete-habit-btn" data-habit-id="${habit.id}">
                     <i class="fas fa-check mr-2"></i>
                     Mark Complete
                 </button>
@@ -1387,7 +1387,7 @@ function createHabitElement(habit, showWeekView = false) {
                     Completed Today!
                 </div>
             `}
-            <button class="btn-danger" data-habit-id="${habit.id}" data-action="delete-habit">
+            <button class="btn-danger delete-habit-btn" data-habit-id="${habit.id}">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -1446,10 +1446,9 @@ function createWeeklyHabitElement(habit) {
         const isToday = dayDate.toDateString() === today.toDateString();
         
         return `
-            <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}" 
+            <div class="day-cell habit-day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}" 
                  data-habit-id="${habit.id}" 
-                 data-date="${dateStr}"
-                 data-action="toggle-habit">
+                 data-date="${dateStr}">
                 <div class="text-xs text-white/70 font-medium">${dayName}</div>
                 <div class="text-lg mt-1">${isCompleted ? '✓' : '○'}</div>
                 <div class="text-xs text-white/60">${dayDate.getDate()}</div>
@@ -1466,7 +1465,7 @@ function createWeeklyHabitElement(habit) {
                     <span class="text-green-400 font-semibold">${completedCount}</span> / ${targetCount} days this week
                 </p>
             </div>
-            <button class="btn-danger" data-habit-id="${habit.id}" data-action="delete-habit" title="Delete habit">
+            <button class="btn-danger delete-habit-btn" data-habit-id="${habit.id}" title="Delete habit">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -1503,11 +1502,11 @@ function createSimpleHabitElement(habit) {
                 </div>
             </div>
             <div class="flex space-x-2">
-                <button class="btn-primary" data-habit-id="${habit.id}" data-action="complete-habit">
+                <button class="btn-primary complete-habit-btn" data-habit-id="${habit.id}">
                     <i class="fas fa-check mr-2"></i>
                     Complete
                 </button>
-                <button class="btn-secondary" data-habit-id="${habit.id}" data-action="delete-habit" title="Delete habit">
+                <button class="btn-secondary delete-habit-btn" data-habit-id="${habit.id}" title="Delete habit">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -4283,6 +4282,43 @@ window.debugAuth = function() {
 };
 
 // Test function for admin login
+// Test function for the new simple habit system
+window.testSimpleHabits = async function() {
+    console.log('🧪 Testing simple habits system...');
+    
+    if (!sessionId) {
+        console.log('❌ Please log in first');
+        return;
+    }
+    
+    // Get first habit
+    try {
+        const response = await fetch('/api/habits', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (!response.ok) {
+            console.log('❌ Failed to fetch habits');
+            return;
+        }
+        
+        const data = await response.json();
+        if (data.habits && data.habits.length > 0) {
+            const habit = data.habits[0];
+            const today = new Date().toISOString().split('T')[0];
+            
+            console.log('🎯 Testing with habit:', habit.name);
+            console.log('📅 Date:', today);
+            
+            await simpleToggleHabit(habit.id, today);
+        } else {
+            console.log('❌ No habits found');
+        }
+    } catch (error) {
+        console.error('💥 Test error:', error);
+    }
+};
+
 window.testAdminLogin = async function() {
     console.log('🧪 Testing admin login...');
     
@@ -4766,51 +4802,52 @@ function setupHabitEventListeners() {
         uploadProgressCard.addEventListener('click', showMediaUploadModal);
     }
 
-    // Event delegation for habit actions (handles dynamically created elements)
+    // Simple and reliable habit toggle system
     document.addEventListener('click', function(event) {
-        const element = event.target.closest('[data-action]');
-        if (element) {
-            event.preventDefault();
-            const action = element.getAttribute('data-action');
-            const habitId = element.getAttribute('data-habit-id');
+        // Handle habit day toggle
+        if (event.target.closest('.habit-day-cell')) {
+            const cell = event.target.closest('.habit-day-cell');
+            const habitId = cell.dataset.habitId;
+            const date = cell.dataset.date;
             
-            console.log('📱 Habit action clicked via event delegation:', action, habitId);
+            if (habitId && date) {
+                console.log('🎯 Simple habit toggle:', habitId, date);
+                simpleToggleHabit(habitId, date);
+                return;
+            }
+        }
+        
+        // Handle complete habit button
+        if (event.target.closest('.complete-habit-btn')) {
+            const btn = event.target.closest('.complete-habit-btn');
+            const habitId = btn.dataset.habitId;
             
-            if (action === 'toggle-habit') {
-                const date = element.getAttribute('data-date');
-                console.log('🔄 Toggling habit day:', habitId, date);
-                toggleHabitDay(habitId, date);
-            } else if (action === 'complete-habit') {
-                console.log('✅ Completing habit:', habitId);
-                toggleHabitCompletion(habitId);
-            } else if (action === 'delete-habit') {
-                console.log('🗑️ Deleting habit:', habitId);
+            if (habitId) {
+                console.log('✅ Simple habit complete:', habitId);
+                simpleCompleteHabit(habitId);
+                return;
+            }
+        }
+        
+        // Handle delete habit button  
+        if (event.target.closest('.delete-habit-btn')) {
+            const btn = event.target.closest('.delete-habit-btn');
+            const habitId = btn.dataset.habitId;
+            
+            if (habitId) {
+                console.log('🗑️ Simple habit delete:', habitId);
                 deleteHabit(habitId);
+                return;
             }
         }
     });
     
-    // Also handle touch events for mobile
+    // Simple touch events for mobile
     document.addEventListener('touchend', function(event) {
-        const element = event.target.closest('[data-action]');
-        if (element) {
-            event.preventDefault();
-            const action = element.getAttribute('data-action');
-            const habitId = element.getAttribute('data-habit-id');
-            
-            console.log('📱 Habit action touched via event delegation:', action, habitId);
-            
-            if (action === 'toggle-habit') {
-                const date = element.getAttribute('data-date');
-                console.log('🔄 Toggling habit day (touch):', habitId, date);
-                toggleHabitDay(habitId, date);
-            } else if (action === 'complete-habit') {
-                console.log('✅ Completing habit (touch):', habitId);
-                toggleHabitCompletion(habitId);
-            } else if (action === 'delete-habit') {
-                console.log('🗑️ Deleting habit (touch):', habitId);
-                deleteHabit(habitId);
-            }
+        // Prevent double-tap and let click handler deal with it
+        if (event.target.closest('.habit-day-cell, .complete-habit-btn, .delete-habit-btn')) {
+            // Let the click handler process this
+            return;
         }
     });
     
@@ -4923,7 +4960,7 @@ function createDashboardHabitCard(habit) {
                         <p class="text-white/60 text-xs">${completionsThisWeek}/${habit.weekly_target || 7} this week</p>
                     </div>
                 </div>
-                <button data-habit-id="${habit.id}" data-action="delete-habit" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
+                <button class="delete-habit-btn text-red-400 hover:text-red-300 text-sm" data-habit-id="${habit.id}" title="Delete habit">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -5189,7 +5226,7 @@ function createHabitCard(habit) {
                     </div>
                 </div>
                 <div class="flex flex-col items-end space-y-2">
-                    <button data-habit-id="${habit.id}" data-action="delete-habit" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
+                    <button class="delete-habit-btn text-red-400 hover:text-red-300 text-sm" data-habit-id="${habit.id}" title="Delete habit">
                         <i class="fas fa-trash"></i>
                     </button>
                     <div class="text-right">
@@ -5220,10 +5257,9 @@ function createHabitCard(habit) {
                     const isPast = date < new Date().setHours(0, 0, 0, 0);
                     
                     return `
-                        <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}"
+                        <div class="day-cell habit-day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}"
                              data-habit-id="${habit.id}" 
-                             data-date="${date.toISOString().split('T')[0]}"
-                             data-action="toggle-habit">
+                             data-date="${date.toISOString().split('T')[0]}">
                             <div class="text-xs font-medium">${date.toLocaleDateString('en', {weekday: 'short'})}</div>
                             <div class="text-lg font-bold">${date.getDate()}</div>
                             ${isCompleted ? '<i class="fas fa-check text-xs mt-1"></i>' : ''}
@@ -5241,6 +5277,85 @@ function createHabitCard(habit) {
     `;
 }
 
+// Simple and reliable habit toggle function
+async function simpleToggleHabit(habitId, date) {
+    console.log('🚀 Starting simple habit toggle:', habitId, date);
+    
+    if (!sessionId) {
+        console.error('❌ No session ID');
+        alert('Please log in first');
+        return;
+    }
+    
+    if (!habitId || !date) {
+        console.error('❌ Missing habit ID or date');
+        alert('Invalid habit data');
+        return;
+    }
+    
+    try {
+        console.log('📡 Making API request...');
+        
+        const response = await fetch('/api/habits/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({
+                habit_id: habitId,
+                date: date
+            })
+        });
+        
+        console.log('📊 API Response Status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('❌ API Error:', errorData);
+            alert('Failed to toggle habit: ' + errorData);
+            return;
+        }
+        
+        const result = await response.json();
+        console.log('✅ API Success:', result);
+        
+        // Show success message
+        if (result.completed) {
+            alert('✅ Habit completed for ' + date + '!');
+        } else {
+            alert('❌ Habit unchecked for ' + date);
+        }
+        
+        // Reload habits
+        await loadHabits();
+        
+    } catch (error) {
+        console.error('💥 Network Error:', error);
+        alert('Network error: ' + error.message);
+    }
+}
+
+// Simple habit completion function  
+async function simpleCompleteHabit(habitId) {
+    console.log('🚀 Starting simple habit complete:', habitId);
+    
+    if (!sessionId) {
+        console.error('❌ No session ID');
+        alert('Please log in first');
+        return;
+    }
+    
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        await simpleToggleHabit(habitId, today);
+    } catch (error) {
+        console.error('💥 Error in complete habit:', error);
+        alert('Error completing habit: ' + error.message);
+    }
+}
+
+// Original toggle function (keeping for compatibility)
 // Toggle habit completion for a specific day
 async function toggleHabitDay(habitId, date) {
     console.log('🔄 Toggle habit called:', habitId, date);

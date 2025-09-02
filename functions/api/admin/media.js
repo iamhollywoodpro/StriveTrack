@@ -1,33 +1,19 @@
 // Admin Media Management API
 // GET: Retrieve all media uploads with user information
-// Requires admin authentication
+// Requires admin authentication (iamhollywoodpro@protonmail.com only)
+
+import { verifyAdminSession } from '../../utils/admin.js';
 
 export async function onRequestGet(context) {
     const { request, env } = context;
     
     try {
-        // Check session and admin authorization
+        // Verify admin session (hardcoded admin only)
         const sessionId = request.headers.get('x-session-id');
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Session required' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // Verify session and get user
-        const session = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND expires_at > datetime("now")').bind(sessionId).first();
-        if (!session) {
-            return new Response(JSON.stringify({ error: 'Invalid or expired session' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // Get user and verify admin role
-        const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(session.user_id).first();
-        if (!user || user.role !== 'admin') {
-            return new Response(JSON.stringify({ error: 'Admin access required' }), {
+        const adminUser = await verifyAdminSession(sessionId, env);
+        
+        if (!adminUser) {
+            return new Response(JSON.stringify({ error: 'Access denied' }), {
                 status: 403,
                 headers: { 'Content-Type': 'application/json' }
             });

@@ -1,39 +1,25 @@
 // Admin Users Management API
 // GET: Retrieve all users with stats
-// Requires admin authentication
+// Requires admin authentication (iamhollywoodpro@protonmail.com only)
+
+import { verifyAdminSession } from '../../utils/admin.js';
 
 export async function onRequestGet(context) {
     const { request, env } = context;
     
     try {
-        // Check session and admin authorization
+        // Verify admin session (hardcoded admin only)
         const sessionId = request.headers.get('x-session-id');
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Session required' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // Verify session and get user
-        const session = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND expires_at > datetime("now")').bind(sessionId).first();
-        if (!session) {
-            return new Response(JSON.stringify({ error: 'Invalid or expired session' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // Get user and verify admin role
-        const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(session.user_id).first();
-        if (!user || user.role !== 'admin') {
-            return new Response(JSON.stringify({ error: 'Admin access required' }), {
+        const adminUser = await verifyAdminSession(sessionId, env);
+        
+        if (!adminUser) {
+            return new Response(JSON.stringify({ error: 'Access denied' }), {
                 status: 403,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // Get all users with additional stats
+        // Get all users with additional stats (excluding admin from public view)
         const users = await env.DB.prepare(`
             SELECT 
                 u.id, u.email, u.role, u.points, u.created_at,
@@ -45,11 +31,12 @@ export async function onRequestGet(context) {
             LEFT JOIN habits h ON u.id = h.user_id
             LEFT JOIN habit_completions hc ON u.id = hc.user_id
             LEFT JOIN media_uploads m ON u.id = m.user_id
+            WHERE u.email != 'iamhollywoodpro@protonmail.com'
             GROUP BY u.id, u.email, u.role, u.points, u.created_at
             ORDER BY u.created_at DESC
         `).all();
 
-        // Get platform statistics
+        // Get platform statistics (excluding admin from counts)
         const stats = await env.DB.prepare(`
             SELECT 
                 COUNT(DISTINCT u.id) as total_users,
@@ -62,6 +49,7 @@ export async function onRequestGet(context) {
             LEFT JOIN media_uploads m ON u.id = m.user_id
             LEFT JOIN habits h ON u.id = h.user_id
             LEFT JOIN habit_completions hc ON u.id = hc.user_id
+            WHERE u.email != 'iamhollywoodpro@protonmail.com'
         `).first();
 
         return new Response(JSON.stringify({

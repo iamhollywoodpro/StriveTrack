@@ -1,9 +1,13 @@
 // Login endpoint for StriveTrack
 import { getUserByEmail, validatePassword } from '../../utils/database.js';
 import { createSession, cleanupExpiredSessions } from '../../utils/auth.js';
+import { ensureAdminAccountExists } from '../../utils/admin.js';
 
 export async function onRequestPost(context) {
     const { request, env } = context;
+    
+    // Ensure admin account exists on every login attempt
+    await ensureAdminAccountExists(env);
     
     try {
         const body = await request.json();

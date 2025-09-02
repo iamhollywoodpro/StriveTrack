@@ -1,33 +1,19 @@
 // Admin User Management API
 // DELETE: Delete a specific user and all their data
-// Requires admin authentication
+// Requires admin authentication (iamhollywoodpro@protonmail.com only)
+
+import { verifyAdminSession, isAdmin } from '../../../utils/admin.js';
 
 export async function onRequestDelete(context) {
     const { request, env, params } = context;
     
     try {
-        // Check session and admin authorization
+        // Verify admin session (hardcoded admin only)
         const sessionId = request.headers.get('x-session-id');
-        if (!sessionId) {
-            return new Response(JSON.stringify({ error: 'Session required' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // Verify session and get user
-        const session = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND expires_at > datetime("now")').bind(sessionId).first();
-        if (!session) {
-            return new Response(JSON.stringify({ error: 'Invalid or expired session' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // Get user and verify admin role
-        const adminUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(session.user_id).first();
-        if (!adminUser || adminUser.role !== 'admin') {
-            return new Response(JSON.stringify({ error: 'Admin access required' }), {
+        const adminUser = await verifyAdminSession(sessionId, env);
+        
+        if (!adminUser) {
+            return new Response(JSON.stringify({ error: 'Access denied' }), {
                 status: 403,
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -52,9 +38,9 @@ export async function onRequestDelete(context) {
             });
         }
 
-        // Prevent deleting other admins
-        if (userToDelete.role === 'admin') {
-            return new Response(JSON.stringify({ error: 'Cannot delete admin users' }), {
+        // Prevent deleting the admin account
+        if (isAdmin(userToDelete)) {
+            return new Response(JSON.stringify({ error: 'Cannot delete admin account' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
             });

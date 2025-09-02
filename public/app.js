@@ -237,9 +237,12 @@ function showDashboard() {
     document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.email.split('@')[0]} ⭐ ${currentUser.points || 0} pts`;
     document.getElementById('user-points').textContent = `⭐ ${currentUser.points || 0} pts`;
     
-    // Show admin tab if user is admin
-    if (currentUser.role === 'admin') {
+    // Show admin tab only for designated admin (iamhollywoodpro@protonmail.com)
+    if (currentUser.email === 'iamhollywoodpro@protonmail.com') {
         document.getElementById('admin-tab').classList.remove('hidden');
+    } else {
+        // Ensure admin tab stays hidden for all other users
+        document.getElementById('admin-tab').classList.add('hidden');
     }
     
     // Load initial data
@@ -2317,7 +2320,8 @@ async function submitNutrition(event) {
 
 // Admin functions
 async function loadAdminData() {
-    if (currentUser && currentUser.role === 'admin') {
+    // Only load admin data for the designated admin
+    if (currentUser && currentUser.email === 'iamhollywoodpro@protonmail.com') {
         await Promise.all([
             loadAdminUsers(),
             loadAdminMedia()
@@ -2348,7 +2352,10 @@ function displayAdminUsers(users) {
     const tbody = document.getElementById('admin-users-table');
     tbody.innerHTML = '';
     
-    users.forEach(user => {
+    // Filter out admin account from display (extra security layer)
+    const filteredUsers = users.filter(user => user.email !== 'iamhollywoodpro@protonmail.com');
+    
+    filteredUsers.forEach(user => {
         const row = document.createElement('tr');
         row.className = 'border-b border-white/5 hover:bg-white/5';
         
@@ -2363,8 +2370,8 @@ function displayAdminUsers(users) {
             </td>
             <td class="py-3 px-4 text-white/70">${user.email}</td>
             <td class="py-3 px-4">
-                <span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-purple-600' : 'bg-blue-600'} text-white">
-                    ${user.role}
+                <span class="px-2 py-1 rounded text-xs bg-blue-600 text-white">
+                    user
                 </span>
             </td>
             <td class="py-3 px-4">
@@ -2375,10 +2382,8 @@ function displayAdminUsers(users) {
             </td>
             <td class="py-3 px-4">
                 <div class="flex space-x-2">
-                    ${user.role !== 'admin' ? `
-                        <button onclick="viewAdminUserDetails('${user.id}')" class="btn-secondary text-xs">View</button>
-                        <button onclick="deleteAdminUser('${user.id}')" class="btn-danger text-xs">Delete</button>
-                    ` : '<span class="text-white/40 text-xs">Protected</span>'}
+                    <button onclick="viewAdminUserDetails('${user.id}')" class="btn-secondary text-xs">View</button>
+                    <button onclick="deleteAdminUser('${user.id}')" class="btn-danger text-xs">Delete</button>
                 </div>
             </td>
         `;
@@ -2569,7 +2574,7 @@ function filterAdminUsers() {
         const matchesSearch = user.email.toLowerCase().includes(searchTerm) || 
                              user.email.split('@')[0].toLowerCase().includes(searchTerm);
         
-        // Type filter
+        // Type filter (admin filter removed for security)
         let matchesType = true;
         switch (filterType) {
             case 'active':
@@ -2577,9 +2582,6 @@ function filterAdminUsers() {
                 break;
             case 'flagged':
                 matchesType = user.flagged_media > 0;
-                break;
-            case 'admin':
-                matchesType = user.role === 'admin';
                 break;
             default:
                 matchesType = true;

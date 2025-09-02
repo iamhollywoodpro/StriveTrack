@@ -1,0 +1,98 @@
+// Secure Admin Authentication Utility
+// Only iamhollywoodpro@protonmail.com has admin access
+
+const ADMIN_EMAIL = 'iamhollywoodpro@protonmail.com';
+const ADMIN_PASSWORD_HASH = '$2a$12$LQv3c1yqBwEHXk5YjS2.dOjPm5KflmLYfGd8/UgOUX7ADwEt1tEye'; // password@1981 hashed
+
+/**
+ * Check if user has admin privileges
+ * @param {Object} user - User object from database
+ * @returns {boolean} - True if user is the designated admin
+ */
+export function isAdmin(user) {
+    return user && user.email === ADMIN_EMAIL;
+}
+
+/**
+ * Verify admin session and return admin user
+ * @param {string} sessionId - Session ID from request
+ * @param {Object} env - Environment with DB access
+ * @returns {Object|null} - Admin user object or null if not admin
+ */
+export async function verifyAdminSession(sessionId, env) {
+    if (!sessionId) {
+        return null;
+    }
+
+    try {
+        // Get session
+        const session = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND expires_at > datetime("now")').bind(sessionId).first();
+        if (!session) {
+            return null;
+        }
+
+        // Get user
+        const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(session.user_id).first();
+        if (!user) {
+            return null;
+        }
+
+        // Check if user is the designated admin
+        if (!isAdmin(user)) {
+            return null;
+        }
+
+        return user;
+    } catch (error) {
+        console.error('Admin session verification error:', error);
+        return null;
+    }
+}
+
+/**
+ * Ensure admin account exists in database
+ * This should be called during app initialization
+ * @param {Object} env - Environment with DB access
+ */
+export async function ensureAdminAccountExists(env) {
+    try {
+        // Check if admin account exists
+        const existingAdmin = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(ADMIN_EMAIL).first();
+        
+        if (!existingAdmin) {
+            // Create admin account
+            const adminId = crypto.randomUUID();
+            await env.DB.prepare(`
+                INSERT INTO users (id, email, password_hash, role, points, created_at, updated_at)
+                VALUES (?, ?, ?, 'admin', 0, datetime('now'), datetime('now'))
+            `).bind(adminId, ADMIN_EMAIL, ADMIN_PASSWORD_HASH).run();
+            
+            console.log('Admin account created successfully');
+        } else {
+            // Ensure existing account has admin role and correct password
+            await env.DB.prepare(`
+                UPDATE users 
+                SET role = 'admin', password_hash = ?, updated_at = datetime('now')
+                WHERE email = ?
+            `).bind(ADMIN_PASSWORD_HASH, ADMIN_EMAIL).run();
+        }
+    } catch (error) {
+        console.error('Ensure admin account error:', error);
+    }
+}
+
+/**
+ * Filter users to hide admin from regular users
+ * @param {Array} users - Array of user objects
+ * @param {Object} requestingUser - User making the request
+ * @returns {Array} - Filtered users array
+ */
+export function filterUsersForDisplay(users, requestingUser) {
+    if (isAdmin(requestingUser)) {
+        // Admin can see all users including themselves
+        return users;
+    } else {
+        // Regular users cannot see admin account at all
+        return users.filter(user => !isAdmin(user));
+    }
+}

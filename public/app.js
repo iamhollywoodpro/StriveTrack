@@ -4421,38 +4421,40 @@ function updateEmojiPreview() {
 }
 
 // Handle Create Habit Form Submission
+// Get color based on habit category
+function getCategoryColor(category) {
+    const categoryColors = {
+        'nutrition': '#10b981', // Green
+        'cardio': '#ef4444',    // Red
+        'strength': '#8b5cf6',  // Purple
+        'flexibility': '#f59e0b', // Orange
+        'general': '#667eea'    // Blue (default)
+    };
+    return categoryColors[category] || categoryColors.general;
+}
+
 async function handleCreateHabit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
     const habitData = {
         name: formData.get('habit-name') || document.getElementById('habit-name').value,
-        category: formData.get('habit-category') || document.getElementById('habit-category').value,
+        description: formData.get('habit-description') || document.getElementById('habit-description').value,
         weekly_target: parseInt(formData.get('weekly-target') || document.getElementById('weekly-target').value),
-        difficulty: formData.get('habit-difficulty') || document.getElementById('habit-difficulty').value,
-        description: formData.get('habit-description') || document.getElementById('habit-description').value
+        target_frequency: 1, // Default frequency - can be enhanced later
+        color: getCategoryColor(formData.get('habit-category') || document.getElementById('habit-category').value)
     };
 
-    // Add emoji based on habit name
-    const habitName = habitData.name.toLowerCase();
-    let emoji = '⭐';
+    // Validate required fields
+    if (!habitData.name || habitData.name.trim() === '') {
+        showNotification('Habit name is required', 'error');
+        return;
+    }
     
-    if (habitName.includes('water') || habitName.includes('drink') || habitName.includes('hydrat')) emoji = '💧';
-    else if (habitName.includes('run') || habitName.includes('jog') || habitName.includes('cardio')) emoji = '🏃';
-    else if (habitName.includes('walk') || habitName.includes('step')) emoji = '🚶';
-    else if (habitName.includes('gym') || habitName.includes('workout') || habitName.includes('train')) emoji = '💪';
-    else if (habitName.includes('yoga') || habitName.includes('stretch') || habitName.includes('meditat')) emoji = '🧘';
-    else if (habitName.includes('sleep') || habitName.includes('rest')) emoji = '😴';
-    else if (habitName.includes('read') || habitName.includes('book') || habitName.includes('study')) emoji = '📚';
-    else if (habitName.includes('protein') || habitName.includes('eat') || habitName.includes('meal')) emoji = '🍎';
-    else if (habitName.includes('push') || habitName.includes('pull')) emoji = '💪';
-    else if (habitName.includes('bike') || habitName.includes('cycle')) emoji = '🚴';
-    else if (habitName.includes('swim')) emoji = '🏊';
-    else if (habitName.includes('climb')) emoji = '🧗';
-    else if (habitName.includes('dance')) emoji = '💃';
-    else if (habitName.includes('vitamin') || habitName.includes('supplement')) emoji = '💊';
-    
-    habitData.emoji = emoji;
+    if (!habitData.weekly_target || habitData.weekly_target < 1 || habitData.weekly_target > 7) {
+        showNotification('Weekly target must be between 1 and 7 days', 'error');
+        return;
+    }
 
     console.log('Creating habit with data:', habitData);
 

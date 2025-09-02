@@ -134,10 +134,10 @@ export async function getUserHabits(userId, env) {
     // Get completions for each habit
     for (const habit of habits) {
         const completionsResult = await env.DB.prepare(`
-            SELECT completion_date
+            SELECT DATE(completed_at) as completion_date
             FROM habit_completions
             WHERE habit_id = ? AND user_id = ?
-            ORDER BY completion_date DESC
+            ORDER BY completed_at DESC
         `).bind(habit.id, userId).all();
         
         habit.completions = (completionsResult.results || []).map(c => c.completion_date);

@@ -1,0 +1,26 @@
+
+ ⛅️ wrangler 3.114.14 (update available 4.33.1)
+-----------------------------------------------
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe version of Wrangler you are using is now out-of-date.[0m
+
+  Please update to the latest version to prevent critical errors.
+  Run `npm install --save-dev wrangler@4` to update to the latest version.
+  After installation, run Wrangler with `npx wrangler`.
+
+
+✨ Compiled Worker successfully
+Your Worker and resources are simulated locally via Miniflare. For more information, see: https://developers.cloudflare.com/workers/testing/local-development.
+
+Your worker has access to the following bindings:
+- D1 Databases:
+  - DB: strivetrack (b497cf67-d4c1-4cb5-b60a-aa574fe5b9cb) [simulated locally]
+- R2 Buckets:
+  - MEDIA_BUCKET: strivetrack-media [simulated locally]
+- Vars:
+  - ADMIN_EMAIL: "iamhollywoodpro@protonmail.com"
+  - ADMIN_PASSWORD: "password123"
+  - ENVIRONMENT: "development"
+[wrangler:inf] Ready on http://localhost:3000
+⎔ Starting local server...
+[wrangler:inf] GET / 200 OK (108ms)

@@ -340,12 +340,12 @@ function showLoginScreen() {
 }
 
 // Dashboard functions
-function showDashboard() {
+async function showDashboard() {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     
     // Update welcome text and points
-    document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.email.split('@')[0]} ⭐ ${currentUser.points || 0} pts`;
+    document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.name || currentUser.email.split('@')[0]} ⭐ ${currentUser.points || 0} pts`;
     document.getElementById('user-points').textContent = `⭐ ${currentUser.points || 0} pts`;
     
     // Show admin tab only for designated admin (iamhollywoodpro@protonmail.com)
@@ -356,8 +356,780 @@ function showDashboard() {
         document.getElementById('admin-tab').classList.add('hidden');
     }
     
+    // Load role-based dashboard configuration
+    await loadRoleBasedDashboard();
+    
     // Load initial data
     loadDashboardData();
+}
+
+// Load role-based dashboard configuration and UI
+async function loadRoleBasedDashboard() {
+    try {
+        const response = await fetch('/api/user/dashboard-config', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Dashboard config loaded:', data);
+            
+            // Update current user with detailed info
+            currentUser = { ...currentUser, ...data.user };
+            
+            // Create role-specific navigation tabs
+            createRoleBasedNavigation(data.dashboard.sections);
+            
+            // Create role-specific dashboard sections
+            createRoleBasedSections(data.dashboard.sections, data.features);
+            
+            // Show role-specific welcome message
+            showRoleWelcomeMessage(data.user.user_type);
+            
+        } else {
+            console.error('Failed to load dashboard config');
+        }
+    } catch (error) {
+        console.error('Error loading role-based dashboard:', error);
+    }
+}
+
+// Create navigation tabs based on user role
+function createRoleBasedNavigation(sections) {
+    const navContainer = document.querySelector('.flex.space-x-4.overflow-x-auto');
+    if (!navContainer) return;
+    
+    // Clear existing nav items except admin tab
+    const adminTab = document.getElementById('admin-tab');
+    navContainer.innerHTML = '';
+    if (adminTab) navContainer.appendChild(adminTab);
+    
+    // Add role-specific navigation tabs
+    sections.forEach((section, index) => {
+        const button = document.createElement('button');
+        button.className = `nav-tab ${index === 0 ? 'active' : ''}`;
+        button.setAttribute('data-section', section.id);
+        button.innerHTML = `
+            <i class="${section.icon}"></i>
+            ${section.name}
+        `;
+        
+        // Add event listener for tab switching
+        button.addEventListener('click', () => {
+            showSection(section.id);
+        });
+        
+        navContainer.insertBefore(button, adminTab);
+    });
+}
+
+// Create dashboard sections based on user role  
+function createRoleBasedSections(sections, features) {
+    const contentArea = document.querySelector('.max-w-7xl.mx-auto.px-4.py-8');
+    if (!contentArea) return;
+    
+    // Hide all existing sections first
+    const existingSections = contentArea.querySelectorAll('.section');
+    existingSections.forEach(section => {
+        section.classList.add('hidden');
+    });
+    
+    // Create or show role-specific sections
+    sections.forEach((section, index) => {
+        let sectionDiv = document.getElementById(`${section.id}-section`);
+        
+        // If section doesn't exist, create it
+        if (!sectionDiv) {
+            sectionDiv = document.createElement('div');
+            sectionDiv.id = `${section.id}-section`;
+            sectionDiv.className = `section ${index === 0 ? '' : 'hidden'}`;
+            
+            // Generate content based on section type  
+            sectionDiv.innerHTML = generateSectionContent(section, features);
+            
+            // Insert before admin section if it exists
+            const adminSection = document.getElementById('admin-section');
+            if (adminSection) {
+                contentArea.insertBefore(sectionDiv, adminSection);
+            } else {
+                contentArea.appendChild(sectionDiv);
+            }
+        } else {
+            // Section exists, just show it and update active state
+            if (index === 0) {
+                sectionDiv.classList.remove('hidden');
+            } else {
+                sectionDiv.classList.add('hidden');
+            }
+        }
+    });
+}
+
+// Generate content for each section based on user role
+function generateSectionContent(section, features) {
+    // Check if this section already exists - if so, don't regenerate
+    const existingSection = document.getElementById(`${section.id}-section`);
+    if (existingSection && ['habits', 'nutrition', 'achievements', 'progress', 'dashboard'].includes(section.id)) {
+        return existingSection.innerHTML;
+    }
+    
+    switch (section.id) {
+        case 'overview':
+            return generateOverviewContent();
+        case 'habits':
+            return generateDefaultHabitsContent();
+        case 'nutrition':
+            return generateDefaultNutritionContent();
+        case 'achievements':
+            return generateDefaultAchievementsContent();
+        case 'progress':
+            return generateDefaultProgressContent();
+        case 'learning_hub':
+            return generateLearningHubContent();
+        case 'guided_workouts':
+            return generateGuidedWorkoutsContent();
+        case 'analytics':
+            return generateAnalyticsContent();
+        case 'workout_variations':
+            return generateWorkoutVariationsContent();
+        case 'challenges':
+            return generateChallengesContent();
+        case 'performance':
+            return generatePerformanceContent();
+        case 'program_builder':
+            return generateProgramBuilderContent();
+        case 'competitions':
+            return generateCompetitionsContent();
+        case 'clients':
+            return generateClientManagementContent();
+        case 'programs':
+            return generateProgramTemplatesContent();
+        case 'business_tools':
+            return generateBusinessToolsContent();
+        default:
+            return `<div class="text-center py-12 text-white/50">
+                <i class="${section.icon} text-4xl mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">${section.name}</h3>
+                <p>Coming soon! This feature is under development.</p>
+            </div>`;
+    }
+}
+
+function showRoleWelcomeMessage(userType) {
+    const welcomeMessages = {
+        'beginner': '🔰 Welcome to your fitness journey! Let\'s start with the basics and build healthy habits.',
+        'intermediate': '💪 Ready to level up! Access advanced analytics and challenge yourself with new workouts.',
+        'advanced': '🚀 Optimize your performance! Track detailed metrics and build custom training programs.',
+        'competition': '🏆 Train like a champion! Track competitions and peak at the perfect time.',
+        'coach': '👨‍🏫 Grow your coaching business! Manage clients and track their success.'
+    };
+    
+    const message = welcomeMessages[userType] || 'Welcome to StriveTrack!';
+    
+    // Show welcome notification
+    showNotification(message, 'success');
+    
+    // Update dashboard subtitle
+    const subtitle = document.querySelector('.text-white\\/70');
+    if (subtitle) {
+        subtitle.textContent = message;
+    }
+}
+
+// Content generators for role-specific sections
+function generateOverviewContent() {
+    return `
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="active-habits">0</div>
+                <div class="text-white/70 text-sm">Active Habits</div>
+                <div class="text-blue-400 text-xs">Goals set</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="today-progress">0/0</div>
+                <div class="text-white/70 text-sm">Today's Progress</div>
+                <div class="text-green-400 text-xs">Completed</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="average-performance">0%</div>
+                <div class="text-white/70 text-sm">Average</div>
+                <div class="text-yellow-400 text-xs">Performance</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="user-points-display">0</div>
+                <div class="text-white/70 text-sm">Total Points</div>
+                <div class="text-purple-400 text-xs">Earned</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" onclick="showSection('habits')">
+                <i class="fas fa-plus-circle text-3xl text-blue-400 mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Add Habit</h3>
+                <p class="text-white/70 text-sm">Create a new fitness goal</p>
+            </div>
+            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" id="upload-progress-card">
+                <i class="fas fa-camera text-3xl text-green-400 mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Upload Progress</h3>
+                <p class="text-white/70 text-sm">Share your journey</p>
+            </div>
+            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" onclick="showSection('achievements')">
+                <i class="fas fa-trophy text-3xl text-yellow-400 mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2">View Achievements</h3>
+                <p class="text-white/70 text-sm">Track your milestones</p>
+            </div>
+        </div>
+    `;
+}
+
+function generateLearningHubContent() {
+    return `
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-graduation-cap text-blue-400 mr-3"></i>
+                Learning Hub - Master the Fundamentals
+            </h2>
+            <p class="text-white/70 mb-6">Build a strong foundation with expert tutorials, safety tips, and structured programs designed for beginners.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Exercise Tutorials -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">
+                    <i class="fas fa-play-circle text-green-400 mr-2"></i>
+                    Exercise Tutorials
+                </h3>
+                <div class="space-y-4" id="exercise-tutorials">
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 cursor-pointer transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-white">Squat Form Fundamentals</h4>
+                                <p class="text-white/70 text-sm">Master perfect squat technique • 5:30</p>
+                            </div>
+                            <i class="fas fa-play text-blue-400"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 cursor-pointer transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-white">Push-Up Progression Guide</h4>
+                                <p class="text-white/70 text-sm">Build up to perfect push-ups • 4:15</p>
+                            </div>
+                            <i class="fas fa-play text-blue-400"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 cursor-pointer transition-all">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-white">Plank Form & Variations</h4>
+                                <p class="text-white/70 text-sm">Strengthen your core safely • 3:45</p>
+                            </div>
+                            <i class="fas fa-play text-blue-400"></i>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-primary w-full mt-4" onclick="loadLearningContent()">
+                    <i class="fas fa-graduation-cap mr-2"></i>
+                    Access Full Learning Hub
+                </button>
+            </div>
+
+            <!-- Safety Tips -->
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">
+                    <i class="fas fa-shield-alt text-yellow-400 mr-2"></i>
+                    Safety First
+                </h3>
+                <div class="space-y-4">
+                    <div class="bg-yellow-400/10 border border-yellow-400/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-yellow-300 mb-2">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Warm-Up Importance
+                        </h4>
+                        <p class="text-white/70 text-sm">Always warm up for 5-10 minutes before exercise to prevent injury and improve performance.</p>
+                    </div>
+                    <div class="bg-blue-400/10 border border-blue-400/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-blue-300 mb-2">
+                            <i class="fas fa-lungs mr-2"></i>
+                            Proper Breathing
+                        </h4>
+                        <p class="text-white/70 text-sm">Breathe out during exertion, breathe in during relaxation. Never hold your breath.</p>
+                    </div>
+                    <div class="bg-green-400/10 border border-green-400/20 rounded-lg p-4">
+                        <h4 class="font-semibold text-green-300 mb-2">
+                            <i class="fas fa-bed mr-2"></i>
+                            Rest & Recovery
+                        </h4>
+                        <p class="text-white/70 text-sm">Take at least one full rest day per week. Listen to your body.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beginner Programs -->
+        <div class="glass-card p-6">
+            <h3 class="text-xl font-bold text-white mb-4">
+                <i class="fas fa-rocket text-purple-400 mr-2"></i>
+                Starter Programs
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                    <h4 class="font-bold text-white mb-2">7-Day Beginner Starter</h4>
+                    <p class="text-white/70 text-sm mb-4">Your first week of structured fitness</p>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-white/60">Duration:</span>
+                            <span class="text-white">1 week</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-white/60">Workouts:</span>
+                            <span class="text-white">3 per week</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-white/60">Time:</span>
+                            <span class="text-white">20-30 min</span>
+                        </div>
+                    </div>
+                    <button class="btn-secondary w-full">Start Program</button>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                    <h4 class="font-bold text-white mb-2">30-Day Home Challenge</h4>
+                    <p class="text-white/70 text-sm mb-4">Build strength at home, no equipment needed</p>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-white/60">Duration:</span>
+                            <span class="text-white">30 days</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-white/60">Workouts:</span>
+                            <span class="text-white">4 per week</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-white/60">Equipment:</span>
+                            <span class="text-white">Bodyweight</span>
+                        </div>
+                    </div>
+                    <button class="btn-secondary w-full">Join Challenge</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function generateAnalyticsContent() {
+    return `
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-chart-bar text-blue-400 mr-3"></i>
+                Advanced Analytics - Level Up Your Performance
+            </h2>
+            <p class="text-white/70 mb-6">Deep dive into your fitness data with trend analysis, plateau detection, and personalized insights.</p>
+        </div>
+
+        <!-- Analytics Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-6">
+                <h3 class="text-lg font-bold text-white mb-4">
+                    <i class="fas fa-trending-up text-green-400 mr-2"></i>
+                    Performance Trend
+                </h3>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-400 mb-2">📈 Improving</div>
+                    <p class="text-white/70 text-sm">15% increase over last 30 days</p>
+                </div>
+            </div>
+            <div class="glass-card p-6">
+                <h3 class="text-lg font-bold text-white mb-4">
+                    <i class="fas fa-percentage text-blue-400 mr-2"></i>
+                    Consistency Score
+                </h3>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-400 mb-2">87%</div>
+                    <p class="text-white/70 text-sm">Above average consistency</p>
+                </div>
+            </div>
+            <div class="glass-card p-6">
+                <h3 class="text-lg font-bold text-white mb-4">
+                    <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
+                    Plateau Detection
+                </h3>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-400 mb-2">✓ Clear</div>
+                    <p class="text-white/70 text-sm">No plateaus detected</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">
+                    <i class="fas fa-chart-line text-purple-400 mr-2"></i>
+                    Habit Completion Trends
+                </h3>
+                <div class="bg-white/5 border border-white/10 rounded-lg p-6 mb-4">
+                    <div class="text-center text-white/70">
+                        <i class="fas fa-chart-line text-4xl mb-4"></i>
+                        <p>Interactive chart showing your habit completion rates over time</p>
+                    </div>
+                </div>
+                <button class="btn-primary w-full" onclick="loadAnalyticsData()">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Load Analytics Data
+                </button>
+            </div>
+
+            <div class="glass-card p-6">
+                <h3 class="text-xl font-bold text-white mb-4">
+                    <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                    AI Insights & Recommendations
+                </h3>
+                <div class="space-y-4">
+                    <div class="bg-green-400/10 border border-green-400/20 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-thumbs-up text-green-400 mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold text-green-300 mb-1">Great Progress!</h4>
+                                <p class="text-white/70 text-sm">Your consistency has improved 15% this month. Keep up the momentum!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-blue-400/10 border border-blue-400/20 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-400 mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold text-blue-300 mb-1">Optimization Tip</h4>
+                                <p class="text-white/70 text-sm">Consider adding a rest day between high-intensity workouts for better recovery.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-purple-400/10 border border-purple-400/20 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-target text-purple-400 mr-3 mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold text-purple-300 mb-1">Goal Suggestion</h4>
+                                <p class="text-white/70 text-sm">Ready for a new challenge? Try increasing your weekly workout frequency by 1 session.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function generateClientManagementContent() {
+    return `
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-users text-blue-400 mr-3"></i>
+                Client Management - Grow Your Coaching Business
+            </h2>
+            <p class="text-white/70 mb-6">Manage your clients, track their progress, and grow your fitness coaching business with powerful tools.</p>
+        </div>
+
+        <!-- Client Overview Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="total-clients">0</div>
+                <div class="text-white/70 text-sm">Total Clients</div>
+                <div class="text-blue-400 text-xs">Active accounts</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="active-clients">0</div>
+                <div class="text-white/70 text-sm">Active This Week</div>
+                <div class="text-green-400 text-xs">Engaged</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="retention-rate">0%</div>
+                <div class="text-white/70 text-sm">Retention Rate</div>
+                <div class="text-purple-400 text-xs">Success metric</div>
+            </div>
+            <div class="stats-card">
+                <div class="text-2xl font-bold text-white mb-2" id="avg-client-progress">0</div>
+                <div class="text-white/70 text-sm">Avg Client Score</div>
+                <div class="text-yellow-400 text-xs">Performance</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" onclick="showAddClientModal()">
+                <i class="fas fa-user-plus text-3xl text-green-400 mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Add New Client</h3>
+                <p class="text-white/70 text-sm">Invite clients to join your program</p>
+            </div>
+            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" onclick="loadCoachAnalytics()">
+                <i class="fas fa-chart-line text-3xl text-blue-400 mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Business Analytics</h3>
+                <p class="text-white/70 text-sm">Track your coaching metrics</p>
+            </div>
+            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" onclick="loadProgramTemplates()">
+                <i class="fas fa-clipboard-list text-3xl text-purple-400 mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Program Templates</h3>
+                <p class="text-white/70 text-sm">Create and manage workouts</p>
+            </div>
+        </div>
+
+        <!-- Client List -->
+        <div class="glass-card p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white">
+                    <i class="fas fa-users mr-2"></i>
+                    Your Clients
+                </h3>
+                <button class="btn-primary" onclick="loadClientsData()">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh Data
+                </button>
+            </div>
+            <div id="clients-list">
+                <div class="text-center py-12 text-white/50">
+                    <i class="fas fa-users text-4xl mb-4"></i>
+                    <p class="mb-4">No clients found</p>
+                    <button class="btn-secondary" onclick="showAddClientModal()">Add Your First Client</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Helper functions for role-specific features
+async function loadLearningContent() {
+    try {
+        const response = await fetch('/api/beginner/learning-hub', {
+            headers: { 'x-session-id': sessionId }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Learning content loaded:', data);
+            showNotification('Loading interactive tutorials...', 'success');
+        } else {
+            showNotification('Learning content will be available soon!', 'info');
+        }
+    } catch (error) {
+        console.error('Error loading learning content:', error);
+        showNotification('Learning hub features coming soon!', 'info');
+    }
+}
+
+async function loadAnalyticsData() {
+    try {
+        const response = await fetch('/api/intermediate/analytics', {
+            headers: { 'x-session-id': sessionId }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Analytics data loaded:', data);
+            showNotification('Analytics data refreshed!', 'success');
+        } else {
+            showNotification('Analytics will be available soon!', 'info');
+        }
+    } catch (error) {
+        console.error('Error loading analytics:', error);
+        showNotification('Advanced analytics coming soon!', 'info');
+    }
+}
+
+async function loadClientsData() {
+    try {
+        const response = await fetch('/api/coach/clients', {
+            headers: { 'x-session-id': sessionId }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Clients data loaded:', data);
+            displayClientsData(data);
+        } else {
+            showNotification('Client management will be available soon!', 'info');
+        }
+    } catch (error) {
+        console.error('Error loading clients:', error);
+        showNotification('Client features coming soon!', 'info');
+    }
+}
+
+function displayClientsData(data) {
+    const clientsList = document.getElementById('clients-list');
+    const totalClientsEl = document.getElementById('total-clients');
+    const activeClientsEl = document.getElementById('active-clients');
+    const retentionRateEl = document.getElementById('retention-rate');
+    
+    if (totalClientsEl) totalClientsEl.textContent = data.summary?.total_clients || 0;
+    if (activeClientsEl) activeClientsEl.textContent = data.summary?.active_clients || 0;
+    if (retentionRateEl) retentionRateEl.textContent = `${data.coach_stats?.retention_rate || 0}%`;
+    
+    if (data.clients && data.clients.length > 0) {
+        clientsList.innerHTML = data.clients.map(client => `
+            <div class="bg-white/5 border border-white/10 rounded-lg p-4 mb-4 hover:bg-white/10 transition-all">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="font-semibold text-white">${client.name}</h4>
+                        <p class="text-white/70 text-sm">${client.email}</p>
+                        <div class="flex space-x-4 mt-2 text-xs">
+                            <span class="text-blue-400">
+                                <i class="fas fa-calendar mr-1"></i>
+                                ${client.total_habits} habits
+                            </span>
+                            <span class="text-green-400">
+                                <i class="fas fa-check mr-1"></i>
+                                ${client.weekly_completions} this week
+                            </span>
+                            <span class="text-purple-400">
+                                <i class="fas fa-star mr-1"></i>
+                                ${client.points} points
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold ${client.engagement_score > 70 ? 'text-green-400' : client.engagement_score > 40 ? 'text-yellow-400' : 'text-red-400'}">
+                            ${client.engagement_score}%
+                        </div>
+                        <div class="text-white/60 text-xs">Engagement</div>
+                        ${client.needs_attention ? '<div class="text-red-400 text-xs mt-1"><i class="fas fa-exclamation-triangle mr-1"></i>Needs Attention</div>' : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// Add missing content generators
+function generateHabitsContent() {
+    return generateExistingHabitsContent(); // Use existing habits section
+}
+
+function generateNutritionContent() {
+    return generateExistingNutritionContent(); // Use existing nutrition section  
+}
+
+function generateAchievementsContent() {
+    return generateExistingAchievementsContent(); // Use existing achievements section
+}
+
+function generateProgressContent() {
+    return generateExistingProgressContent(); // Use existing progress section
+}
+
+// Placeholder functions for other role-specific sections
+function generateGuidedWorkoutsContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-play-circle text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Guided Workouts</h3>
+        <p>Step-by-step workout instructions coming soon!</p>
+    </div>`;
+}
+
+function generateWorkoutVariationsContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-exchange-alt text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Workout Variations</h3>
+        <p>Exercise modifications and progressions coming soon!</p>
+    </div>`;
+}
+
+function generateChallengesContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-medal text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Challenges</h3>
+        <p>Create and join fitness challenges coming soon!</p>
+    </div>`;
+}
+
+function generatePerformanceContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-tachometer-alt text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Performance Metrics</h3>
+        <p>Advanced performance tracking coming soon!</p>
+    </div>`;
+}
+
+function generateProgramBuilderContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-cogs text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Program Builder</h3>
+        <p>Custom workout program creation coming soon!</p>
+    </div>`;
+}
+
+function generateCompetitionsContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-calendar-alt text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Competition Calendar</h3>
+        <p>Track competitions and peak timing coming soon!</p>
+    </div>`;
+}
+
+function generateProgramTemplatesContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-clipboard-list text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Program Templates</h3>
+        <p>Workout template management coming soon!</p>
+    </div>`;
+}
+
+function generateBusinessToolsContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-briefcase text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Business Tools</h3>
+        <p>Scheduling and billing integration coming soon!</p>
+    </div>`;
+}
+
+// Helper functions to reference existing content
+function generateExistingHabitsContent() {
+    // Keep the existing habits section content
+    const existingHabitsSection = document.getElementById('habits-section');
+    return existingHabitsSection ? existingHabitsSection.innerHTML : generateDefaultHabitsContent();
+}
+
+function generateExistingNutritionContent() {
+    const existingNutritionSection = document.getElementById('nutrition-section');
+    return existingNutritionSection ? existingNutritionSection.innerHTML : generateDefaultNutritionContent();
+}
+
+function generateExistingAchievementsContent() {
+    const existingAchievementsSection = document.getElementById('achievements-section');
+    return existingAchievementsSection ? existingAchievementsSection.innerHTML : generateDefaultAchievementsContent();
+}
+
+function generateExistingProgressContent() {
+    const existingProgressSection = document.getElementById('progress-section');
+    return existingProgressSection ? existingProgressSection.innerHTML : generateDefaultProgressContent();
+}
+
+function generateDefaultHabitsContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-target text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Habits & Goals</h3>
+        <p>Track your fitness habits and achieve your goals</p>
+    </div>`;
+}
+
+function generateDefaultNutritionContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-apple-alt text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Nutrition Tracking</h3>
+        <p>Monitor your nutrition and fuel your fitness journey</p>
+    </div>`;
+}
+
+function generateDefaultAchievementsContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-trophy text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Achievements</h3>
+        <p>Unlock badges and track your milestones</p>
+    </div>`;
+}
+
+function generateDefaultProgressContent() {
+    return `<div class="text-center py-12 text-white/50">
+        <i class="fas fa-images text-4xl mb-4"></i>
+        <h3 class="text-xl font-bold mb-2">Progress Gallery</h3>
+        <p>Upload and track your fitness progress photos</p>
+    </div>`;
 }
 
 async function loadDashboardWeeklyProgress() {

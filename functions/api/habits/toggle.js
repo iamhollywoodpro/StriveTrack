@@ -36,9 +36,13 @@ export async function onRequestPost(context) {
         }
         
         // Check if completion already exists for this date
+        console.log('🔍 Checking existing completion for:', { habit_id, user_id: user.id, date });
+        
         const existingCompletion = await env.DB.prepare(
             'SELECT id FROM habit_completions WHERE habit_id = ? AND user_id = ? AND DATE(completed_at) = ?'
         ).bind(habit_id, user.id, date).first();
+        
+        console.log('🔍 Existing completion result:', existingCompletion);
         
         let completed = false;
         let points = 0;
@@ -58,18 +62,30 @@ export async function onRequestPost(context) {
         } else {
             // Add completion
             const completionId = crypto.randomUUID();
+            const timestamp = new Date().toISOString();
+            
+            console.log('💾 Inserting new completion:', { 
+                completionId, 
+                habit_id, 
+                user_id: user.id, 
+                completed_at: timestamp,
+                target_date: date 
+            });
+            
             await env.DB.prepare(
                 'INSERT INTO habit_completions (id, habit_id, user_id, completed_at, notes) VALUES (?, ?, ?, ?, ?)'
             ).bind(
                 completionId, 
                 habit_id, 
                 user.id, 
-                new Date().toISOString(),
+                timestamp,
                 null
             ).run();
             
             completed = true;
             points = 10; // Award points for completion
+            
+            console.log('✅ Completion inserted successfully');
             
             // Update user points
             await env.DB.prepare(

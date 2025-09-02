@@ -1471,9 +1471,11 @@ function createWeeklyHabitElement(habit) {
     const targetCount = habit.weekly_target || 7;
     
     // DEBUG: Log habit creation details
-    console.log('🏗️ Creating weekly habit element:', {
+    console.log('🏗️ Creating habit card:', {
         habitName: habit.name,
+        habitId: habit.id,
         completionsArray: completions,
+        weekDays: weekDays.map(d => d.toISOString().split('T')[0]),
         weekCompletions: weekCompletions,
         completedCount: completedCount,
         targetCount: targetCount
@@ -5443,6 +5445,18 @@ function createHabitCard(habit) {
 
     const completedDays = weekCompletions.filter(Boolean).length;
     const progressPercent = (completedDays / habit.weekly_target) * 100;
+    
+    // DEBUG: Log habit card creation details
+    console.log('🏗️ Creating habit card:', {
+        habitName: habit.name,
+        habitId: habit.id,
+        completionsFromServer: completions,
+        weekDaysGenerated: weekDays.map(d => d.toISOString().split('T')[0]),
+        weekCompletionsCalculated: weekCompletions,
+        completedDaysCount: completedDays,
+        targetCount: habit.weekly_target,
+        progressPercent: progressPercent
+    });
 
     return `
         <div class="habit-card">

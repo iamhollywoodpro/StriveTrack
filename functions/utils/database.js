@@ -133,14 +133,20 @@ export async function getUserHabits(userId, env) {
     
     // Get completions for each habit
     for (const habit of habits) {
+        console.log('📅 Loading completions for habit:', habit.id, habit.name);
+        
         const completionsResult = await env.DB.prepare(`
-            SELECT DATE(completed_at) as completion_date
+            SELECT DATE(completed_at) as completion_date, completed_at
             FROM habit_completions
             WHERE habit_id = ? AND user_id = ?
             ORDER BY completed_at DESC
         `).bind(habit.id, userId).all();
         
+        console.log('📊 Raw completions from DB:', completionsResult.results);
+        
         habit.completions = (completionsResult.results || []).map(c => c.completion_date);
+        
+        console.log('📋 Processed completions array:', habit.completions);
         
         // Parse emoji and name if stored together
         if (habit.name && habit.name.includes(' ')) {

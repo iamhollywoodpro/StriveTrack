@@ -51,15 +51,16 @@ function setupEventListeners() {
     
     // Upload progress card
     document.getElementById('upload-progress-card').addEventListener('click', () => {
-        document.getElementById('media-upload').click();
+        showMediaUploadModal();
     });
     
     // Media upload
     document.getElementById('upload-media-btn').addEventListener('click', () => {
-        document.getElementById('media-upload').click();
+        showMediaUploadModal();
     });
     
-    document.getElementById('media-upload').addEventListener('change', uploadMedia);
+    // Connect media upload form to submit handler
+    document.getElementById('media-upload-form').addEventListener('submit', submitMediaUpload);
     
     // Admin tabs
     document.getElementById('admin-users-tab').addEventListener('click', () => {
@@ -810,6 +811,10 @@ async function submitMediaUpload(event) {
         
         const xhr = new XMLHttpRequest();
         
+        // Set session header for authentication
+        xhr.open('POST', endpoint);
+        xhr.setRequestHeader('x-session-id', sessionId);
+        
         // Track upload progress
         xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
@@ -822,7 +827,7 @@ async function submitMediaUpload(event) {
         xhr.onload = function() {
             progressContainer.classList.add('hidden');
             
-            if (xhr.status === 200) {
+            if (xhr.status === 200 || xhr.status === 201) {
                 const data = JSON.parse(xhr.responseText);
                 const mediaTypeText = isVideo ? '🎥 Video' : '📸 Image';
                 const mediaType = data.media_type || 'progress';
@@ -856,8 +861,6 @@ async function submitMediaUpload(event) {
             showNotification('Upload failed', 'error');
         };
         
-        xhr.open('POST', endpoint);
-        xhr.setRequestHeader('x-session-id', sessionId);
         xhr.send(formData);
         
     } catch (error) {

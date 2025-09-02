@@ -125,7 +125,21 @@ export async function onRequestGet(context) {
             ]
         };
 
-        // Get user progress on learning content
+        // Get user progress on learning content (create table if it doesn't exist)
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS user_learning_progress (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                content_id TEXT NOT NULL,
+                progress_percentage INTEGER DEFAULT 0,
+                completed_at DATETIME,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                UNIQUE(user_id, content_id)
+            )
+        `).run();
+        
         const userProgress = await env.DB.prepare(`
             SELECT content_id, completed_at, progress_percentage
             FROM user_learning_progress

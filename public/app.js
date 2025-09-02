@@ -27,8 +27,28 @@ function setupEventListeners() {
     document.getElementById('signup-user-type').addEventListener('change', updateUserTypeDescription);
     
     // Register buttons
-    document.getElementById('show-register').addEventListener('click', showSignupForm);
-    document.getElementById('show-login').addEventListener('click', showLoginForm);
+    const showRegisterBtn = document.getElementById('show-register');
+    const showLoginBtn = document.getElementById('show-login');
+    
+    console.log('Show register button:', showRegisterBtn);
+    console.log('Show login button:', showLoginBtn);
+    
+    if (showRegisterBtn) {
+        showRegisterBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Signup button clicked');
+            showSignupForm();
+        });
+        console.log('Event listener attached to show-register button');
+    } else {
+        console.error('show-register button not found');
+    }
+    
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener('click', showLoginForm);
+    } else {
+        console.log('show-login button not found (this is expected on first load)');
+    }
     
     // Logout button
     document.getElementById('logout-btn').addEventListener('click', logout);
@@ -168,9 +188,28 @@ async function handleLogin(event) {
 }
 
 function showSignupForm() {
-    document.getElementById('login-form-card').classList.add('hidden');
-    document.getElementById('signup-form-card').classList.remove('hidden');
-    document.getElementById('signup-name').focus();
+    console.log('showSignupForm called - switching to signup form');
+    const loginCard = document.getElementById('login-form-card');
+    const signupCard = document.getElementById('signup-form-card');
+    
+    if (loginCard && signupCard) {
+        loginCard.classList.add('hidden');
+        signupCard.classList.remove('hidden');
+        
+        // Focus on the name input after a short delay to ensure it's visible
+        setTimeout(() => {
+            const nameInput = document.getElementById('signup-name');
+            if (nameInput) {
+                nameInput.focus();
+            }
+        }, 100);
+        
+        console.log('Successfully switched to signup form');
+    } else {
+        console.error('Could not find required form elements');
+        console.error('Login card found:', !!loginCard);
+        console.error('Signup card found:', !!signupCard);
+    }
 }
 
 function showLoginForm() {

@@ -1301,9 +1301,32 @@ function createDashboardProgressElement(habit) {
     const div = document.createElement('div');
     div.className = 'mb-4 p-4 bg-white/5 border border-white/10 rounded-lg';
     
-    const completedCount = habit.completedCount || 0;
-    const targetCount = habit.targetCount || 7;
+    // Use SAME week calculation as habits page - CRITICAL FIX
+    const weekStart = getWeekStart(currentWeekOffset || 0);
+    const weekDays = Array.from({length: 7}, (_, i) => {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        return date;
+    });
+    
+    const completions = habit.completions || [];
+    const weekCompletions = weekDays.map(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        return completions.includes(dateStr);
+    });
+    
+    const completedCount = weekCompletions.filter(Boolean).length;
+    const targetCount = habit.weekly_target || 7;
     const progressPercent = Math.round((completedCount / targetCount) * 100);
+    
+    console.log('📊 Dashboard progress element:', {
+        habitName: habit.name,
+        completionsFromServer: completions,
+        weekDaysGenerated: weekDays.map(d => d.toISOString().split('T')[0]),
+        weekCompletionsCalculated: weekCompletions,
+        completedCount: completedCount,
+        targetCount: targetCount
+    });
     
     // Status color based on progress
     let statusColor = 'text-red-400';

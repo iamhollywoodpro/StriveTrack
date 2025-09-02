@@ -4060,27 +4060,24 @@ function closeModal(modalId) {
 function showNotification(message, type = 'info', persistent = false) {
     const notification = document.getElementById('notification');
     
-    // Create notification content with close button for persistent notifications
-    if (persistent || type === 'success') {
-        notification.innerHTML = `
-            <span>${message}</span>
-            <button onclick="hideNotification()" class="ml-4 text-white/80 hover:text-white">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-    } else {
-        notification.textContent = message;
-    }
+    // Always show just the message (no close button needed since auto-dismiss)
+    notification.innerHTML = `<span>${message}</span>`;
     
     notification.className = `notification ${type}`;
     notification.classList.add('show');
     
-    // Auto-dismiss after delay unless persistent
-    if (!persistent) {
-        setTimeout(() => {
+    // Auto-dismiss ALL notifications after 3 seconds
+    setTimeout(() => {
+        if (notification) {
             notification.classList.remove('show');
-        }, type === 'success' ? 5000 : 3000);
-    }
+            // Clear content after fade out animation
+            setTimeout(() => {
+                if (notification && !notification.classList.contains('show')) {
+                    notification.innerHTML = '';
+                }
+            }, 500); // Wait for CSS transition to complete
+        }
+    }, 3000);
 }
 
 // Hide notification manually
@@ -4282,6 +4279,23 @@ window.debugAuth = function() {
 };
 
 // Test function for admin login
+// Test function for notification timing
+window.testNotifications = function() {
+    console.log('🔔 Testing notification auto-dismiss...');
+    
+    showNotification('This is a test info notification', 'info');
+    
+    setTimeout(() => {
+        showNotification('This is a test success notification', 'success');
+    }, 1000);
+    
+    setTimeout(() => {
+        showNotification('This is a test error notification', 'error');
+    }, 2000);
+    
+    console.log('✅ Three notifications sent. Each should auto-dismiss after 3 seconds.');
+};
+
 // Test function for the new simple habit system
 window.testSimpleHabits = async function() {
     console.log('🧪 Testing simple habits system...');
@@ -5283,13 +5297,13 @@ async function simpleToggleHabit(habitId, date) {
     
     if (!sessionId) {
         console.error('❌ No session ID');
-        alert('Please log in first');
+        showNotification('Please log in first', 'error');
         return;
     }
     
     if (!habitId || !date) {
         console.error('❌ Missing habit ID or date');
-        alert('Invalid habit data');
+        showNotification('Invalid habit data', 'error');
         return;
     }
     
@@ -5313,7 +5327,7 @@ async function simpleToggleHabit(habitId, date) {
         if (!response.ok) {
             const errorData = await response.text();
             console.error('❌ API Error:', errorData);
-            alert('Failed to toggle habit: ' + errorData);
+            showNotification('Failed to toggle habit: ' + errorData, 'error');
             return;
         }
         
@@ -5322,9 +5336,9 @@ async function simpleToggleHabit(habitId, date) {
         
         // Show success message
         if (result.completed) {
-            alert('✅ Habit completed for ' + date + '!');
+            showNotification('✅ Habit completed for ' + date + '!', 'success');
         } else {
-            alert('❌ Habit unchecked for ' + date);
+            showNotification('Habit unchecked for ' + date, 'info');
         }
         
         // Reload habits
@@ -5332,7 +5346,7 @@ async function simpleToggleHabit(habitId, date) {
         
     } catch (error) {
         console.error('💥 Network Error:', error);
-        alert('Network error: ' + error.message);
+        showNotification('Network error: ' + error.message, 'error');
     }
 }
 
@@ -5342,7 +5356,7 @@ async function simpleCompleteHabit(habitId) {
     
     if (!sessionId) {
         console.error('❌ No session ID');
-        alert('Please log in first');
+        showNotification('Please log in first', 'error');
         return;
     }
     
@@ -5351,7 +5365,7 @@ async function simpleCompleteHabit(habitId) {
         await simpleToggleHabit(habitId, today);
     } catch (error) {
         console.error('💥 Error in complete habit:', error);
-        alert('Error completing habit: ' + error.message);
+        showNotification('Error completing habit: ' + error.message, 'error');
     }
 }
 

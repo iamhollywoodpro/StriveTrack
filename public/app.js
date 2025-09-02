@@ -451,8 +451,9 @@ async function showDashboard() {
     
     console.log('✅ Dashboard display completed');
     
-    // Load role-based dashboard configuration
-    await loadRoleBasedDashboard();
+    // Load role-based dashboard configuration - DISABLED for clean UI
+    // await loadRoleBasedDashboard();
+    console.log('Role-based dashboard disabled - using core features only');
     
     // Load initial data
     loadDashboardData();
@@ -4029,6 +4030,118 @@ async function downloadAdminMedia(mediaId, filename) {
     }
 }
 
+// Load Coming Soon Features
+function loadComingSoonFeatures() {
+    const container = document.getElementById('coming-soon-container');
+    if (!container) return;
+    
+    const comingSoonFeatures = [
+        {
+            icon: 'fas fa-graduation-cap',
+            name: 'Learning Hub', 
+            description: 'Interactive fitness education, form tutorials, and guided learning paths for all levels.',
+            category: 'Education',
+            eta: 'Q1 2024'
+        },
+        {
+            icon: 'fas fa-dumbbell',
+            name: 'Guided Workouts',
+            description: 'Step-by-step workout routines with video demonstrations and real-time coaching.',
+            category: 'Workouts', 
+            eta: 'Q1 2024'
+        },
+        {
+            icon: 'fas fa-chart-line',
+            name: 'Advanced Analytics',
+            description: 'Deep insights into your performance trends, plateau detection, and optimization suggestions.',
+            category: 'Analytics',
+            eta: 'Q2 2024'
+        },
+        {
+            icon: 'fas fa-users',
+            name: 'Workout Buddy Finder',
+            description: 'Connect with fitness partners in your area with similar goals and schedules.',
+            category: 'Social',
+            eta: 'Q2 2024'
+        },
+        {
+            icon: 'fas fa-trophy',
+            name: 'Challenges & Competitions',
+            description: 'Join community challenges, compete with friends, and participate in fitness competitions.',
+            category: 'Competition',
+            eta: 'Q1 2024'
+        },
+        {
+            icon: 'fas fa-heartbeat',
+            name: 'Biometric Tracking',
+            description: 'Advanced health metrics, heart rate zones, sleep quality, and recovery analysis.',
+            category: 'Health',
+            eta: 'Q2 2024'
+        },
+        {
+            icon: 'fas fa-puzzle-piece',
+            name: 'Fitness App Integration',
+            description: 'Connect with popular fitness apps and wearables for seamless data synchronization.',
+            category: 'Integration',
+            eta: 'Q2 2024'
+        },
+        {
+            icon: 'fas fa-clipboard-list',
+            name: 'Custom Program Builder',
+            description: 'Create personalized workout programs with periodization and progressive overload.',
+            category: 'Programming',
+            eta: 'Q3 2024'
+        },
+        {
+            icon: 'fas fa-chalkboard-teacher',
+            name: 'Mentorship Platform',
+            description: 'Connect with experienced trainers and mentors for personalized guidance.',
+            category: 'Coaching',
+            eta: 'Q3 2024'
+        },
+        {
+            icon: 'fas fa-briefcase',
+            name: 'Coach Business Tools',
+            description: 'Client management, program templates, scheduling, and revenue tracking for fitness professionals.',
+            category: 'Business',
+            eta: 'Q3 2024'
+        },
+        {
+            icon: 'fas fa-medal',
+            name: 'Competition Management',
+            description: 'Track competitions, plan peak timing, analyze performance data for competitive athletes.',
+            category: 'Competition',
+            eta: 'Q4 2024'
+        },
+        {
+            icon: 'fas fa-sitemap',
+            name: 'Team Management',
+            description: 'Manage athletic teams, track group progress, and coordinate training schedules.',
+            category: 'Teams',
+            eta: 'Q4 2024'
+        }
+    ];
+    
+    container.innerHTML = comingSoonFeatures.map(feature => `
+        <div class="glass-card p-6 hover:bg-white/10 transition-all">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-lg bg-gradient-primary flex items-center justify-center">
+                    <i class="${feature.icon} text-white text-lg"></i>
+                </div>
+                <span class="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">${feature.category}</span>
+            </div>
+            <h3 class="text-white font-semibold text-lg mb-2">${feature.name}</h3>
+            <p class="text-white/70 text-sm mb-4">${feature.description}</p>
+            <div class="flex justify-between items-center">
+                <span class="text-white/50 text-xs">Estimated: ${feature.eta}</span>
+                <button class="btn-secondary text-xs" onclick="showNotification('We\\'ll notify you when ${feature.name} is ready!', 'info')">
+                    Notify Me
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
 // UI functions
 function showSection(section) {
     // Hide all sections
@@ -4054,6 +4167,8 @@ function showSection(section) {
         loadAchievements();
         loadDailyChallenges();
         loadLeaderboards();
+    } else if (section === 'coming-soon') {
+        loadComingSoonFeatures();
     } else if (section === 'admin') {
         loadAdminUsers(); // Load users immediately
         showAdminUserList(); // Ensure user list is visible
@@ -5187,10 +5302,38 @@ async function loadHabits() {
     }
 }
 
+// Update current week display
+function updateCurrentWeekDisplay() {
+    const weekDisplay = document.getElementById('current-week-display');
+    if (weekDisplay) {
+        const today = new Date();
+        const weekStart = new Date(today);
+        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // Get Monday of this week
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        weekStart.setDate(today.getDate() + mondayOffset);
+        
+        // Get Sunday of this week
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        
+        // Format dates as "MMM DD"
+        const formatOptions = { month: 'short', day: 'numeric' };
+        const startStr = weekStart.toLocaleDateString('en-US', formatOptions);
+        const endStr = weekEnd.toLocaleDateString('en-US', formatOptions);
+        
+        weekDisplay.textContent = `${startStr} - ${endStr}`;
+    }
+}
+
 // Display habits in the UI
 function displayHabits(habits) {
     const container = document.getElementById('habits-container');
     if (!container) return;
+    
+    // Update current week display when showing habits
+    updateCurrentWeekDisplay();
     
     if (habits.length === 0) {
         container.innerHTML = `
@@ -5435,58 +5578,66 @@ function updateWeeklyProgressForHabit(habitId) {
     console.log('📊 Updating weekly progress for habit:', habitId);
     
     try {
-        // Find the habit card by looking for day cells with this habit ID
-        const firstDayCell = document.querySelector(`[data-habit-id="${habitId}"]`);
-        if (!firstDayCell) {
-            console.log('❌ No day cell found for habit:', habitId);
+        // Find all day cells for this habit
+        const dayCells = document.querySelectorAll(`[data-habit-id="${habitId}"]`);
+        if (dayCells.length === 0) {
+            console.log('❌ No day cells found for habit:', habitId);
             return;
         }
         
-        const habitCard = firstDayCell.closest('.habit-card');
+        // Get the habit card from the first day cell
+        const habitCard = dayCells[0].closest('.habit-card');
         if (!habitCard) {
             console.log('❌ Habit card not found');
             return;
         }
         
-        // Count completed days for this week within this habit card
-        const completedCells = habitCard.querySelectorAll(`[data-habit-id="${habitId}"].completed`);
+        // Count completed days by checking for .completed class on day cells
+        const completedCells = Array.from(dayCells).filter(cell => cell.classList.contains('completed'));
         const completedCount = completedCells.length;
         
-        // Find the progress text - look for text containing "/ X days"
-        const allSpans = habitCard.querySelectorAll('span, p');
-        let progressText = null;
-        let target = 7;
+        console.log('📊 Found completed cells:', completedCount, 'out of', dayCells.length);
         
-        for (const span of allSpans) {
-            if (span.textContent && span.textContent.includes(' / ') && span.textContent.includes('days')) {
-                progressText = span;
-                const targetMatch = span.textContent.match(/\/\s*(\d+)/);
+        // Find the progress text element - look for the specific pattern
+        const progressTextElements = habitCard.querySelectorAll('p');
+        let progressTextElement = null;
+        let target = 7; // default
+        
+        for (const p of progressTextElements) {
+            if (p.textContent && p.textContent.includes(' / ') && p.textContent.includes('days this week')) {
+                progressTextElement = p;
+                // Extract target from existing text
+                const targetMatch = p.textContent.match(/\/\s*(\d+)\s*days/);
                 if (targetMatch) target = parseInt(targetMatch[1]);
                 break;
             }
         }
         
-        if (progressText) {
-            progressText.innerHTML = `<span class="text-green-400 font-semibold">${completedCount}</span> / ${target} days this week`;
+        if (progressTextElement) {
+            progressTextElement.innerHTML = `<span class="text-green-400 font-semibold">${completedCount}</span> / ${target} days this week`;
+            console.log('✅ Updated progress text to:', `${completedCount}/${target}`);
         }
         
-        // Update progress bar
+        // Update progress bar width
         const progressBar = habitCard.querySelector('.progress-bar');
         if (progressBar) {
-            const percentage = (completedCount / target) * 100;
-            progressBar.style.width = `${Math.min(percentage, 100)}%`;
+            const percentage = Math.min((completedCount / target) * 100, 100);
+            progressBar.style.width = `${percentage}%`;
+            console.log('✅ Updated progress bar to:', percentage + '%');
         }
         
-        // Update percentage display
-        const percentageSpans = habitCard.querySelectorAll('span');
-        for (const span of percentageSpans) {
+        // Update percentage display in the weekly progress section
+        const percentageElements = habitCard.querySelectorAll('.text-white\\/70 span');
+        for (const span of percentageElements) {
             if (span.textContent && span.textContent.includes('%')) {
-                span.textContent = `${Math.round((completedCount / target) * 100)}%`;
+                const newPercentage = Math.round((completedCount / target) * 100);
+                span.textContent = `${newPercentage}%`;
+                console.log('✅ Updated percentage display to:', newPercentage + '%');
                 break;
             }
         }
         
-        console.log('✅ Weekly progress updated:', completedCount, '/', target);
+        console.log('✅ Weekly progress update complete for habit:', habitId);
     } catch (error) {
         console.error('❌ Error updating weekly progress:', error);
     }

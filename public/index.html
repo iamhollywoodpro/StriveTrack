@@ -1442,6 +1442,10 @@
                         <i class="fas fa-trophy"></i>
                         Achievements
                     </button>
+                    <button class="nav-tab" data-section="coming-soon">
+                        <i class="fas fa-rocket"></i>
+                        Coming Soon
+                    </button>
                     <button class="nav-tab hidden" id="admin-tab" data-section="admin">
                         <i class="fas fa-shield-alt"></i>
                         ADMIN Dashboard
@@ -1520,7 +1524,7 @@
                         </div>
                         <div class="flex items-center space-x-4">
                             <div class="text-white/70">This Week</div>
-                            <div class="text-white font-semibold">Aug 25 - Aug 31</div>
+                            <div id="current-week-display" class="text-white font-semibold">Aug 25 - Aug 31</div>
                             <button class="btn-secondary">Current Week</button>
                         </div>
                     </div>
@@ -1722,6 +1726,23 @@
                         <div id="achievements-container" class="space-y-8">
                             <!-- Achievements will be loaded here -->
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Coming Soon Section -->
+            <div id="coming-soon-section" class="section hidden">
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">🚀 Coming Soon Features</h2>
+                            <p class="text-white/70">Exciting new features in development - get ready to level up your fitness journey!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Coming Soon Features Grid -->
+                    <div id="coming-soon-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Coming soon features will be loaded here -->
                     </div>
                 </div>
             </div>

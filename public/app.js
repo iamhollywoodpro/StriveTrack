@@ -570,7 +570,7 @@ function generateOverviewContent() {
 
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" onclick="showSection('habits')">
+            <div class="glass-card p-6 text-center cursor-pointer hover:bg-white/10 transition-all" onclick="showCreateHabitModal()">
                 <i class="fas fa-plus-circle text-3xl text-blue-400 mb-4"></i>
                 <h3 class="text-lg font-bold text-white mb-2">Add Habit</h3>
                 <p class="text-white/70 text-sm">Create a new fitness goal</p>
@@ -1106,11 +1106,26 @@ function generateExistingProgressContent() {
 }
 
 function generateDefaultHabitsContent() {
-    return `<div class="text-center py-12 text-white/50">
-        <i class="fas fa-target text-4xl mb-4"></i>
-        <h3 class="text-xl font-bold mb-2">Habits & Goals</h3>
-        <p>Track your fitness habits and achieve your goals</p>
-    </div>`;
+    return `
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Your Fitness Habits</h3>
+                    <p class="text-white/70">Track your daily habits and build consistency</p>
+                </div>
+                <button onclick="showCreateHabitModal()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New Habit
+                </button>
+            </div>
+        </div>
+        <div id="habits-container">
+            <div class="text-center py-12 text-white/50">
+                <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
+                <p>Loading your habits...</p>
+            </div>
+        </div>
+    `;
 }
 
 function generateDefaultNutritionContent() {
@@ -1401,7 +1416,7 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
             showNotification(data.completed ? 
                 `Day completed! +${data.points} pts` : 
                 'Day unmarked', 'success');
-            loadWeeklyHabits(); // Refresh the weekly view
+            loadHabits(); // Refresh the habits view
             loadDashboardWeeklyProgress(); // Refresh dashboard progress
             updateDashboardStats();
             
@@ -3901,7 +3916,7 @@ function showSection(section) {
     
     // Load section-specific data
     if (section === 'habits') {
-        loadWeeklyHabits();
+        loadHabits();
     } else if (section === 'progress') {
         loadMedia();
     } else if (section === 'nutrition') {
@@ -4793,29 +4808,7 @@ function setupAllEventListeners() {
     setupHabitEventListeners(); // Habit-specific event listeners
 }
 
-// Add habits to role-based dashboard content
-function generateDefaultHabitsContent() {
-    return `
-        <div class="mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="text-2xl font-bold text-white">Your Fitness Habits</h3>
-                    <p class="text-white/70">Track your daily habits and build consistency</p>
-                </div>
-                <button onclick="showCreateHabitModal()" class="btn-primary">
-                    <i class="fas fa-plus mr-2"></i>
-                    Add New Habit
-                </button>
-            </div>
-        </div>
-        <div id="habits-container">
-            <div class="text-center py-12 text-white/50">
-                <i class="fas fa-spinner fa-spin text-4xl mb-4"></i>
-                <p>Loading your habits...</p>
-            </div>
-        </div>
-    `;
-}
+// Duplicate function removed - using the updated one above
 
 // Initialize habits when dashboard loads
 function initializeHabits() {

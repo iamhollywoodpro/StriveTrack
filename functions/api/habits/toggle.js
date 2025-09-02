@@ -37,7 +37,7 @@ export async function onRequestPost(context) {
         
         // Check if completion already exists for this date
         const existingCompletion = await env.DB.prepare(
-            'SELECT id FROM habit_completions WHERE habit_id = ? AND user_id = ? AND completion_date = ?'
+            'SELECT id FROM habit_completions WHERE habit_id = ? AND user_id = ? AND DATE(completed_at) = ?'
         ).bind(habit_id, user.id, date).first();
         
         let completed = false;
@@ -53,13 +53,13 @@ export async function onRequestPost(context) {
             // Add completion
             const completionId = crypto.randomUUID();
             await env.DB.prepare(
-                'INSERT INTO habit_completions (id, habit_id, user_id, completion_date, created_at) VALUES (?, ?, ?, ?, ?)'
+                'INSERT INTO habit_completions (id, habit_id, user_id, completed_at, notes) VALUES (?, ?, ?, ?, ?)'
             ).bind(
                 completionId, 
                 habit_id, 
                 user.id, 
-                date, 
-                new Date().toISOString()
+                new Date().toISOString(),
+                null
             ).run();
             
             completed = true;

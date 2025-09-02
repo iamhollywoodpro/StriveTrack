@@ -4766,11 +4766,16 @@ function createHabitCard(habit) {
                         </div>
                     </div>
                 </div>
-                <div class="text-right">
-                    <div class="text-2xl font-bold text-white mb-1">
-                        ${completedDays}/${habit.weekly_target}
+                <div class="flex flex-col items-end space-y-2">
+                    <button onclick="deleteHabit('${habit.id}')" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-white mb-1">
+                            ${completedDays}/${habit.weekly_target}
+                        </div>
+                        <div class="text-white/60 text-xs">This week</div>
                     </div>
-                    <div class="text-white/60 text-xs">This week</div>
                 </div>
             </div>
             

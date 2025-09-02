@@ -139,3 +139,72 @@ Admin account updated with correct password hash
 [wrangler:inf] GET / 200 OK (72ms)
 [wrangler:inf] GET /app.js 200 OK (28ms)
 [wrangler:inf] GET /favicon.ico 200 OK (14ms)
+[wrangler:inf] GET / 304 Not Modified (102ms)
+[wrangler:inf] GET /app.js 200 OK (28ms)
+[wrangler:inf] GET /api/auth/validate-session 200 OK (10ms)
+[wrangler:inf] GET /api/user/dashboard-config 200 OK (11ms)
+[wrangler:inf] GET /api/habits 200 OK (41ms)
+[wrangler:inf] GET /api/media/enhanced 200 OK (103ms)
+[wrangler:inf] GET /api/habits 200 OK (151ms)
+[wrangler:inf] GET /api/achievements 200 OK (69ms)
+[wrangler:inf] GET /api/challenges/daily 200 OK (117ms)
+[wrangler:inf] GET /api/habits/weekly 200 OK (74ms)
+[wrangler:inf] GET /api/habits 200 OK (63ms)
+[wrangler:inf] GET / 200 OK (42ms)
+[wrangler:inf] GET /app.js 304 Not Modified (12ms)
+[wrangler:inf] GET /api/auth/validate-session 200 OK (15ms)
+[wrangler:inf] GET /api/user/dashboard-config 200 OK (24ms)
+[wrangler:inf] GET /api/habits/weekly 200 OK (36ms)
+[wrangler:inf] GET /api/habits 200 OK (93ms)
+[wrangler:inf] GET /api/habits 200 OK (83ms)
+[wrangler:inf] GET /api/challenges/daily 200 OK (166ms)
+[wrangler:inf] GET /api/media/enhanced 200 OK (161ms)
+[wrangler:inf] GET /api/achievements 200 OK (56ms)
+[wrangler:inf] GET /api/habits 200 OK (47ms)
+[wrangler:inf] POST /api/habits/toggle 500 Internal Server Error (113ms)
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mToggle habit error: Error: D1_ERROR: no such column: completion_date at offset 72: SQLITE_ERROR[0m
+
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+      at async D1PreparedStatement.first (cloudflare-internal:d1-api:287:35)
+      ... 7 lines matching cause stack trace ...
+      at async jsonError (file:///home/user/webapp/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+    [cause]: Error: no such column: completion_date at offset 72: SQLITE_ERROR
+        at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+        at async D1PreparedStatement.first (cloudflare-internal:d1-api:287:35)
+        at async onRequestPost (file:///home/user/webapp/functions/api/habits/toggle.js:39:36)
+        at async next (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+        at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+        at async next (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+        at async Object.fetch (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+        at async jsonError (file:///home/user/webapp/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+        at async drainBody (file:///home/user/webapp/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+        at async jsonError (file:///home/user/webapp/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+  }
+
+
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNutrition achievement check error: Error: D1_ERROR: table user_achievements has no column named points_earned: SQLITE_ERROR[0m
+
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+      at async D1PreparedStatement.run (cloudflare-internal:d1-api:307:29)
+      ... 7 lines matching cause stack trace ...
+      at async Object.fetch (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:180:11) {
+    [cause]: Error: table user_achievements has no column named points_earned: SQLITE_ERROR
+        at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+        at async D1PreparedStatement.run (cloudflare-internal:d1-api:307:29)
+        at async unlockAchievementIfNotEarned (file:///home/user/webapp/functions/utils/achievements.js:626:5)
+        at async checkNutritionAchievements (file:///home/user/webapp/functions/utils/achievements.js:543:34)
+        at async checkAndAwardAchievements (file:///home/user/webapp/functions/utils/achievements.js:20:39)
+        at async onRequestPost (file:///home/user/webapp/functions/api/habits/toggle.js:78:17)
+        at async next (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+        at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+        at async next (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+        at async Object.fetch (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+  }
+
+
+[wrangler:inf] POST /api/habits/toggle 200 OK (337ms)
+[wrangler:inf] DELETE /api/habits/a1838d75-a3e3-4dda-8675-bb16c976de2e 200 OK (117ms)

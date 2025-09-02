@@ -767,102 +767,292 @@ async function deleteHabit(habitId) {
 }
 
 // Media functions
+// Enhanced Media Upload with Modal
+function showMediaUploadModal() {
+    const modal = document.getElementById('media-upload-modal');
+    modal.classList.remove('hidden');
+    
+    // Reset form
+    document.getElementById('media-upload-form').reset();
+    
+    // Set default media type to progress
+    document.querySelector('input[name="media_type"][value="progress"]').checked = true;
+}
+
+async function submitMediaUpload(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const file = formData.get('file');
+    
+    if (!file) {
+        showNotification('Please select a file to upload', 'error');
+        return;
+    }
+    
+    // Show upload progress
+    const progressContainer = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const progressText = document.getElementById('upload-progress-text');
+    
+    progressContainer.classList.remove('hidden');
+    progressBar.style.width = '0%';
+    progressText.textContent = '0%';
+    
+    try {
+        // Use enhanced media API for all uploads
+        const isVideo = file.type.startsWith('video/');
+        const endpoint = '/api/media/enhanced';
+        
+        // The media_type is already in the form data from the modal
+        // No need to append video_type or image_type separately
+        
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBar.style.width = `${percentComplete}%`;
+                progressText.textContent = `${Math.round(percentComplete)}%`;
+            }
+        });
+        
+        xhr.onload = function() {
+            progressContainer.classList.add('hidden');
+            
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                const mediaTypeText = isVideo ? '🎥 Video' : '📸 Image';
+                const mediaType = data.media_type || 'progress';
+                const pointsText = data.total_points ? `+${data.total_points} pts` : `+${data.points || 10} pts`;
+                showNotification(`${mediaTypeText} (${mediaType.toUpperCase()}) uploaded successfully! (${pointsText})`, 'success');
+                
+                // Show pair bonus notification if applicable
+                if (data.pair_bonus && data.pair_bonus > 0) {
+                    setTimeout(() => {
+                        showNotification(`🎉 Before/After pair completed! Bonus +${data.pair_bonus} pts!`, 'success');
+                    }, 1500);
+                }
+                
+                // Close modal and reload media
+                closeModal('media-upload-modal');
+                loadMedia();
+                updateDashboardStats();
+                
+                // Check for achievements
+                const trigger = isVideo ? 'video_upload' : 'media_upload';
+                checkAndAwardAchievements(trigger);
+                
+            } else {
+                const error = JSON.parse(xhr.responseText);
+                showNotification(error.error || 'Upload failed', 'error');
+            }
+        };
+        
+        xhr.onerror = function() {
+            progressContainer.classList.add('hidden');
+            showNotification('Upload failed', 'error');
+        };
+        
+        xhr.open('POST', endpoint);
+        xhr.setRequestHeader('x-session-id', sessionId);
+        xhr.send(formData);
+        
+    } catch (error) {
+        console.error('Upload error:', error);
+        progressContainer.classList.add('hidden');
+        showNotification('Upload failed', 'error');
+    }
+}
+
+// Legacy upload handler for compatibility
 async function uploadMedia(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    const formData = new FormData();
-    formData.append('file', file);
+    // Trigger the new upload modal
+    showMediaUploadModal();
     
-    // Check if it's a video
-    const isVideo = file.type.startsWith('video/');
-    const endpoint = isVideo ? '/api/media/videos' : '/api/media';
-    
-    if (isVideo) {
-        // For videos, ask for video type
-        const videoType = prompt('What type of video is this?\n\n1. progress - General progress video\n2. before - Before transformation video\n3. after - After transformation video\n\nEnter: progress, before, or after', 'progress');
-        if (videoType && ['progress', 'before', 'after'].includes(videoType)) {
-            formData.append('video_type', videoType);
-        }
-    }
-    
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'x-session-id': sessionId },
-            body: formData
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const mediaType = isVideo ? '🎥 Video' : '📸 Image';
-            showNotification(`${mediaType} uploaded successfully! (+${data.points_earned || 10} pts)`, 'success');
-            loadMedia();
-            updateDashboardStats();
-            
-            // Check for achievements after media upload
-            const trigger = isVideo ? 'video_upload' : 'media_upload';
-            checkAndAwardAchievements(trigger);
-        } else {
-            const data = await response.json();
-            showNotification(data.error || 'Upload failed', 'error');
-        }
-    } catch (error) {
-        console.error('Upload error:', error);
-        showNotification('Upload failed', 'error');
-    }
+    // Pre-fill the file input in the modal
+    const modalFileInput = document.getElementById('media-file');
+    modalFileInput.files = event.target.files;
     
     event.target.value = '';
 }
 
 async function loadMedia() {
     try {
-        const response = await fetch('/api/media', {
+        const response = await fetch('/api/media/enhanced?stats=true&pairs=true', {
             headers: { 'x-session-id': sessionId }
         });
         
         if (response.ok) {
-            const media = await response.json();
-            displayMedia(media);
+            const data = await response.json();
+            displayEnhancedMedia(data);
+            updateMediaStats(data);
+        } else {
+            // Fallback to regular media API
+            const fallbackResponse = await fetch('/api/media', {
+                headers: { 'x-session-id': sessionId }
+            });
+            if (fallbackResponse.ok) {
+                const media = await fallbackResponse.json();
+                displayMedia(media);
+            }
         }
     } catch (error) {
         console.error('Load media error:', error);
     }
 }
 
-function displayMedia(media) {
+function displayEnhancedMedia(data) {
     const container = document.getElementById('media-container');
+    const emptyState = document.getElementById('media-empty-state');
+    
     container.innerHTML = '';
     
-    if (media.length === 0) {
-        container.innerHTML = '<p class="text-white/70 col-span-full text-center">No media uploaded yet. Start documenting your progress!</p>';
+    if (!data.media || data.media.length === 0) {
+        container.classList.add('hidden');
+        emptyState.classList.remove('hidden');
         return;
     }
     
-    media.forEach(item => {
+    container.classList.remove('hidden');
+    emptyState.classList.add('hidden');
+    
+    // Apply filters
+    const filter = document.getElementById('gallery-filter').value;
+    let filteredMedia = data.media;
+    
+    if (filter !== 'all') {
+        if (filter === 'comparisons') {
+            displayBeforeAfterPairs(data.comparisons || []);
+            return;
+        } else {
+            filteredMedia = data.media.filter(item => 
+                (item.media_type || item.video_type || item.image_type) === filter
+            );
+        }
+    }
+    
+    // Sort by date (newest first)
+    filteredMedia.sort((a, b) => new Date(b.upload_date) - new Date(a.upload_date));
+    
+    filteredMedia.forEach(item => {
         const div = document.createElement('div');
         div.className = 'media-item';
-        div.onclick = () => showMediaModal(item);
+        div.onclick = () => showEnhancedMediaModal(item);
+        
+        const mediaType = item.media_type || item.video_type || item.image_type || 'progress';
+        const isVideo = item.file_type && item.file_type.startsWith('video/');
+        const isPaired = item.paired_with_id;
         
         div.innerHTML = `
             <div class="media-preview" id="media-${item.id}">
-                <i class="fas fa-image text-2xl"></i>
+                <i class="fas fa-${isVideo ? 'video' : 'image'} text-2xl text-white/40"></i>
+                <div class="media-type-badge ${mediaType}">
+                    ${mediaType.toUpperCase()}
+                </div>
+                ${isPaired ? '<div class="pairing-indicator">📊 Paired</div>' : ''}
             </div>
-            <div class="p-3">
-                <p class="text-sm font-medium text-white">${item.filename}</p>
-                <p class="text-xs text-white/60">${new Date(item.upload_date).toLocaleDateString()}</p>
-                <p class="text-xs text-white/60">${(item.file_size / 1024 / 1024).toFixed(2)} MB</p>
+            <div class="media-info">
+                <div class="media-date">
+                    ${new Date(item.upload_date).toLocaleDateString()}
+                </div>
+                ${item.description ? `
+                    <div class="media-description">
+                        ${item.description.length > 60 ? item.description.substring(0, 60) + '...' : item.description}
+                    </div>
+                ` : `
+                    <div class="media-description">
+                        ${isVideo ? 'Progress Video' : 'Progress Photo'} • ${(item.file_size / 1024 / 1024).toFixed(1)}MB
+                    </div>
+                `}
             </div>
         `;
         
         container.appendChild(div);
         
-        // Load the actual image
-        loadMediaImage(item.id, `media-${item.id}`);
+        // Load the actual media
+        loadMediaPreview(item.id, `media-${item.id}`, isVideo);
     });
 }
 
-async function loadMediaImage(mediaId, containerId) {
+function displayBeforeAfterPairs(comparisons) {
+    const container = document.getElementById('media-container');
+    container.innerHTML = '';
+    
+    if (comparisons.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">📊</div>
+                <h3 class="text-xl font-bold text-white mb-2">No Comparisons Yet</h3>
+                <p class="text-white/70 mb-4">Upload before and after photos to see amazing comparisons!</p>
+                <button onclick="showMediaUploadModal()" class="btn-primary">
+                    Upload Before/After Photos
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    comparisons.forEach(comparison => {
+        const div = document.createElement('div');
+        div.className = 'media-item';
+        div.onclick = () => showComparisonModal(comparison);
+        
+        div.innerHTML = `
+            <div class="media-preview comparison-preview">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; height: 100%; gap: 2px;">
+                    <div id="before-${comparison.before.id}" style="background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-image text-blue-400"></i>
+                    </div>
+                    <div id="after-${comparison.after.id}" style="background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-image text-green-400"></i>
+                    </div>
+                </div>
+                <div class="pairing-indicator">📊 Comparison</div>
+            </div>
+            <div class="media-info">
+                <div class="media-date">
+                    ${new Date(comparison.before.upload_date).toLocaleDateString()} → ${new Date(comparison.after.upload_date).toLocaleDateString()}
+                </div>
+                <div class="media-description">
+                    Before & After • Week ${comparison.week_number || 'N/A'}
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(div);
+        
+        // Load preview images
+        loadMediaPreview(comparison.before.id, `before-${comparison.before.id}`, false);
+        loadMediaPreview(comparison.after.id, `after-${comparison.after.id}`, false);
+    });
+}
+
+function updateMediaStats(data) {
+    const stats = data.stats || {
+        total: 0,
+        before_count: 0,
+        after_count: 0,
+        comparison_count: 0
+    };
+    
+    document.getElementById('total-uploads').textContent = stats.total;
+    document.getElementById('before-count').textContent = stats.before_count;
+    document.getElementById('after-count').textContent = stats.after_count;
+    document.getElementById('comparison-count').textContent = stats.comparison_count;
+}
+
+// Legacy display function for compatibility
+function displayMedia(media) {
+    displayEnhancedMedia({ media, stats: { total: media.length, before_count: 0, after_count: 0, comparison_count: 0 } });
+}
+
+async function loadMediaPreview(mediaId, containerId, isVideo = false) {
     try {
         const response = await fetch(`/api/media/${mediaId}/view`, {
             headers: { 'x-session-id': sessionId }
@@ -870,19 +1060,34 @@ async function loadMediaImage(mediaId, containerId) {
         
         if (response.ok) {
             const blob = await response.blob();
-            const imageUrl = URL.createObjectURL(blob);
+            const mediaUrl = URL.createObjectURL(blob);
             
             const container = document.getElementById(containerId);
             if (container) {
-                container.innerHTML = `<img src="${imageUrl}" class="w-full h-full object-cover" alt="Progress photo">`;
+                if (isVideo) {
+                    container.innerHTML = `
+                        <video style="width: 100%; height: 100%; object-fit: cover;" muted>
+                            <source src="${mediaUrl}" type="${blob.type}">
+                        </video>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <img src="${mediaUrl}" alt="Progress media" style="width: 100%; height: 100%; object-fit: cover;">
+                    `;
+                }
             }
         }
     } catch (error) {
-        console.error('Media image load error:', error);
+        console.error('Load media preview error:', error);
     }
 }
 
-async function showMediaModal(media) {
+// Legacy function for compatibility
+async function loadMediaImage(mediaId, containerId) {
+    return loadMediaPreview(mediaId, containerId, false);
+}
+
+async function showEnhancedMediaModal(media) {
     const modal = document.getElementById('media-modal');
     const content = document.getElementById('media-modal-content');
     
@@ -894,29 +1099,50 @@ async function showMediaModal(media) {
         if (response.ok) {
             const blob = await response.blob();
             const mediaUrl = URL.createObjectURL(blob);
+            const isVideo = (media.file_type || media.mime_type || '').startsWith('video/');
+            const mediaType = media.media_type || media.video_type || media.image_type || 'progress';
             
-            if (media.mime_type.startsWith('image/')) {
-                content.innerHTML = `
-                    <img src="${mediaUrl}" class="max-w-full max-h-96 mx-auto rounded-lg" alt="${media.filename}">
-                    <div class="mt-4 text-center">
-                        <p class="text-white font-medium">${media.filename}</p>
-                        <p class="text-white/70 text-sm">Uploaded: ${new Date(media.upload_date).toLocaleString()}</p>
-                        <p class="text-white/70 text-sm">Size: ${(media.file_size / 1024 / 1024).toFixed(2)} MB</p>
+            content.innerHTML = `
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="media-type-badge ${mediaType}">
+                            ${mediaType.toUpperCase()}
+                        </div>
+                        <div class="text-white/60 text-sm">
+                            ${new Date(media.upload_date).toLocaleDateString()}
+                        </div>
                     </div>
-                `;
-            } else if (media.mime_type.startsWith('video/')) {
-                content.innerHTML = `
-                    <video controls class="max-w-full max-h-96 mx-auto rounded-lg">
-                        <source src="${mediaUrl}" type="${media.mime_type}">
-                        Your browser does not support the video tag.
-                    </video>
-                    <div class="mt-4 text-center">
-                        <p class="text-white font-medium">${media.filename}</p>
-                        <p class="text-white/70 text-sm">Uploaded: ${new Date(media.upload_date).toLocaleString()}</p>
-                        <p class="text-white/70 text-sm">Size: ${(media.file_size / 1024 / 1024).toFixed(2)} MB</p>
+                    ${media.description ? `
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-3 mb-4">
+                            <div class="text-white/90 text-sm">${media.description}</div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="media-display mb-4" style="max-height: 70vh; overflow: hidden; border-radius: 12px;">
+                    ${isVideo ? `
+                        <video controls style="width: 100%; max-height: 70vh; object-fit: contain;">
+                            <source src="${mediaUrl}" type="${blob.type}">
+                        </video>
+                    ` : `
+                        <img src="${mediaUrl}" alt="Progress media" style="width: 100%; max-height: 70vh; object-fit: contain;">
+                    `}
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-white/60">
+                    <div>${media.filename}</div>
+                    <div>${(media.file_size / 1024 / 1024).toFixed(2)} MB</div>
+                </div>
+                
+                ${media.paired_with_id ? `
+                    <div class="mt-4">
+                        <button onclick="showPairedComparison('${media.id}')" class="btn-primary w-full">
+                            <i class="fas fa-exchange-alt mr-2"></i>
+                            View Before/After Comparison
+                        </button>
                     </div>
-                `;
-            }
+                ` : ''}
+            `;
             
             modal.classList.remove('hidden');
         } else {
@@ -925,6 +1151,87 @@ async function showMediaModal(media) {
     } catch (error) {
         console.error('Media modal error:', error);
         showNotification('Failed to load media', 'error');
+    }
+}
+
+// Legacy function for compatibility
+async function showMediaModal(media) {
+    return showEnhancedMediaModal(media);
+}
+
+async function showComparisonModal(comparison) {
+    const modal = document.getElementById('comparison-modal');
+    const content = document.getElementById('comparison-content');
+    
+    try {
+        // Load both before and after media
+        const beforeResponse = await fetch(`/api/media/${comparison.before.id}/view`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        const afterResponse = await fetch(`/api/media/${comparison.after.id}/view`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (beforeResponse.ok && afterResponse.ok) {
+            const beforeBlob = await beforeResponse.blob();
+            const afterBlob = await afterResponse.blob();
+            const beforeUrl = URL.createObjectURL(beforeBlob);
+            const afterUrl = URL.createObjectURL(afterBlob);
+            
+            const beforeIsVideo = (comparison.before.file_type || '').startsWith('video/');
+            const afterIsVideo = (comparison.after.file_type || '').startsWith('video/');
+            
+            content.innerHTML = `
+                <div class="comparison-item">
+                    <div class="comparison-header">
+                        <h4 class="text-lg font-semibold text-white">📅 Before</h4>
+                        <div class="text-white/60 text-sm">${new Date(comparison.before.upload_date).toLocaleDateString()}</div>
+                    </div>
+                    <div class="comparison-media">
+                        ${beforeIsVideo ? `
+                            <video controls style="width: 100%; height: 100%; object-fit: cover;">
+                                <source src="${beforeUrl}" type="${beforeBlob.type}">
+                            </video>
+                        ` : `
+                            <img src="${beforeUrl}" alt="Before" style="width: 100%; height: 100%; object-fit: cover;">
+                        `}
+                    </div>
+                    ${comparison.before.description ? `
+                        <div class="p-4 text-white/80 text-sm border-t border-white/10">
+                            ${comparison.before.description}
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="comparison-item">
+                    <div class="comparison-header">
+                        <h4 class="text-lg font-semibold text-white">🎯 After</h4>
+                        <div class="text-white/60 text-sm">${new Date(comparison.after.upload_date).toLocaleDateString()}</div>
+                    </div>
+                    <div class="comparison-media">
+                        ${afterIsVideo ? `
+                            <video controls style="width: 100%; height: 100%; object-fit: cover;">
+                                <source src="${afterUrl}" type="${afterBlob.type}">
+                            </video>
+                        ` : `
+                            <img src="${afterUrl}" alt="After" style="width: 100%; height: 100%; object-fit: cover;">
+                        `}
+                    </div>
+                    ${comparison.after.description ? `
+                        <div class="p-4 text-white/80 text-sm border-t border-white/10">
+                            ${comparison.after.description}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        } else {
+            showNotification('Failed to load comparison', 'error');
+        }
+    } catch (error) {
+        console.error('Comparison modal error:', error);
+        showNotification('Failed to load comparison', 'error');
     }
 }
 

@@ -5073,7 +5073,7 @@ async function unlockAchievement(achievementId) {
 
 // Habit Management System
 let habits = [];
-let currentWeekOffset = 0;
+// currentWeekOffset moved to comprehensive habit system
 
 // Setup additional event listeners for habit functionality
 function setupHabitEventListeners() {

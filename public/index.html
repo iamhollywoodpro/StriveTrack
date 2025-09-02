@@ -1504,12 +1504,19 @@
                     </div>
                 </div>
                 
-                <!-- Weekly Progress Dashboard -->
-                <div class="glass-card p-6">
-                    <h2 class="text-2xl font-bold text-white mb-6">Weekly Progress Dashboard</h2>
-                    <div class="text-white/70 mb-4">Quick reference to your weekly goals and habits</div>
-                    <div id="dashboard-weekly-progress">
-                        <!-- Weekly progress bars will be loaded here -->
+                <!-- Your Active Habits Section -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white">Your Active Habits</h3>
+                        <button onclick="showSection('habits')" class="text-blue-400 hover:text-blue-300 text-sm">
+                            View All <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div id="dashboard-habits-container">
+                        <div class="text-center py-8 text-white/50">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Loading your habits...</p>
+                        </div>
                     </div>
                 </div>
             </div>

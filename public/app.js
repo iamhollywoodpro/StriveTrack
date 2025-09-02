@@ -1360,16 +1360,12 @@ function createDashboardProgressElement(habit) {
 
 async function loadDashboardData() {
     await Promise.all([
-        loadDashboardWeeklyProgress(),
-        loadHabits(),
-        loadDashboardHabits(), // Load habits for dashboard display
+        loadHabitsAndUpdateDashboard(), // Load habits and update both sections
         loadMedia(),
         loadAchievements(),
         loadDailyChallenges(),
         loadAdminData()
     ]);
-    
-    updateDashboardStats();
     
     // Initialize habits after dashboard data is loaded
     setTimeout(() => {
@@ -1580,9 +1576,7 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
             showNotification(data.completed ? 
                 `Day completed! +${data.points} pts` : 
                 'Day unmarked', 'success');
-            loadHabits(); // Refresh the habits view
-            loadDashboardWeeklyProgress(); // Refresh dashboard progress
-            updateDashboardStats();
+            await loadHabitsAndUpdateDashboard(); // Refresh both with same data
             
             // Check for achievements after habit completion
             if (data.completed) {
@@ -1622,8 +1616,7 @@ async function toggleHabitCompletion(habitId) {
             } else {
                 showNotification('Habit uncompleted', 'info');
             }
-            loadHabits();
-            updateDashboardStats();
+            await loadHabitsAndUpdateDashboard();
         } else {
             const data = await response.json();
             showNotification(data.error || 'Failed to update habit', 'error');
@@ -4600,8 +4593,85 @@ window.testHabitToggle = async function(habitId = '25f5c19c-d4d8-4fef-83f7-6cc22
 };
 
 function updateDashboardStats() {
-    // This will be called after loading habits to update the dashboard stats
-    // Implementation depends on the loaded data
+    // Get the current habits data to calculate statistics
+    loadDashboardStats();
+}
+
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('/api/habits', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            calculateAndDisplayDashboardStats(data.habits);
+        }
+    } catch (error) {
+        console.error('Load dashboard stats error:', error);
+    }
+}
+
+function calculateAndDisplayDashboardStats(habits) {
+    if (!habits) return;
+    
+    // Calculate stats using SAME logic as habits page - total completions across all habits
+    const weekStart = getWeekStart(currentWeekOffset || 0);
+    const weekDays = Array.from({length: 7}, (_, i) => {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        return date;
+    });
+    
+    let totalCompletionsThisWeek = 0; // Sum all completions across all habits
+    let totalTargetThisWeek = 0; // Sum all weekly targets
+    let totalHabits = habits.length;
+    let totalWeeklyProgress = 0;
+    
+    // For each habit, sum up all completions and targets
+    habits.forEach(habit => {
+        const completions = habit.completions || [];
+        const weekCompletions = weekDays.map(date => {
+            const dateStr = date.toISOString().split('T')[0];
+            return completions.includes(dateStr);
+        });
+        
+        const weeklyCompleted = weekCompletions.filter(Boolean).length;
+        const weeklyTarget = habit.weekly_target || 7;
+        
+        // Add to total sums
+        totalCompletionsThisWeek += weeklyCompleted;
+        totalTargetThisWeek += weeklyTarget;
+        
+        // Calculate individual habit progress for averaging
+        const habitProgress = weeklyTarget > 0 ? (weeklyCompleted / weeklyTarget) * 100 : 0;
+        totalWeeklyProgress += habitProgress;
+    });
+    
+    // Calculate average performance
+    const averagePerformance = totalHabits > 0 ? Math.round(totalWeeklyProgress / totalHabits) : 0;
+    
+    // Update dashboard stat cards with calculated values
+    console.log('📊 Updating dashboard stats to match habits page (total completions):', {
+        activeHabits: totalHabits,
+        totalCompletions: totalCompletionsThisWeek,
+        totalTargets: totalTargetThisWeek,
+        averagePerformance: averagePerformance,
+        weekStart: weekStart.toISOString().split('T')[0]
+    });
+    
+    // Update dashboard stats elements
+    const activeHabitsEl = document.getElementById('active-habits');
+    const todayProgressEl = document.getElementById('today-progress'); 
+    const averagePerformanceEl = document.getElementById('average-performance');
+    const userPointsDisplayEl = document.getElementById('user-points-display');
+    
+    if (activeHabitsEl) activeHabitsEl.textContent = totalHabits;
+    if (todayProgressEl) todayProgressEl.textContent = `${totalCompletionsThisWeek}/${totalTargetThisWeek}`;
+    if (averagePerformanceEl) averagePerformanceEl.textContent = `${averagePerformance}%`;
+    if (userPointsDisplayEl) userPointsDisplayEl.textContent = currentUser?.points || 0;
+    
+    console.log('✅ Dashboard stats updated to show total weekly completions across all habits');
 }
 
 // Global Confirmation Modal functions
@@ -5106,10 +5176,8 @@ async function deleteHabit(habitId) {
 
         if (response.ok) {
             showNotification('Habit deleted successfully!', 'success');
-            // Refresh both dashboard and habits sections
-            await loadHabits();
-            await loadDashboardHabits();
-            updateDashboardStats();
+            // Refresh both dashboard and habits sections with same data
+            await loadHabitsAndUpdateDashboard();
         } else {
             const error = await response.json();
             showNotification(error.error || 'Failed to delete habit', 'error');
@@ -5130,6 +5198,8 @@ async function loadDashboardHabits() {
         if (response.ok) {
             const data = await response.json();
             displayDashboardHabits(data.habits);
+            // Also update dashboard stats with the loaded habits
+            updateHabitsStats(data.habits);
         } else {
             console.error('Failed to load dashboard habits');
         }
@@ -5140,10 +5210,18 @@ async function loadDashboardHabits() {
 
 // Display habits in dashboard
 function displayDashboardHabits(habits) {
+    console.log('🏠 displayDashboardHabits called with:', habits?.length, 'habits');
+    
     const container = document.getElementById('dashboard-habits-container');
-    if (!container) return;
+    console.log('🏠 Dashboard container found:', !!container);
+    
+    if (!container) {
+        console.error('❌ dashboard-habits-container element not found!');
+        return;
+    }
     
     if (!habits || habits.length === 0) {
+        console.log('🏠 No habits to display, showing empty state');
         container.innerHTML = `
             <div class="text-center py-8 text-white/50">
                 <i class="fas fa-target text-3xl mb-4"></i>
@@ -5160,9 +5238,14 @@ function displayDashboardHabits(habits) {
     
     // Show up to 3 most recent habits in dashboard
     const recentHabits = habits.slice(0, 3);
+    console.log('🏠 Showing', recentHabits.length, 'habits in dashboard');
+    
+    const habitCards = recentHabits.map(habit => createDashboardHabitCard(habit)).join('');
+    console.log('🏠 Generated habit cards HTML length:', habitCards.length);
+    
     container.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            ${recentHabits.map(habit => createDashboardHabitCard(habit)).join('')}
+            ${habitCards}
         </div>
         ${habits.length > 3 ? `
             <div class="text-center mt-4">
@@ -5172,6 +5255,8 @@ function displayDashboardHabits(habits) {
             </div>
         ` : ''}
     `;
+    
+    console.log('✅ Dashboard habits updated successfully');
 }
 
 // Create compact habit card for dashboard
@@ -5369,6 +5454,53 @@ async function loadHabits() {
         }
     } catch (error) {
         console.error('Load habits error:', error);
+    }
+}
+
+// Unified function to load habits and update both habits page and dashboard
+async function loadHabitsAndUpdateDashboard() {
+    console.log('🚀 loadHabitsAndUpdateDashboard called');
+    try {
+        const response = await fetch('/api/habits', {
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+
+        console.log('📡 Habits API response status:', response.status);
+
+        if (response.ok) {
+            const data = await response.json();
+            const habitsData = data.habits || [];
+            
+            console.log('🔄 Loading habits and updating dashboard with same data:', habitsData.length, 'habits');
+            console.log('📊 Habit data sample:', habitsData.length > 0 ? habitsData[0] : 'No habits');
+            
+            // Store globally for other functions  
+            habits = habitsData;
+            
+            // Update habits page (only if habits container exists)
+            const habitsContainer = document.getElementById('habits-container');
+            if (habitsContainer) {
+                console.log('📄 Updating habits page');
+                displayHabits(habitsData);
+            } else {
+                console.log('📄 Habits container not found, skipping habits page update');
+            }
+            
+            // Update dashboard with SAME data
+            console.log('🏠 Updating dashboard habits');
+            displayDashboardHabits(habitsData);
+            
+            console.log('📊 Updating dashboard stats');
+            updateHabitsStats(habitsData);
+            
+            console.log('✅ Both habits page and dashboard updated with identical data');
+        } else {
+            console.error('❌ Failed to load habits, status:', response.status);
+        }
+    } catch (error) {
+        console.error('💥 Load habits and dashboard error:', error);
     }
 }
 
@@ -5612,7 +5744,19 @@ async function simpleToggleHabit(habitId, date) {
             const result = await response.json();
             console.log('✅ Toggle success:', result);
             
-            // Show notification with points information - only show points if they were actually awarded
+            // Update user points in the UI immediately
+            if (result.points !== 0 && currentUser) {
+                currentUser.points = (currentUser.points || 0) + result.points;
+                document.getElementById('user-points').textContent = `⭐ ${currentUser.points} pts`;
+                
+                // Also update dashboard points display
+                const userPointsDisplay = document.getElementById('user-points-display');
+                if (userPointsDisplay) {
+                    userPointsDisplay.textContent = currentUser.points;
+                }
+            }
+            
+            // Show notification with points information
             if (result.completed) {
                 if (result.points > 0) {
                     showNotification(`✅ Habit completed! +${result.points} points`, 'success');
@@ -5632,6 +5776,9 @@ async function simpleToggleHabit(habitId, date) {
             
             // Update weekly counter for this specific habit
             updateWeeklyProgressForHabit(habitId);
+            
+            // Update dashboard stats immediately (without full reload)
+            await loadHabitsAndUpdateDashboard();
             
         } else {
             const errorText = await response.text();
@@ -5930,10 +6077,8 @@ async function toggleHabitDay(habitId, date) {
                 showNotification('Habit unmarked for this date', 'info');
             }
             
-            // Reload habits and dashboard
-            await loadHabits();
-            await loadDashboardHabits();
-            updateDashboardStats();
+            // Reload habits and dashboard with same data
+            await loadHabitsAndUpdateDashboard();
             
             // Check for achievements
             checkAchievements();
@@ -5989,30 +6134,49 @@ function getWeekStart(offset = 0) {
     return monday;
 }
 
-// Update habits statistics in dashboard
+// Update habits statistics in dashboard using weekly calculation
 function updateHabitsStats(habits) {
     const activeHabitsEl = document.getElementById('active-habits');
     if (activeHabitsEl) {
         activeHabitsEl.textContent = habits.length;
     }
 
-    // Calculate today's progress
-    const today = new Date().toISOString().split('T')[0];
-    let todayCompleted = 0;
-    let todayTotal = 0;
+    // Calculate weekly progress to match habits page display - sum all completions
+    const weekStart = getWeekStart(currentWeekOffset || 0);
+    const weekDays = Array.from({length: 7}, (_, i) => {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        return date;
+    });
+    
+    let totalCompletionsThisWeek = 0;
+    let totalTargetThisWeek = 0;
 
     habits.forEach(habit => {
         const completions = habit.completions || [];
-        todayTotal++;
-        if (completions.includes(today)) {
-            todayCompleted++;
-        }
+        const weekCompletions = weekDays.map(date => {
+            const dateStr = date.toISOString().split('T')[0];
+            return completions.includes(dateStr);
+        });
+        
+        const weeklyCompleted = weekCompletions.filter(Boolean).length;
+        const weeklyTarget = habit.weekly_target || 7;
+        
+        // Sum all completions and targets across all habits
+        totalCompletionsThisWeek += weeklyCompleted;
+        totalTargetThisWeek += weeklyTarget;
     });
 
     const todayProgressEl = document.getElementById('today-progress');
     if (todayProgressEl) {
-        todayProgressEl.textContent = `${todayCompleted}/${todayTotal}`;
+        todayProgressEl.textContent = `${totalCompletionsThisWeek}/${totalTargetThisWeek}`;
     }
+    
+    console.log('📊 Updated habits stats (total completions across all habits):', {
+        totalCompletions: totalCompletionsThisWeek,
+        totalTargets: totalTargetThisWeek,
+        weekStart: weekStart.toISOString().split('T')[0]
+    });
 
     // Calculate average performance (last 7 days)
     const avgPerformanceEl = document.getElementById('average-performance');

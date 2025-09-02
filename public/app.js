@@ -5154,12 +5154,31 @@ function displayDashboardHabits(habits) {
 // Create compact habit card for dashboard
 function createDashboardHabitCard(habit) {
     const emoji = getHabitEmoji(habit.name, habit.category);
-    const completionsThisWeek = habit.completions ? habit.completions.filter(date => {
-        const completionDate = new Date(date);
-        const now = new Date();
-        const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-        return completionDate >= weekStart;
-    }).length : 0;
+    
+    // Use SAME week calculation as habits page for consistency
+    const weekStart = getWeekStart(currentWeekOffset || 0);
+    const weekDays = Array.from({length: 7}, (_, i) => {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        return date;
+    });
+    
+    const completions = habit.completions || [];
+    const weekCompletions = weekDays.map(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        return completions.includes(dateStr);
+    });
+    
+    const completionsThisWeek = weekCompletions.filter(Boolean).length;
+    
+    console.log('🏠 Dashboard habit card:', {
+        habitName: habit.name,
+        completionsFromServer: completions,
+        weekDaysGenerated: weekDays.map(d => d.toISOString().split('T')[0]),
+        weekCompletionsCalculated: weekCompletions,
+        completedCount: completionsThisWeek,
+        target: habit.weekly_target || 7
+    });
     
     const progress = Math.round((completionsThisWeek / (habit.weekly_target || 7)) * 100);
     

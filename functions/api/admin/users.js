@@ -19,18 +19,21 @@ export async function onRequestGet(context) {
             });
         }
 
-        // Get all users with additional stats (excluding admin from public view)
+        // Get all users with additional stats including last activity (excluding admin from public view)
         const users = await env.DB.prepare(`
             SELECT 
                 u.id, u.email, u.role, u.points, u.created_at,
                 COUNT(DISTINCT h.id) as total_habits,
                 COUNT(DISTINCT hc.id) as total_completions,
                 COUNT(DISTINCT m.id) as total_media,
-                COUNT(DISTINCT CASE WHEN m.is_flagged = 1 THEN m.id END) as flagged_media
+                COUNT(DISTINCT CASE WHEN m.is_flagged = 1 THEN m.id END) as flagged_media,
+                MAX(s.created_at) as last_session,
+                COUNT(DISTINCT CASE WHEN s.expires_at > datetime('now') THEN s.id END) as active_sessions
             FROM users u
             LEFT JOIN habits h ON u.id = h.user_id
             LEFT JOIN habit_completions hc ON u.id = hc.user_id
             LEFT JOIN media_uploads m ON u.id = m.user_id
+            LEFT JOIN sessions s ON u.id = s.user_id
             WHERE u.email != 'iamhollywoodpro@protonmail.com'
             GROUP BY u.id, u.email, u.role, u.points, u.created_at
             ORDER BY u.created_at DESC

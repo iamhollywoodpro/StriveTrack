@@ -2349,47 +2349,87 @@ async function loadAdminUsers() {
 }
 
 function displayAdminUsers(users) {
-    const tbody = document.getElementById('admin-users-table');
-    tbody.innerHTML = '';
+    const container = document.getElementById('admin-users-table').parentElement.parentElement;
+    
+    // Replace table with card layout
+    container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="admin-users-grid">
+            <!-- User cards will be loaded here -->
+        </div>
+    `;
+    
+    const grid = document.getElementById('admin-users-grid');
     
     // Filter out admin account from display (extra security layer)
     const filteredUsers = users.filter(user => user.email !== 'iamhollywoodpro@protonmail.com');
     
     filteredUsers.forEach(user => {
-        const row = document.createElement('tr');
-        row.className = 'border-b border-white/5 hover:bg-white/5';
-        
         const joinedDate = new Date(user.created_at).toLocaleDateString();
+        const lastSeen = user.last_session ? new Date(user.last_session).toLocaleDateString() : 'Never';
+        const isOnline = user.active_sessions > 0;
         const hasActivity = (user.total_habits > 0 || user.total_media > 0);
         
-        row.innerHTML = `
-            <td class="py-3 px-4">
-                <div class="text-white font-medium">${user.email.split('@')[0]}</div>
-                <div class="text-white/50 text-xs">Joined ${joinedDate}</div>
-                ${user.flagged_media > 0 ? `<div class="text-red-400 text-xs">⚠️ ${user.flagged_media} flagged</div>` : ''}
-            </td>
-            <td class="py-3 px-4 text-white/70">${user.email}</td>
-            <td class="py-3 px-4">
-                <span class="px-2 py-1 rounded text-xs bg-blue-600 text-white">
-                    user
-                </span>
-            </td>
-            <td class="py-3 px-4">
-                <div class="text-white font-medium">${user.points || 0} pts</div>
-                <div class="text-white/50 text-xs">
-                    ${user.total_habits}H • ${user.total_media}M • ${user.total_completions}C
+        const card = document.createElement('div');
+        card.className = 'bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-colors';
+        
+        card.innerHTML = `
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-400'}" title="${isOnline ? 'Online' : 'Offline'}"></div>
+                    <div>
+                        <div class="text-white font-medium">${user.email.split('@')[0]}</div>
+                        <div class="text-white/50 text-xs">${user.email}</div>
+                    </div>
                 </div>
-            </td>
-            <td class="py-3 px-4">
-                <div class="flex space-x-2">
-                    <button onclick="viewAdminUserDetails('${user.id}')" class="btn-secondary text-xs">View</button>
-                    <button onclick="deleteAdminUser('${user.id}')" class="btn-danger text-xs">Delete</button>
+                ${user.flagged_media > 0 ? `<div class="text-red-400 text-xs font-medium">⚠️ ${user.flagged_media}</div>` : ''}
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-3 text-xs">
+                <div class="bg-white/5 rounded p-2 text-center">
+                    <div class="text-white font-medium">${user.points || 0}</div>
+                    <div class="text-white/50">Points</div>
                 </div>
-            </td>
+                <div class="bg-white/5 rounded p-2 text-center">
+                    <div class="text-white font-medium">${user.total_habits}</div>
+                    <div class="text-white/50">Habits</div>
+                </div>
+                <div class="bg-white/5 rounded p-2 text-center">
+                    <div class="text-white font-medium">${user.total_media}</div>
+                    <div class="text-white/50">Media</div>
+                </div>
+                <div class="bg-white/5 rounded p-2 text-center">
+                    <div class="text-white font-medium">${user.total_completions}</div>
+                    <div class="text-white/50">Done</div>
+                </div>
+            </div>
+            
+            <div class="text-xs text-white/50 mb-3">
+                <div>Joined: ${joinedDate}</div>
+                <div>Last seen: ${lastSeen}</div>
+                ${isOnline ? '<div class="text-green-400">🟢 Currently online</div>' : ''}
+            </div>
+            
+            <div class="flex space-x-2">
+                <button onclick="viewUserMedia('${user.id}', '${user.email}')" class="btn-secondary text-xs flex-1">
+                    <i class="fas fa-images mr-1"></i>Media (${user.total_media})
+                </button>
+                <button onclick="deleteAdminUser('${user.id}')" class="btn-danger text-xs">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         `;
         
-        tbody.appendChild(row);
+        grid.appendChild(card);
     });
+    
+    if (filteredUsers.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-12 text-white/50">
+                <i class="fas fa-users text-4xl mb-4"></i>
+                <p>No users found</p>
+            </div>
+        `;
+    }
 }
 
 // loadAdminMedia function moved below with filtering support
@@ -2599,6 +2639,183 @@ async function filterAdminMedia() {
     await loadAdminMedia(filterType);
 }
 
+// Load media organized by user
+async function loadAdminMediaByUser() {
+    try {
+        const response = await fetch('/api/admin/media-by-user', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayAdminMediaByUser(data.user_media || [], data.stats || {});
+        }
+    } catch (error) {
+        console.error('Load admin media by user error:', error);
+    }
+}
+
+// Display media organized by user with expandable sections
+function displayAdminMediaByUser(userMediaData, stats) {
+    const container = document.getElementById('admin-media-table').parentElement.parentElement;
+    
+    container.innerHTML = `
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-white">${stats.users_with_media || 0}</div>
+                <div class="text-white/60 text-sm">Users with Media</div>
+            </div>
+            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-blue-400">${stats.total_media_files || 0}</div>
+                <div class="text-white/60 text-sm">Total Files</div>
+            </div>
+            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-red-400">${stats.total_flagged || 0}</div>
+                <div class="text-white/60 text-sm">Flagged</div>
+            </div>
+            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-green-400">${((stats.total_storage_bytes || 0) / 1024 / 1024 / 1024).toFixed(2)} GB</div>
+                <div class="text-white/60 text-sm">Storage Used</div>
+            </div>
+        </div>
+        
+        <!-- User Media Sections -->
+        <div class="space-y-4" id="user-media-sections">
+            <!-- User sections will be loaded here -->
+        </div>
+    `;
+    
+    const sectionsContainer = document.getElementById('user-media-sections');
+    
+    userMediaData.forEach((userData, index) => {
+        const user = userData.user;
+        const media = userData.media;
+        const lastUpload = user.last_upload ? new Date(user.last_upload).toLocaleDateString() : 'Never';
+        
+        const section = document.createElement('div');
+        section.className = 'bg-white/5 border border-white/10 rounded-lg overflow-hidden';
+        section.innerHTML = `
+            <!-- User Header -->
+            <div class="p-4 cursor-pointer hover:bg-white/5 transition-colors" onclick="toggleUserMediaSection('user-${user.id}')">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <h3 class="text-white font-medium">${user.email.split('@')[0]}</h3>
+                            <p class="text-white/60 text-sm">${user.email}</p>
+                        </div>
+                        <div class="flex space-x-4 text-sm">
+                            <span class="text-blue-400">${user.total_images} images</span>
+                            <span class="text-purple-400">${user.total_videos} videos</span>
+                            ${user.flagged_media > 0 ? `<span class="text-red-400">⚠️ ${user.flagged_media} flagged</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right text-xs text-white/50">
+                            <div>${user.total_media} total files</div>
+                            <div>Last: ${lastUpload}</div>
+                        </div>
+                        <i class="fas fa-chevron-down text-white/40 transition-transform" id="chevron-user-${user.id}"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Media Grid (Initially Hidden) -->
+            <div class="hidden border-t border-white/10" id="user-${user.id}">
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-white/70 text-sm">${media.length} files shown (most recent first)</span>
+                        <div class="flex space-x-2">
+                            <button onclick="downloadAllUserMedia('${user.id}', '${user.email}')" class="btn-secondary text-xs">
+                                <i class="fas fa-download mr-1"></i>Download All
+                            </button>
+                            <button onclick="flagAllUserMedia('${user.id}')" class="btn-secondary text-xs">
+                                <i class="fas fa-flag mr-1"></i>Flag All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3" id="media-grid-${user.id}">
+                        <!-- Media items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        sectionsContainer.appendChild(section);
+        
+        // Load media grid for this user
+        const mediaGrid = document.getElementById(`media-grid-${user.id}`);
+        media.forEach(item => {
+            const mediaItem = document.createElement('div');
+            mediaItem.className = 'relative group bg-white/5 rounded-lg overflow-hidden aspect-square cursor-pointer hover:bg-white/10 transition-colors';
+            
+            mediaItem.innerHTML = `
+                <div class="w-full h-full flex items-center justify-center" id="media-preview-${item.id}">
+                    <i class="fas fa-${item.media_type === 'video' ? 'video' : 'image'} text-2xl text-white/40"></i>
+                </div>
+                
+                <!-- Media Type Badge -->
+                <div class="absolute top-2 left-2 px-2 py-1 bg-black/60 rounded text-xs text-white">
+                    ${item.media_type.toUpperCase()}
+                </div>
+                
+                <!-- Flag Badge -->
+                ${item.is_flagged ? '<div class="absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"><i class="fas fa-flag text-xs text-white"></i></div>' : ''}
+                
+                <!-- Hover Actions -->
+                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                    <button onclick="viewAdminMediaModal('${item.id}')" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="View">
+                        <i class="fas fa-eye text-sm text-white"></i>
+                    </button>
+                    <button onclick="toggleAdminMediaFlag('${item.id}', this)" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="Flag">
+                        <i class="fas fa-flag text-sm text-white"></i>
+                    </button>
+                    <button onclick="downloadAdminMedia('${item.id}', '${item.original_name}')" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="Download">
+                        <i class="fas fa-download text-sm text-white"></i>
+                    </button>
+                    <button onclick="deleteAdminMedia('${item.id}')" class="w-8 h-8 bg-red-500/80 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors" title="Delete">
+                        <i class="fas fa-trash text-sm text-white"></i>
+                    </button>
+                </div>
+                
+                <!-- File Info -->
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                    <div class="text-white text-xs truncate">${item.original_name}</div>
+                    <div class="text-white/60 text-xs">${(item.file_size / 1024 / 1024).toFixed(1)}MB</div>
+                </div>
+            `;
+            
+            mediaGrid.appendChild(mediaItem);
+            
+            // Load actual media preview
+            loadAdminMediaPreview(item.id, `media-preview-${item.id}`, item.media_type === 'video');
+        });
+    });
+    
+    if (userMediaData.length === 0) {
+        sectionsContainer.innerHTML = `
+            <div class="text-center py-12 text-white/50">
+                <i class="fas fa-images text-4xl mb-4"></i>
+                <p>No media uploads found</p>
+            </div>
+        `;
+    }
+}
+
+// Toggle user media section expansion
+function toggleUserMediaSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    const chevron = document.getElementById(`chevron-${sectionId}`);
+    
+    if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+    } else {
+        section.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
 // Update loadAdminMedia to support filtering  
 async function loadAdminMedia(filter = 'all') {
     try {
@@ -2638,6 +2855,28 @@ function filterAdminMediaBySearch() {
     );
     
     displayAdminMedia(filteredMedia);
+}
+
+// View specific user's media
+function viewUserMedia(userId, userEmail) {
+    // Switch to media management tab and filter by user
+    showAdminSection('media');
+    // Add user filter functionality here if needed
+}
+
+// Download all media for a specific user
+async function downloadAllUserMedia(userId, userEmail) {
+    showNotification(`Downloading all media for ${userEmail} - feature coming soon`, 'info');
+}
+
+// Flag all media for a specific user
+async function flagAllUserMedia(userId) {
+    showConfirmationModal(
+        'Are you sure you want to flag ALL media files for this user? This will mark all their content for review.',
+        async function() {
+            showNotification('Bulk flag operation - feature coming soon', 'info');
+        }
+    );
 }
 
 async function deleteAdminUser(userId) {
@@ -2764,18 +3003,30 @@ function showSection(section) {
         loadLeaderboards();
     } else if (section === 'admin') {
         loadAdminData();
+        // Default to user management tab
+        showAdminSection('users');
     }
 }
 
 function showAdminSection(section) {
+    // Hide all sections
     document.getElementById('admin-users-section').classList.add('hidden');
     document.getElementById('admin-media-section').classList.add('hidden');
     
+    // Remove active state from all tabs
     document.getElementById('admin-users-tab').classList.remove('active');
     document.getElementById('admin-media-tab').classList.remove('active');
     
+    // Show selected section and make tab active
     document.getElementById(`admin-${section}-section`).classList.remove('hidden');
     document.getElementById(`admin-${section}-tab`).classList.add('active');
+    
+    // Load data immediately when switching sections
+    if (section === 'users') {
+        loadAdminUsers();
+    } else if (section === 'media') {
+        loadAdminMediaByUser();
+    }
 }
 
 function showModal(modalId) {

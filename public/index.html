@@ -377,8 +377,9 @@
             position: absolute;
             top: 8px;
             right: 8px;
-            opacity: 0;
+            opacity: 1; /* Make always visible for testing */
             transition: opacity 0.3s ease;
+            z-index: 10;
         }
         
         .media-item:hover .media-actions {
@@ -386,15 +387,16 @@
         }
         
         .delete-btn {
-            background: rgba(239, 68, 68, 0.9);
+            background: rgba(239, 68, 68, 1); /* More opaque for testing */
             color: white;
-            border: none;
-            padding: 6px 8px;
+            border: 2px solid white; /* Add border for visibility */
+            padding: 8px 10px; /* Bigger for testing */
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             transition: all 0.2s ease;
             backdrop-filter: blur(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3); /* Add shadow for visibility */
         }
         
         .delete-btn:hover {

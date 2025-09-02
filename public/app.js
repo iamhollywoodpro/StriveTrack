@@ -67,7 +67,7 @@ function setupEventListeners() {
         updateEmojiPreview(); // Initialize emoji preview
     });
     
-    document.getElementById('create-habit-form').addEventListener('submit', createHabit);
+    // Habit form handler will be set up by setupHabitEventListeners()
     
     // Emoji preview auto-update
     document.getElementById('habit-name').addEventListener('input', updateEmojiPreview);

@@ -38,9 +38,13 @@ export async function onRequestPost(context) {
         // Check if completion already exists for this date
         console.log('🔍 Checking existing completion for:', { habit_id, user_id: user.id, date });
         
+        // Use more robust date range check instead of DATE() function
+        const dateStart = `${date} 00:00:00`;
+        const dateEnd = `${date} 23:59:59`;
+        
         const existingCompletion = await env.DB.prepare(
-            'SELECT id FROM habit_completions WHERE habit_id = ? AND user_id = ? AND DATE(completed_at) = ?'
-        ).bind(habit_id, user.id, date).first();
+            'SELECT id FROM habit_completions WHERE habit_id = ? AND user_id = ? AND completed_at >= ? AND completed_at <= ?'
+        ).bind(habit_id, user.id, dateStart, dateEnd).first();
         
         console.log('🔍 Existing completion result:', existingCompletion);
         
@@ -60,16 +64,19 @@ export async function onRequestPost(context) {
                 'UPDATE users SET points = points + ? WHERE id = ?'
             ).bind(points, user.id).run();
         } else {
-            // Add completion
+            // Add completion - use target date with current time for consistency
             const completionId = crypto.randomUUID();
-            const timestamp = new Date().toISOString();
+            const now = new Date();
+            const targetDate = new Date(date + 'T' + now.toTimeString().split(' ')[0]); // YYYY-MM-DD + current time
+            const timestamp = targetDate.toISOString();
             
             console.log('💾 Inserting new completion:', { 
                 completionId, 
                 habit_id, 
                 user_id: user.id, 
                 completed_at: timestamp,
-                target_date: date 
+                target_date: date,
+                parsed_target_date: targetDate
             });
             
             await env.DB.prepare(

@@ -136,7 +136,7 @@ export async function getUserHabits(userId, env) {
         console.log('📅 Loading completions for habit:', habit.id, habit.name);
         
         const completionsResult = await env.DB.prepare(`
-            SELECT DATE(completed_at) as completion_date, completed_at
+            SELECT SUBSTR(completed_at, 1, 10) as completion_date, completed_at
             FROM habit_completions
             WHERE habit_id = ? AND user_id = ?
             ORDER BY completed_at DESC

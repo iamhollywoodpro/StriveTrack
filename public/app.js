@@ -4871,13 +4871,18 @@ function setupHabitEventListeners() {
         const habitCell = event.target.closest('.habit-day-cell');
         if (habitCell) {
             console.log('🎯 Habit cell clicked');
+            console.log('📍 Cell element:', habitCell);
+            console.log('📍 Cell classes:', habitCell.className);
             event.preventDefault();
             event.stopPropagation();
             
             const habitId = habitCell.getAttribute('data-habit-id') || habitCell.dataset.habitId;
             const date = habitCell.getAttribute('data-date') || habitCell.dataset.date;
             
+            console.log('📊 Habit data:', { habitId, date });
+            
             if (habitId && date) {
+                console.log('🚀 Calling simpleToggleHabit...');
                 simpleToggleHabit(habitId, date);
             } else {
                 console.error('❌ Missing habit data:', { habitId, date });
@@ -5373,11 +5378,19 @@ async function simpleToggleHabit(habitId, date) {
             const result = await response.json();
             console.log('✅ Toggle success:', result);
             
-            // Show notification with points information
+            // Show notification with points information - only show points if they were actually awarded
             if (result.completed) {
-                showNotification(`✅ Habit completed! +${result.points} points`, 'success');
+                if (result.points > 0) {
+                    showNotification(`✅ Habit completed! +${result.points} points`, 'success');
+                } else {
+                    showNotification('✅ Habit completed!', 'success');
+                }
             } else {
-                showNotification(`⭕ Habit unchecked! ${result.points} points`, 'info');
+                if (result.points < 0) {
+                    showNotification(`⭕ Habit unchecked! ${result.points} points`, 'info');
+                } else {
+                    showNotification('⭕ Habit unchecked!', 'info');
+                }
             }
             
             // Update the specific day cell immediately

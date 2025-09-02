@@ -71,6 +71,17 @@ function setupEventListeners() {
         showAdminSection('media');
     });
     
+    // Admin search and filter functionality (bind when elements exist)
+    const adminUserSearch = document.getElementById('admin-user-search');
+    const adminUserFilter = document.getElementById('admin-user-filter');
+    const adminMediaSearch = document.getElementById('admin-media-search');
+    const adminMediaFilter = document.getElementById('admin-media-filter');
+    
+    if (adminUserSearch) adminUserSearch.addEventListener('input', debounce(filterAdminUsers, 300));
+    if (adminUserFilter) adminUserFilter.addEventListener('change', filterAdminUsers);
+    if (adminMediaSearch) adminMediaSearch.addEventListener('input', debounce(filterAdminMediaBySearch, 300));
+    if (adminMediaFilter) adminMediaFilter.addEventListener('change', () => loadAdminMedia(adminMediaFilter.value));
+    
     // Install app
     document.getElementById('install-app').addEventListener('click', installPWA);
     
@@ -2324,7 +2335,8 @@ async function loadAdminUsers() {
         
         if (response.ok) {
             const data = await response.json();
-            displayAdminUsers(data.users || []);
+            allAdminUsers = data.users || [];
+            displayAdminUsers(allAdminUsers);
             updateAdminStats(data.stats || {});
         }
     } catch (error) {
@@ -2375,20 +2387,7 @@ function displayAdminUsers(users) {
     });
 }
 
-async function loadAdminMedia() {
-    try {
-        const response = await fetch('/api/admin/media', {
-            headers: { 'x-session-id': sessionId }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            displayAdminMedia(data.media || []);
-        }
-    } catch (error) {
-        console.error('Load admin media error:', error);
-    }
-}
+// loadAdminMedia function moved below with filtering support
 
 function displayAdminMedia(media) {
     const tbody = document.getElementById('admin-media-table');
@@ -2541,6 +2540,102 @@ async function viewAdminMediaModal(mediaId) {
         console.error('View admin media modal error:', error);
         showNotification('Failed to load media', 'error');
     }
+}
+
+// Utility function for debouncing search input
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Store original data for client-side filtering
+let allAdminUsers = [];
+let allAdminMedia = [];
+
+// Filter admin users
+function filterAdminUsers() {
+    const searchTerm = document.getElementById('admin-user-search').value.toLowerCase();
+    const filterType = document.getElementById('admin-user-filter').value;
+    
+    let filteredUsers = allAdminUsers.filter(user => {
+        // Search filter
+        const matchesSearch = user.email.toLowerCase().includes(searchTerm) || 
+                             user.email.split('@')[0].toLowerCase().includes(searchTerm);
+        
+        // Type filter
+        let matchesType = true;
+        switch (filterType) {
+            case 'active':
+                matchesType = user.total_habits > 0 || user.total_media > 0;
+                break;
+            case 'flagged':
+                matchesType = user.flagged_media > 0;
+                break;
+            case 'admin':
+                matchesType = user.role === 'admin';
+                break;
+            default:
+                matchesType = true;
+        }
+        
+        return matchesSearch && matchesType;
+    });
+    
+    displayAdminUsers(filteredUsers);
+}
+
+// Filter admin media with server-side filtering
+async function filterAdminMedia() {
+    const filterType = document.getElementById('admin-media-filter').value;
+    await loadAdminMedia(filterType);
+}
+
+// Update loadAdminMedia to support filtering  
+async function loadAdminMedia(filter = 'all') {
+    try {
+        let url = '/api/admin/media';
+        if (filter && filter !== 'all') {
+            url += `?filter=${filter}`;
+        }
+        
+        const response = await fetch(url, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            allAdminMedia = data.media || [];
+            displayAdminMedia(allAdminMedia);
+            
+            // Apply client-side search if there's a search term
+            const searchTerm = document.getElementById('admin-media-search')?.value;
+            if (searchTerm) {
+                filterAdminMediaBySearch();
+            }
+        }
+    } catch (error) {
+        console.error('Load admin media error:', error);
+    }
+}
+
+// Client-side media search filtering
+function filterAdminMediaBySearch() {
+    const searchTerm = document.getElementById('admin-media-search').value.toLowerCase();
+    
+    const filteredMedia = allAdminMedia.filter(item => 
+        item.original_name.toLowerCase().includes(searchTerm) ||
+        item.userEmail.toLowerCase().includes(searchTerm) ||
+        (item.description && item.description.toLowerCase().includes(searchTerm))
+    );
+    
+    displayAdminMedia(filteredMedia);
 }
 
 async function deleteAdminUser(userId) {

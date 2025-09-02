@@ -911,7 +911,6 @@ async function loadMedia() {
 }
 
 function displayEnhancedMedia(data) {
-    console.log('displayEnhancedMedia called with:', data); // DEBUG
     const container = document.getElementById('media-container');
     const emptyState = document.getElementById('media-empty-state');
     
@@ -944,9 +943,7 @@ function displayEnhancedMedia(data) {
     // Sort by date (newest first)
     filteredMedia.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
     
-    console.log('Rendering', filteredMedia.length, 'media items'); // DEBUG
     filteredMedia.forEach(item => {
-        console.log('Creating media item:', item.id, 'type:', item.media_type); // DEBUG
         const div = document.createElement('div');
         div.className = 'media-item';
         div.onclick = () => showEnhancedMediaModal(item);
@@ -985,7 +982,6 @@ function displayEnhancedMedia(data) {
         `;
         
         container.appendChild(div);
-        console.log('Added media item with delete button for:', item.id); // DEBUG
         
         // Load the actual media
         loadMediaPreview(item.id, `media-${item.id}`, isVideo);

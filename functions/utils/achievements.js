@@ -234,6 +234,64 @@ export async function checkAndAwardAchievements(userId, actionType, actionData, 
                 case 'commitment_streak':
                     shouldUnlock = await checkCommitmentStreak(userId, achievement.requirement_value, env);
                     break;
+                    
+                // Combo & Streak Achievement Types
+                case 'achievement_combo':
+                    // These are handled in real-time by the frontend
+                    shouldUnlock = false;
+                    break;
+                    
+                case 'daily_achievement_count':
+                    shouldUnlock = await checkDailyAchievementCount(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'category_mastery':
+                    shouldUnlock = await checkCategoryMastery(userId, achievement.category, env);
+                    break;
+                    
+                case 'daily_achievement_streak':
+                    shouldUnlock = await checkDailyAchievementStreak(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'weekly_achievement_streak':
+                    shouldUnlock = await checkWeeklyAchievementStreak(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'total_achievements':
+                    shouldUnlock = await checkTotalAchievements(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'achievements_in_timeframe':
+                    shouldUnlock = await checkAchievementsInTimeframe(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'seasonal_event':
+                    shouldUnlock = await checkSeasonalEvent(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'monthly_challenge':
+                    shouldUnlock = await checkMonthlyChallenge(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'consecutive_monthly':
+                    shouldUnlock = await checkConsecutiveMonthly(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'achievement_rank':
+                    shouldUnlock = await checkAchievementRank(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'achievement_leaderboard':
+                    shouldUnlock = await checkAchievementLeaderboard(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'perfect_category':
+                    shouldUnlock = await checkPerfectCategory(userId, achievement.requirement_value, env);
+                    break;
+                    
+                case 'completionist':
+                    shouldUnlock = await checkCompletionist(userId, achievement.requirement_value, env);
+                    break;
             }
             
             if (shouldUnlock) {
@@ -1198,4 +1256,180 @@ async function getUserWeeklyRank(userId, weekStart, env) {
     ).first();
     
     return result.rank;
+}
+
+// Combo & Streak Achievement Helpers
+async function checkDailyAchievementCount(userId, requiredCount, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(*) as achievement_count
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ?
+        AND date(ua.created_at) = date('now')
+    `).bind(userId).first();
+    return result.achievement_count >= requiredCount;
+}
+
+async function checkCategoryMastery(userId, category, env) {
+    const categoryAchievements = await env.DB.prepare(`
+        SELECT COUNT(*) as total_in_category
+        FROM achievements
+        WHERE category = ? AND is_hidden = 0
+    `).bind(category).first();
+    
+    const userCategoryAchievements = await env.DB.prepare(`
+        SELECT COUNT(*) as earned_in_category
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ? AND a.category = ? AND a.is_hidden = 0
+    `).bind(userId, category).first();
+    
+    return userCategoryAchievements.earned_in_category >= categoryAchievements.total_in_category;
+}
+
+async function checkDailyAchievementStreak(userId, requiredDays, env) {
+    // Check if user has unlocked at least 1 achievement every day for required days
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(ua.created_at)) as achievement_days
+        FROM user_achievements ua
+        WHERE ua.user_id = ?
+        AND date(ua.created_at) >= date('now', '-${requiredDays} days')
+    `).bind(userId).first();
+    return result.achievement_days >= requiredDays;
+}
+
+async function checkWeeklyAchievementStreak(userId, requiredWeeks, env) {
+    // Check if user has unlocked achievements for consecutive weeks
+    let consecutiveWeeks = 0;
+    const currentDate = new Date();
+    
+    for (let i = 0; i < requiredWeeks + 2; i++) {
+        const weekStart = new Date(currentDate.getTime() - (i * 7 * 24 * 60 * 60 * 1000));
+        const weekEnd = new Date(weekStart.getTime() + (6 * 24 * 60 * 60 * 1000));
+        
+        const result = await env.DB.prepare(`
+            SELECT COUNT(*) as weekly_achievements
+            FROM user_achievements ua
+            WHERE ua.user_id = ?
+            AND date(ua.created_at) BETWEEN date(?) AND date(?)
+        `).bind(userId, weekStart.toISOString().split('T')[0], weekEnd.toISOString().split('T')[0]).first();
+        
+        if (result.weekly_achievements > 0) {
+            consecutiveWeeks++;
+            if (consecutiveWeeks >= requiredWeeks) return true;
+        } else {
+            consecutiveWeeks = 0;
+        }
+    }
+    return false;
+}
+
+async function checkTotalAchievements(userId, requiredCount, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(*) as total_achievements
+        FROM user_achievements
+        WHERE user_id = ?
+    `).bind(userId).first();
+    return result.total_achievements >= requiredCount;
+}
+
+async function checkAchievementsInTimeframe(userId, requiredCount, env) {
+    const userCreated = await env.DB.prepare(`
+        SELECT created_at FROM users WHERE id = ?
+    `).bind(userId).first();
+    
+    if (!userCreated) return false;
+    
+    const createdDate = new Date(userCreated.created_at);
+    const oneMonthLater = new Date(createdDate.getTime() + (30 * 24 * 60 * 60 * 1000));
+    
+    const result = await env.DB.prepare(`
+        SELECT COUNT(*) as achievement_count
+        FROM user_achievements ua
+        WHERE ua.user_id = ?
+        AND ua.created_at BETWEEN ? AND ?
+    `).bind(userId, createdDate.toISOString(), oneMonthLater.toISOString()).first();
+    
+    return result.achievement_count >= requiredCount;
+}
+
+async function checkSeasonalEvent(userId, requiredCount, env) {
+    // Placeholder for seasonal events - would need event system
+    return false;
+}
+
+async function checkMonthlyChallenge(userId, requiredCount, env) {
+    // Placeholder for monthly challenges - would need challenge system
+    return false;
+}
+
+async function checkConsecutiveMonthly(userId, requiredCount, env) {
+    // Placeholder for consecutive monthly challenges
+    return false;
+}
+
+async function checkAchievementRank(userId, percentile, env) {
+    // Check if user is in top X% for achievement count among friends
+    const friendsCount = await env.DB.prepare(`
+        SELECT COUNT(*) as friends_count
+        FROM friendships
+        WHERE (user_id = ? OR friend_id = ?) AND status = 'accepted'
+    `).bind(userId, userId).first();
+    
+    if (friendsCount.friends_count === 0) return false;
+    
+    const userAchievementCount = await env.DB.prepare(`
+        SELECT COUNT(*) as user_achievements
+        FROM user_achievements
+        WHERE user_id = ?
+    `).bind(userId).first();
+    
+    const betterFriends = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT f.friend_id) as better_count
+        FROM friendships f
+        LEFT JOIN user_achievements ua ON (
+            f.friend_id = ua.user_id OR 
+            (f.user_id = ua.user_id AND f.friend_id = ?)
+        )
+        WHERE (f.user_id = ? OR f.friend_id = ?) 
+        AND f.status = 'accepted'
+        GROUP BY f.friend_id
+        HAVING COUNT(ua.id) > ?
+    `).bind(userId, userId, userId, userAchievementCount.user_achievements).first();
+    
+    const percentileRank = ((friendsCount.friends_count - (betterFriends?.better_count || 0)) / friendsCount.friends_count) * 100;
+    return percentileRank >= percentile;
+}
+
+async function checkAchievementLeaderboard(userId, requiredRank, env) {
+    // Check if user has the most achievements among friends
+    return await checkAchievementRank(userId, 100, env);
+}
+
+async function checkPerfectCategory(userId, requiredCount, env) {
+    // Check if user completed a category without missing any achievements
+    const categories = ['onboarding', 'habits', 'progress', 'nutrition', 'social', 'consistency', 'challenges', 'analytics'];
+    
+    for (const category of categories) {
+        const mastery = await checkCategoryMastery(userId, category, env);
+        if (mastery) return true;
+    }
+    return false;
+}
+
+async function checkCompletionist(userId, requiredCount, env) {
+    const totalNonHidden = await env.DB.prepare(`
+        SELECT COUNT(*) as total_achievements
+        FROM achievements
+        WHERE is_hidden = 0
+    `).first();
+    
+    const userAchievements = await env.DB.prepare(`
+        SELECT COUNT(*) as user_achievements
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ? AND a.is_hidden = 0
+    `).bind(userId).first();
+    
+    return userAchievements.user_achievements >= totalNonHidden.total_achievements * 0.95; // 95% completion
 }

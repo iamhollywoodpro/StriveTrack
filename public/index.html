@@ -17,6 +17,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Confetti Animation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    
     <!-- Custom Styles -->
     <style>
         body {
@@ -398,6 +401,80 @@
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         }
         
+        /* Enhanced Achievement Notifications */
+        .notification.achievement {
+            min-width: 320px;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+        }
+        
+        .notification.achievement.common {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            border: 2px solid #9ca3af;
+        }
+        
+        .notification.achievement.rare {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: 2px solid #60a5fa;
+            animation: rare-glow 2s ease-in-out;
+        }
+        
+        .notification.achievement.epic {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            border: 2px solid #a78bfa;
+            animation: epic-glow 2s ease-in-out;
+        }
+        
+        .notification.achievement.legendary {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%, #ef4444 100%);
+            border: 2px solid #fbbf24;
+            animation: legendary-glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes rare-glow {
+            0%, 100% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
+            50% { box-shadow: 0 20px 40px rgba(59, 130, 246, 0.6), 0 0 30px rgba(59, 130, 246, 0.3); }
+        }
+        
+        @keyframes epic-glow {
+            0%, 100% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
+            50% { box-shadow: 0 20px 40px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.3); }
+        }
+        
+        @keyframes legendary-glow {
+            0%, 100% { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
+            33% { box-shadow: 0 20px 40px rgba(245, 158, 11, 0.8), 0 0 40px rgba(245, 158, 11, 0.4); }
+            66% { box-shadow: 0 20px 40px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.4); }
+        }
+        
+        .achievement-notification-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .achievement-notification-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .achievement-notification-desc {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .achievement-notification-rarity {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
         .hidden {
             display: none !important;
         }
@@ -424,6 +501,122 @@
             max-width: 90%;
             max-height: 90%;
             overflow: auto;
+        }
+        
+        /* Achievement Showcase Modal */
+        .achievement-showcase-modal {
+            max-width: 600px;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(30px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .achievement-showcase-header {
+            padding: 32px 32px 24px 32px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .achievement-showcase-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 16px auto;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .achievement-showcase-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            text-align: center;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .achievement-showcase-desc {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+        
+        .achievement-showcase-rarity {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 auto;
+        }
+        
+        .achievement-showcase-body {
+            padding: 24px 32px 32px 32px;
+        }
+        
+        .achievement-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .achievement-stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .achievement-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .achievement-stat-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .achievement-timeline {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 24px;
+        }
+        
+        .achievement-timeline-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-left: 2px solid rgba(255, 255, 255, 0.2);
+            padding-left: 16px;
+            margin-left: 8px;
+            position: relative;
+        }
+        
+        .achievement-timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
         }
         
         .week-calendar {
@@ -1409,6 +1602,67 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- Achievement Showcase Modal -->
+    <div id="achievement-showcase-modal" class="modal hidden">
+        <div class="achievement-showcase-modal">
+            <div class="achievement-showcase-header">
+                <div class="flex justify-between items-start mb-4">
+                    <div></div>
+                    <button onclick="closeAchievementShowcase()" class="text-white/70 hover:text-white text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="achievement-showcase-icon" class="achievement-showcase-icon">
+                    🏆
+                </div>
+                
+                <h3 id="achievement-showcase-title" class="achievement-showcase-title">
+                    Achievement Title
+                </h3>
+                
+                <p id="achievement-showcase-desc" class="achievement-showcase-desc">
+                    Achievement description goes here
+                </p>
+                
+                <div id="achievement-showcase-rarity" class="achievement-showcase-rarity">
+                    Common
+                </div>
+            </div>
+            
+            <div class="achievement-showcase-body">
+                <div class="achievement-stats-grid" id="achievement-stats-grid">
+                    <div class="achievement-stat-card">
+                        <div id="achievement-points" class="achievement-stat-value">50</div>
+                        <div class="achievement-stat-label">Points</div>
+                    </div>
+                    <div class="achievement-stat-card">
+                        <div id="achievement-progress" class="achievement-stat-value">100%</div>
+                        <div class="achievement-stat-label">Progress</div>
+                    </div>
+                    <div class="achievement-stat-card">
+                        <div id="achievement-rarity-percent" class="achievement-stat-value">15%</div>
+                        <div class="achievement-stat-label">Rarity</div>
+                    </div>
+                    <div class="achievement-stat-card">
+                        <div id="achievement-unlock-date" class="achievement-stat-value">Today</div>
+                        <div class="achievement-stat-label">Unlocked</div>
+                    </div>
+                </div>
+                
+                <div class="achievement-timeline">
+                    <h4 class="text-lg font-semibold text-white mb-4">
+                        <i class="fas fa-clock mr-2"></i>
+                        Achievement Timeline
+                    </h4>
+                    <div id="achievement-timeline-content">
+                        <!-- Timeline items will be populated here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     

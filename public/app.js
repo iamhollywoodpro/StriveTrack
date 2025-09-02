@@ -1042,6 +1042,10 @@ function createAchievementElement(achievement) {
     
     div.className = `${cardClass} ${pulseClass}`;
     
+    // Add click handler to show achievement details
+    div.style.cursor = 'pointer';
+    div.addEventListener('click', () => showAchievementShowcase(achievement));
+    
     // Difficulty badge colors
     const difficultyColors = {
         'easy': '#10b981',
@@ -1494,10 +1498,44 @@ async function loadLeaderboards(type = 'weekly') {
         if (response.ok) {
             const data = await response.json();
             displayLeaderboards(data);
+            
+            // Also load achievement leaderboard if showing achievements filter
+            if (type === 'achievements') {
+                loadAchievementLeaderboard();
+            }
         }
     } catch (error) {
         console.error('Load leaderboards error:', error);
     }
+}
+
+async function loadAchievementLeaderboard() {
+    try {
+        const response = await fetch('/api/leaderboards/achievements', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayAchievementLeaderboard(data);
+        }
+    } catch (error) {
+        console.error('Load achievement leaderboard error:', error);
+    }
+}
+
+function displayAchievementLeaderboard(data) {
+    const container = document.getElementById('leaderboard-container');
+    
+    // Add achievement leaderboard card
+    const achievementBoard = createLeaderboardCard(
+        '🏆 Weekly Achievement Leaders', 
+        data.leaderboard, 
+        'achievements',
+        'Most achievements unlocked this week'
+    );
+    
+    container.appendChild(achievementBoard);
 }
 
 function displayLeaderboards(data) {
@@ -2242,6 +2280,336 @@ function installPWA() {
         } else {
             showNotification('📱 To install: Click browser menu → Install app', 'info');
         }
+    }
+}
+
+// ============================================================================
+// ENHANCED ACHIEVEMENT CELEBRATION SYSTEM
+// ============================================================================
+
+// Achievement Celebration Functions
+function celebrateAchievement(achievement) {
+    // Show enhanced notification
+    showAchievementNotification(achievement);
+    
+    // Play rarity-based confetti
+    playAchievementConfetti(achievement.rarity);
+    
+    // Play achievement sound
+    playAchievementSound(achievement.rarity);
+    
+    // Update achievement counters
+    updateAchievementCounters();
+}
+
+function showAchievementNotification(achievement) {
+    const notification = document.createElement('div');
+    notification.className = `notification achievement ${achievement.rarity} show`;
+    
+    const iconEmoji = getAchievementIcon(achievement);
+    
+    notification.innerHTML = `
+        <div class="achievement-notification-icon">${iconEmoji}</div>
+        <div class="achievement-notification-title">${achievement.name}</div>
+        <div class="achievement-notification-desc">${achievement.description}</div>
+        <div class="achievement-notification-rarity">${achievement.rarity} Achievement</div>
+        <div style="margin-top: 8px; font-weight: 600;">+${achievement.points} points 🏆</div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 5000);
+}
+
+function playAchievementConfetti(rarity) {
+    const confettiConfig = {
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+    };
+    
+    switch (rarity) {
+        case 'common':
+            confetti({
+                ...confettiConfig,
+                particleCount: 50,
+                colors: ['#9ca3af', '#6b7280']
+            });
+            break;
+            
+        case 'rare':
+            confetti({
+                ...confettiConfig,
+                particleCount: 75,
+                colors: ['#3b82f6', '#60a5fa', '#93c5fd']
+            });
+            break;
+            
+        case 'epic':
+            // Double burst for epic
+            confetti({
+                ...confettiConfig,
+                particleCount: 100,
+                colors: ['#8b5cf6', '#a78bfa', '#c4b5fd']
+            });
+            setTimeout(() => {
+                confetti({
+                    ...confettiConfig,
+                    particleCount: 50,
+                    colors: ['#8b5cf6', '#a78bfa']
+                });
+            }, 300);
+            break;
+            
+        case 'legendary':
+            // Triple burst with golden colors
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    confetti({
+                        ...confettiConfig,
+                        particleCount: 150,
+                        colors: ['#f59e0b', '#fbbf24', '#fcd34d', '#ef4444', '#f87171']
+                    });
+                }, i * 200);
+            }
+            break;
+    }
+}
+
+function playAchievementSound(rarity) {
+    // Create audio context for achievement sounds
+    if (!window.audioContext) {
+        try {
+            window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.log('Audio context not supported');
+            return;
+        }
+    }
+    
+    const audioContext = window.audioContext;
+    
+    // Different frequencies for different rarities
+    const soundConfig = {
+        common: { frequency: 440, duration: 0.2 },
+        rare: { frequency: 523, duration: 0.3 },
+        epic: { frequency: 659, duration: 0.4 },
+        legendary: { frequency: 880, duration: 0.5 }
+    };
+    
+    const config = soundConfig[rarity] || soundConfig.common;
+    
+    // Create oscillator for achievement sound
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(config.frequency, audioContext.currentTime);
+    oscillator.type = 'sine';
+    
+    // Envelope for natural sound
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + config.duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + config.duration);
+}
+
+// Achievement Showcase Modal Functions
+function showAchievementShowcase(achievement) {
+    const modal = document.getElementById('achievement-showcase-modal');
+    
+    // Populate achievement details
+    document.getElementById('achievement-showcase-icon').textContent = getAchievementIcon(achievement);
+    document.getElementById('achievement-showcase-title').textContent = achievement.name;
+    document.getElementById('achievement-showcase-desc').textContent = achievement.description;
+    
+    // Set rarity styling
+    const rarityElement = document.getElementById('achievement-showcase-rarity');
+    rarityElement.textContent = achievement.rarity.toUpperCase();
+    rarityElement.className = `achievement-showcase-rarity ${achievement.rarity}`;
+    
+    // Update rarity styling
+    const rarityColors = {
+        common: 'background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);',
+        rare: 'background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);',
+        epic: 'background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);',
+        legendary: 'background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);'
+    };
+    rarityElement.style.cssText = rarityColors[achievement.rarity] || rarityColors.common;
+    
+    // Populate stats
+    document.getElementById('achievement-points').textContent = achievement.points;
+    document.getElementById('achievement-progress').textContent = achievement.is_completed ? '100%' : `${achievement.progress_percentage}%`;
+    document.getElementById('achievement-rarity-percent').textContent = getRarityPercentage(achievement.rarity);
+    document.getElementById('achievement-unlock-date').textContent = achievement.earned_at ? 
+        new Date(achievement.earned_at).toLocaleDateString() : 'Not unlocked';
+    
+    // Populate timeline
+    populateAchievementTimeline(achievement);
+    
+    modal.classList.remove('hidden');
+}
+
+function closeAchievementShowcase() {
+    const modal = document.getElementById('achievement-showcase-modal');
+    modal.classList.add('hidden');
+}
+
+function populateAchievementTimeline(achievement) {
+    const timelineContainer = document.getElementById('achievement-timeline-content');
+    
+    const timelineEvents = [];
+    
+    if (achievement.is_completed && achievement.earned_at) {
+        timelineEvents.push({
+            date: achievement.earned_at,
+            title: 'Achievement Unlocked! 🎉',
+            description: `Earned this ${achievement.rarity} achievement`
+        });
+    }
+    
+    // Add progress milestones
+    if (achievement.current_progress > 0) {
+        const milestones = [25, 50, 75, 100];
+        milestones.forEach(milestone => {
+            if (achievement.progress_percentage >= milestone) {
+                timelineEvents.push({
+                    date: new Date().toISOString(), // Placeholder - would need actual tracking
+                    title: `${milestone}% Progress`,
+                    description: `Reached ${milestone}% completion`
+                });
+            }
+        });
+    }
+    
+    // Sort by date (newest first)
+    timelineEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (timelineEvents.length === 0) {
+        timelineContainer.innerHTML = `
+            <div class="text-white/60 text-center py-4">
+                <i class="fas fa-clock text-2xl mb-2 block"></i>
+                No progress recorded yet. Start working towards this achievement!
+            </div>
+        `;
+        return;
+    }
+    
+    timelineContainer.innerHTML = timelineEvents.map(event => `
+        <div class="achievement-timeline-item">
+            <div>
+                <div class="text-white font-medium">${event.title}</div>
+                <div class="text-white/70 text-sm">${event.description}</div>
+                <div class="text-white/50 text-xs mt-1">${new Date(event.date).toLocaleDateString()}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getRarityPercentage(rarity) {
+    // Simulate rarity percentages
+    const rarityStats = {
+        common: '65%',
+        rare: '25%', 
+        epic: '8%',
+        legendary: '2%'
+    };
+    return rarityStats[rarity] || '0%';
+}
+
+// Achievement Combo & Streak System
+let achievementComboCount = 0;
+let achievementComboTimer = null;
+
+function checkAchievementCombos() {
+    achievementComboCount++;
+    
+    // Reset combo timer
+    if (achievementComboTimer) {
+        clearTimeout(achievementComboTimer);
+    }
+    
+    // Check for combo achievements
+    if (achievementComboCount >= 3) {
+        triggerComboAchievement('achievement_spree', 'Achievement Spree!', 'Unlocked 3 achievements in quick succession');
+    }
+    
+    if (achievementComboCount >= 5) {
+        triggerComboAchievement('achievement_frenzy', 'Achievement Frenzy!', 'Unlocked 5 achievements in a short time');
+    }
+    
+    // Reset combo after 30 seconds of inactivity
+    achievementComboTimer = setTimeout(() => {
+        achievementComboCount = 0;
+    }, 30000);
+}
+
+function triggerComboAchievement(id, name, description) {
+    const comboAchievement = {
+        id: id,
+        name: name,
+        description: description,
+        rarity: 'epic',
+        points: 100,
+        is_completed: true,
+        earned_at: new Date().toISOString()
+    };
+    
+    celebrateAchievement(comboAchievement);
+}
+
+function updateAchievementCounters() {
+    // Update the achievement counters in the UI
+    setTimeout(() => {
+        loadAchievements();
+        if (typeof loadLeaderboards === 'function') {
+            loadLeaderboards();
+        }
+    }, 1000);
+}
+
+// Enhanced unlock achievement function with celebrations
+async function unlockAchievement(achievementId) {
+    try {
+        const response = await fetch('/api/achievements/unlock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ achievement_id: achievementId })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Celebrate the achievement
+            celebrateAchievement(result.achievement);
+            
+            // Check for combos
+            checkAchievementCombos();
+            
+            // Reload achievements to update UI
+            loadAchievements();
+            
+        } else {
+            showNotification('Failed to unlock achievement', 'error');
+        }
+    } catch (error) {
+        console.error('Unlock achievement error:', error);
+        showNotification('Failed to unlock achievement', 'error');
     }
 }
 

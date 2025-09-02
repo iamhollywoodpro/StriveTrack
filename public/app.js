@@ -4432,6 +4432,30 @@ function setupHabitEventListeners() {
         uploadProgressCard.addEventListener('click', showMediaUploadModal);
     }
 
+    // Event delegation for habit day toggle (handles dynamically created elements)
+    document.addEventListener('click', function(event) {
+        const dayCell = event.target.closest('[data-action="toggle-habit"]');
+        if (dayCell) {
+            event.preventDefault();
+            const habitId = dayCell.getAttribute('data-habit-id');
+            const date = dayCell.getAttribute('data-date');
+            console.log('📱 Day cell clicked via event delegation:', habitId, date);
+            toggleHabitDay(habitId, date);
+        }
+    });
+    
+    // Also handle touch events for mobile
+    document.addEventListener('touchend', function(event) {
+        const dayCell = event.target.closest('[data-action="toggle-habit"]');
+        if (dayCell) {
+            event.preventDefault();
+            const habitId = dayCell.getAttribute('data-habit-id');
+            const date = dayCell.getAttribute('data-date');
+            console.log('📱 Day cell touched via event delegation:', habitId, date);
+            toggleHabitDay(habitId, date);
+        }
+    });
+    
     console.log('Habit event listeners set up successfully');
 }
 
@@ -4839,7 +4863,9 @@ function createHabitCard(habit) {
                     
                     return `
                         <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}"
-                             onclick="toggleHabitDay('${habit.id}', '${date.toISOString().split('T')[0]}')">
+                             data-habit-id="${habit.id}" 
+                             data-date="${date.toISOString().split('T')[0]}"
+                             data-action="toggle-habit">
                             <div class="text-xs font-medium">${date.toLocaleDateString('en', {weekday: 'short'})}</div>
                             <div class="text-lg font-bold">${date.getDate()}</div>
                             ${isCompleted ? '<i class="fas fa-check text-xs mt-1"></i>' : ''}

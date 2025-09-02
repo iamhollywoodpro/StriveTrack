@@ -959,6 +959,12 @@ function displayEnhancedMedia(data) {
                     ${mediaType.toUpperCase()}
                 </div>
                 ${isPaired ? '<div class="pairing-indicator">📊 Paired</div>' : ''}
+                <button onclick="event.stopPropagation(); deleteMediaWithConfirmation('${item.id}')" 
+                        class="delete-button-gallery" 
+                        title="Delete media"
+                        aria-label="Delete media">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
             <div class="media-info">
                 <div class="media-date">
@@ -1203,6 +1209,16 @@ async function deleteMediaFromModal(mediaId) {
         console.error('Delete media error:', error);
         showNotification('Failed to delete media', 'error');
     }
+}
+
+// Global delete media function with confirmation modal
+function deleteMediaWithConfirmation(mediaId) {
+    showConfirmationModal(
+        'Are you sure you want to delete this media? This action cannot be undone and will deduct points from your account.',
+        async function() {
+            await deleteMediaFromModal(mediaId);
+        }
+    );
 }
 
 // Legacy delete media function (for hover buttons if needed)

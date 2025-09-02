@@ -24,3 +24,53 @@ Your worker has access to the following bindings:
 [wrangler:inf] Ready on http://localhost:3000
 ⎔ Starting local server...
 [wrangler:inf] GET / 200 OK (108ms)
+[wrangler:inf] GET / 200 OK (75ms)
+[wrangler:inf] GET /app.js 200 OK (38ms)
+[wrangler:inf] GET /favicon.ico 200 OK (32ms)
+[wrangler:inf] GET / 200 OK (107ms)
+[wrangler:inf] GET /app.js 200 OK (37ms)
+Admin account updated with correct password hash
+[wrangler:inf] POST /api/auth/login 200 OK (1174ms)
+[wrangler:inf] GET /api/user/dashboard-config 200 OK (22ms)
+[wrangler:inf] GET /api/habits/weekly 200 OK (132ms)
+[wrangler:inf] GET /api/media/enhanced 200 OK (223ms)
+[wrangler:inf] GET /api/achievements 200 OK (246ms)
+[wrangler:inf] GET /api/habits 200 OK (244ms)
+[wrangler:inf] GET /api/challenges/daily 200 OK (243ms)
+[wrangler:inf] GET /api/media/file/9670cca1-7560-4fd9-ac2f-12846440e808 200 OK (38ms)
+[wrangler:inf] POST /api/achievements/check 200 OK (113ms)
+[wrangler:inf] POST /api/habits 201 Created (142ms)
+[wrangler:inf] GET /api/habits 200 OK (38ms)
+[wrangler:inf] GET /api/habits 200 OK (59ms)
+[wrangler:inf] GET /api/challenges/daily 200 OK (31ms)
+[wrangler:inf] GET /api/media/enhanced 200 OK (111ms)
+[wrangler:inf] GET /api/achievements 200 OK (118ms)
+[wrangler:inf] GET /api/habits/weekly 200 OK (55ms)
+[wrangler:inf] GET / 200 OK (72ms)
+Admin account updated with correct password hash
+[wrangler:inf] POST /api/auth/login 200 OK (1205ms)
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mNutrition achievement check error: Error: D1_ERROR: table user_achievements has no column named points_earned: SQLITE_ERROR[0m
+
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+      at async D1PreparedStatement.run (cloudflare-internal:d1-api:307:29)
+      ... 7 lines matching cause stack trace ...
+      at async next (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:161:22) {
+    [cause]: Error: table user_achievements has no column named points_earned: SQLITE_ERROR
+        at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+        at async D1PreparedStatement.run (cloudflare-internal:d1-api:307:29)
+        at async unlockAchievementIfNotEarned (file:///home/user/webapp/functions/utils/achievements.js:626:5)
+        at async checkNutritionAchievements (file:///home/user/webapp/functions/utils/achievements.js:543:34)
+        at async checkAndAwardAchievements (file:///home/user/webapp/functions/utils/achievements.js:20:39)
+        at async checkAndAwardAchievements (file:///home/user/webapp/functions/utils/database.js:240:16)
+        at async onRequestPost (file:///home/user/webapp/functions/api/habits/index.js:63:33)
+        at async next (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+        at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+        at async next (file:///home/user/webapp/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+  }
+
+
+[wrangler:inf] POST /api/habits 201 Created (230ms)
+[wrangler:inf] GET / 200 OK (53ms)
+[wrangler:inf] GET /app.js 200 OK (31ms)
+[wrangler:inf] GET /favicon.ico 200 OK (26ms)
+[wrangler:inf] GET / 200 OK (53ms)

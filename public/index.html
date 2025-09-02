@@ -1805,7 +1805,7 @@
             <form id="create-habit-form">
                 <div class="mb-4">
                     <label for="habit-name" class="block text-white/90 text-sm font-medium mb-2">Habit Name</label>
-                    <input type="text" id="habit-name" class="input-field" placeholder="e.g., 30 minutes cardio" required>
+                    <input type="text" id="habit-name" name="habit-name" class="input-field" placeholder="e.g., 30 minutes cardio" required>
                 </div>
                 
                 <!-- Emoji Preview -->
@@ -1822,7 +1822,7 @@
                 
                 <div class="mb-4">
                     <label for="habit-category" class="block text-white/90 text-sm font-medium mb-2">Category</label>
-                    <select id="habit-category" class="input-field">
+                    <select id="habit-category" name="habit-category" class="input-field">
                         <option value="nutrition">🍎 Nutrition</option>
                         <option value="cardio">❤️ Cardio</option>
                         <option value="strength">💪 Strength</option>
@@ -1834,7 +1834,7 @@
                 <!-- Weekly Target Selector -->
                 <div class="mb-4">
                     <label for="weekly-target" class="block text-white/90 text-sm font-medium mb-2">Weekly Target</label>
-                    <select id="weekly-target" class="input-field">
+                    <select id="weekly-target" name="weekly-target" class="input-field">
                         <option value="1">1 day per week</option>
                         <option value="2">2 days per week</option>
                         <option value="3">3 days per week</option>
@@ -1856,7 +1856,7 @@
                 </div>
                 <div class="mb-6">
                     <label for="habit-description" class="block text-white/90 text-sm font-medium mb-2">Description (Optional)</label>
-                    <textarea id="habit-description" class="input-field" rows="3" placeholder="Additional details about your habit"></textarea>
+                    <textarea id="habit-description" name="habit-description" class="input-field" rows="3" placeholder="Additional details about your habit"></textarea>
                 </div>
                 <div class="flex space-x-4">
                     <button type="submit" class="btn-primary flex-1">Create Habit</button>

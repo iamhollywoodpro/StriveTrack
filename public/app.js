@@ -324,6 +324,7 @@ function logout() {
     });
     
     localStorage.removeItem('sessionId');
+    sessionStorage.removeItem('welcomeMessageShown');
     sessionId = null;
     currentUser = null;
     
@@ -383,8 +384,11 @@ async function loadRoleBasedDashboard() {
             // Create role-specific dashboard sections
             createRoleBasedSections(data.dashboard.sections, data.features);
             
-            // Show role-specific welcome message
-            showRoleWelcomeMessage(data.user.user_type);
+            // Show role-specific welcome message (only once per session)
+            if (!sessionStorage.getItem('welcomeMessageShown')) {
+                showRoleWelcomeMessage(data.user.user_type);
+                sessionStorage.setItem('welcomeMessageShown', 'true');
+            }
             
         } else {
             console.error('Failed to load dashboard config');
@@ -531,8 +535,8 @@ function showRoleWelcomeMessage(userType) {
     
     const message = welcomeMessages[userType] || 'Welcome to StriveTrack!';
     
-    // Show welcome notification
-    showNotification(message, 'success');
+    // Show welcome notification (dismissible)
+    showNotification(message, 'success', true);
     
     // Update dashboard subtitle
     const subtitle = document.querySelector('.text-white\\/70');
@@ -3958,15 +3962,36 @@ function closeModal(modalId) {
     document.getElementById(modalId).classList.add('hidden');
 }
 
-function showNotification(message, type = 'info') {
+function showNotification(message, type = 'info', persistent = false) {
     const notification = document.getElementById('notification');
-    notification.textContent = message;
+    
+    // Create notification content with close button for persistent notifications
+    if (persistent || type === 'success') {
+        notification.innerHTML = `
+            <span>${message}</span>
+            <button onclick="hideNotification()" class="ml-4 text-white/80 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+    } else {
+        notification.textContent = message;
+    }
+    
     notification.className = `notification ${type}`;
     notification.classList.add('show');
     
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
+    // Auto-dismiss after delay unless persistent
+    if (!persistent) {
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, type === 'success' ? 5000 : 3000);
+    }
+}
+
+// Hide notification manually
+function hideNotification() {
+    const notification = document.getElementById('notification');
+    notification.classList.remove('show');
 }
 
 function updateDashboardStats() {
@@ -4819,6 +4844,14 @@ function createHabitCard(habit) {
 
 // Toggle habit completion for a specific day
 async function toggleHabitDay(habitId, date) {
+    console.log('Toggle habit called:', habitId, date);
+    console.log('Session ID:', sessionId);
+    
+    if (!sessionId) {
+        showNotification('Please log in to update habits', 'error');
+        return;
+    }
+    
     try {
         const response = await fetch('/api/habits/toggle', {
             method: 'POST',
@@ -4832,8 +4865,11 @@ async function toggleHabitDay(habitId, date) {
             })
         });
 
+        console.log('Toggle response status:', response.status);
+        
         if (response.ok) {
             const result = await response.json();
+            console.log('Toggle response data:', result);
             
             // Show appropriate notification
             if (result.completed) {
@@ -4844,17 +4880,26 @@ async function toggleHabitDay(habitId, date) {
             
             // Reload habits and dashboard
             await loadHabits();
-            await loadDashboardData();
+            await loadDashboardHabits();
+            updateDashboardStats();
             
             // Check for achievements
             checkAchievements();
         } else {
-            const error = await response.json();
-            showNotification(error.error || 'Failed to update habit', 'error');
+            const errorText = await response.text();
+            console.error('Toggle error response:', response.status, errorText);
+            let errorMessage = 'Failed to update habit';
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.error || errorMessage;
+            } catch (parseError) {
+                console.error('Error parsing error response:', parseError);
+            }
+            showNotification(errorMessage, 'error');
         }
     } catch (error) {
-        console.error('Toggle habit error:', error);
-        showNotification('Failed to update habit', 'error');
+        console.error('Toggle habit network error:', error);
+        showNotification('Network error - failed to update habit', 'error');
     }
 }
 

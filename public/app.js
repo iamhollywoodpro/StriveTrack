@@ -4309,25 +4309,43 @@ window.testNotifications = function() {
     console.log('✅ Three notifications sent. Each should auto-dismiss after 3 seconds.');
 };
 
-// Immediate click test - attach to page load
-window.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Adding click test to document...');
-    document.addEventListener('click', function(event) {
-        console.log('👆 CLICK DETECTED:', event.target);
-        console.log('👆 Target classes:', event.target.className);
-        console.log('👆 Closest habit-day-cell:', event.target.closest('.habit-day-cell'));
-        
-        if (event.target.closest('.habit-day-cell')) {
-            console.log('🎯 HABIT DAY CELL CLICKED!');
-            console.log('📍 Cell data:', {
-                habitId: event.target.closest('.habit-day-cell').dataset.habitId,
-                date: event.target.closest('.habit-day-cell').dataset.date
-            });
-        }
-    });
-});
+// Clean initialization
+console.log('✅ StriveTrack habit system initialized');
 
 // Test function for the new simple habit system
+// Debug function to check if habit elements exist
+window.debugHabitElements = function() {
+    console.log('🔍 Debugging habit elements...');
+    
+    const habitCells = document.querySelectorAll('.habit-day-cell');
+    console.log('📊 Found habit day cells:', habitCells.length);
+    
+    habitCells.forEach((cell, index) => {
+        console.log(`Cell ${index + 1}:`, {
+            element: cell,
+            habitId: cell.getAttribute('data-habit-id') || cell.dataset.habitId,
+            date: cell.getAttribute('data-date') || cell.dataset.date,
+            classes: cell.className
+        });
+    });
+    
+    if (habitCells.length > 0) {
+        console.log('🧪 Testing click on first cell...');
+        const firstCell = habitCells[0];
+        console.log('📍 Clicking:', firstCell);
+        firstCell.click();
+    } else {
+        console.log('❌ No habit cells found!');
+        
+        // Check if habits container exists
+        const container = document.getElementById('habits-container');
+        console.log('📦 Habits container:', container);
+        if (container) {
+            console.log('📄 Container innerHTML:', container.innerHTML.substring(0, 500));
+        }
+    }
+};
+
 window.testSimpleHabits = async function() {
     console.log('🧪 Testing simple habits system...');
     
@@ -4847,28 +4865,23 @@ function setupHabitEventListeners() {
         uploadProgressCard.addEventListener('click', showMediaUploadModal);
     }
 
-    // ULTRA SIMPLE habit toggle system - no complex logic
+    // Clean habit toggle system with immediate visual feedback
     document.addEventListener('click', function(event) {
-        console.log('🖱️ Global click handler triggered');
-        
         // Check for habit day cell click
         const habitCell = event.target.closest('.habit-day-cell');
         if (habitCell) {
-            console.log('🎯 HABIT CELL CLICKED!');
+            console.log('🎯 Habit cell clicked');
             event.preventDefault();
             event.stopPropagation();
             
             const habitId = habitCell.getAttribute('data-habit-id') || habitCell.dataset.habitId;
             const date = habitCell.getAttribute('data-date') || habitCell.dataset.date;
             
-            console.log('📊 Extracted data:', { habitId, date });
-            
             if (habitId && date) {
-                console.log('✅ Calling simpleToggleHabit');
                 simpleToggleHabit(habitId, date);
             } else {
-                console.error('❌ Missing habitId or date:', { habitId, date });
-                alert('Missing habit data: habitId=' + habitId + ', date=' + date);
+                console.error('❌ Missing habit data:', { habitId, date });
+                showNotification('Invalid habit data', 'error');
             }
             return;
         }
@@ -4876,7 +4889,6 @@ function setupHabitEventListeners() {
         // Complete button
         const completeBtn = event.target.closest('.complete-habit-btn');
         if (completeBtn) {
-            console.log('✅ Complete button clicked');
             const habitId = completeBtn.getAttribute('data-habit-id') || completeBtn.dataset.habitId;
             if (habitId) {
                 simpleCompleteHabit(habitId);
@@ -4887,7 +4899,6 @@ function setupHabitEventListeners() {
         // Delete button  
         const deleteBtn = event.target.closest('.delete-habit-btn');
         if (deleteBtn) {
-            console.log('🗑️ Delete button clicked');
             const habitId = deleteBtn.getAttribute('data-habit-id') || deleteBtn.dataset.habitId;
             if (habitId) {
                 deleteHabit(habitId);
@@ -5331,61 +5342,100 @@ function createHabitCard(habit) {
     `;
 }
 
-// ULTRA SIMPLE habit toggle function
+// Fixed habit toggle function - NO PAGE RELOAD
 async function simpleToggleHabit(habitId, date) {
-    console.log('🚀🚀🚀 TOGGLE HABIT CALLED 🚀🚀🚀');
-    console.log('📊 Params:', { habitId, date, sessionId });
-    
-    // Show immediate feedback
-    alert('Toggle called for habit: ' + habitId + ' on date: ' + date);
+    console.log('🚀 Toggle habit called:', habitId, date);
     
     if (!sessionId) {
-        alert('ERROR: No session ID!');
+        showNotification('Please log in first', 'error');
         return;
     }
     
     if (!habitId || !date) {
-        alert('ERROR: Missing habitId or date!');
+        showNotification('Missing habit data', 'error');
         return;
     }
     
     try {
-        console.log('📡 Making fetch request...');
-        
-        const requestBody = {
-            habit_id: habitId,
-            date: date
-        };
-        
-        console.log('📤 Request body:', requestBody);
-        
         const response = await fetch('/api/habits/toggle', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'x-session-id': sessionId
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                habit_id: habitId,
+                date: date
+            })
         });
-        
-        console.log('📨 Response received:', response.status, response.ok);
         
         if (response.ok) {
             const result = await response.json();
-            console.log('✅ Success result:', result);
-            alert('SUCCESS: ' + result.message);
+            console.log('✅ Toggle success:', result);
             
-            // Force UI refresh
-            location.reload();
+            // Show notification
+            if (result.completed) {
+                showNotification('✅ Habit completed!', 'success');
+            } else {
+                showNotification('⭕ Habit unchecked', 'info');
+            }
+            
+            // Update the specific day cell immediately
+            updateDayCellVisualState(habitId, date, result.completed);
+            
         } else {
             const errorText = await response.text();
-            console.error('❌ Error response:', errorText);
-            alert('ERROR: ' + errorText);
+            console.error('❌ Toggle failed:', errorText);
+            showNotification('Failed to update habit', 'error');
         }
         
     } catch (error) {
         console.error('💥 Network error:', error);
-        alert('NETWORK ERROR: ' + error.message);
+        showNotification('Network error occurred', 'error');
+    }
+}
+
+// Function to immediately update day cell visual state
+function updateDayCellVisualState(habitId, date, isCompleted) {
+    console.log('🎨 Updating visual state:', habitId, date, isCompleted);
+    
+    // Find the specific day cell
+    const dayCell = document.querySelector(`[data-habit-id="${habitId}"][data-date="${date}"]`);
+    
+    if (dayCell) {
+        console.log('📍 Found day cell:', dayCell);
+        
+        // Update classes
+        if (isCompleted) {
+            dayCell.classList.add('completed');
+            console.log('✅ Added completed class');
+        } else {
+            dayCell.classList.remove('completed');
+            console.log('⭕ Removed completed class');
+        }
+        
+        // Update the checkmark/circle icon
+        const iconElement = dayCell.querySelector('.text-lg');
+        if (iconElement) {
+            iconElement.textContent = isCompleted ? '✓' : '○';
+            console.log('🔄 Updated icon:', isCompleted ? '✓' : '○');
+        }
+        
+        // Update fas fa-check icon if present
+        const checkIcon = dayCell.querySelector('.fas.fa-check');
+        if (isCompleted && !checkIcon) {
+            // Add check icon if completed
+            const checkDiv = document.createElement('i');
+            checkDiv.className = 'fas fa-check text-xs mt-1';
+            dayCell.appendChild(checkDiv);
+        } else if (!isCompleted && checkIcon) {
+            // Remove check icon if not completed
+            checkIcon.remove();
+        }
+        
+        console.log('✅ Visual update complete');
+    } else {
+        console.error('❌ Day cell not found for:', habitId, date);
     }
 }
 

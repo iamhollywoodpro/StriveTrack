@@ -1429,20 +1429,22 @@ function createWeeklyHabitElement(habit) {
     div.className = 'habit-card';
     
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const completedDays = habit.completedDays || [];
-    const targetCount = habit.targetCount || 7;
-    const completedCount = habit.completedCount || 0;
     
     // Calculate this week's dates
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
     
+    // Get habit completions (use the correct data from API)
+    const completions = habit.completions || [];
+    
     const weekCalendar = days.map((dayName, dayIndex) => {
         const dayDate = new Date(weekStart);
         dayDate.setDate(weekStart.getDate() + dayIndex);
         const dateStr = dayDate.toISOString().split('T')[0];
-        const isCompleted = completedDays.includes(dayIndex);
+        
+        // FIXED: Check if the actual date string is in completions array
+        const isCompleted = completions.includes(dateStr);
         const isToday = dayDate.toDateString() === today.toDateString();
         
         return `
@@ -1455,6 +1457,17 @@ function createWeeklyHabitElement(habit) {
             </div>
         `;
     }).join('');
+    
+    // Calculate correct stats for this week
+    const weekCompletions = days.map((_, dayIndex) => {
+        const dayDate = new Date(weekStart);
+        dayDate.setDate(weekStart.getDate() + dayIndex);
+        const dateStr = dayDate.toISOString().split('T')[0];
+        return completions.includes(dateStr);
+    });
+    
+    const completedCount = weekCompletions.filter(Boolean).length;
+    const targetCount = habit.weekly_target || 7;
     
     div.innerHTML = `
         <div class="flex items-center justify-between mb-4">
@@ -5341,8 +5354,10 @@ async function simpleToggleHabit(habitId, date) {
             showNotification('Habit unchecked for ' + date, 'info');
         }
         
-        // Reload habits
+        // Reload habits to update UI
+        console.log('🔄 Reloading habits to update UI...');
         await loadHabits();
+        console.log('✅ UI should now be updated');
         
     } catch (error) {
         console.error('💥 Network Error:', error);

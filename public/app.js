@@ -4582,31 +4582,35 @@ function updateDashboardStats() {
 }
 
 // Global Confirmation Modal functions
-let confirmationCallback = null;
 
 function showConfirmationModal(message, onConfirm) {
     console.log('🎯 Showing confirmation modal:', message);
     document.getElementById('confirmation-message').textContent = message;
-    confirmationCallback = onConfirm;
-    document.getElementById('confirmation-modal').classList.remove('hidden');
     
-    // Set up the confirm button click handler
-    document.getElementById('confirm-delete-btn').onclick = function() {
-        console.log('✅ Confirm button clicked');
+    const modal = document.getElementById('confirmation-modal');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    
+    // Clear any existing event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Set up the fresh confirm button click handler
+    newConfirmBtn.onclick = function() {
+        console.log('✅ Confirm button clicked - executing callback immediately');
         closeConfirmationModal();
-        if (confirmationCallback) {
+        if (onConfirm) {
             console.log('🚀 Executing confirmation callback');
-            confirmationCallback();
-            confirmationCallback = null;
+            onConfirm();
         } else {
-            console.log('❌ No confirmation callback found');
+            console.log('❌ No confirmation callback provided');
         }
     };
+    
+    modal.classList.remove('hidden');
 }
 
 function closeConfirmationModal() {
     document.getElementById('confirmation-modal').classList.add('hidden');
-    confirmationCallback = null;
 }
 
 // PWA functions

@@ -938,7 +938,7 @@ function displayEnhancedMedia(data) {
     }
     
     // Sort by date (newest first)
-    filteredMedia.sort((a, b) => new Date(b.upload_date) - new Date(a.upload_date));
+    filteredMedia.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
     
     filteredMedia.forEach(item => {
         const div = document.createElement('div');
@@ -956,10 +956,15 @@ function displayEnhancedMedia(data) {
                     ${mediaType.toUpperCase()}
                 </div>
                 ${isPaired ? '<div class="pairing-indicator">📊 Paired</div>' : ''}
+                <div class="media-actions">
+                    <button onclick="event.stopPropagation(); deleteMedia('${item.id}')" class="delete-btn" title="Delete media">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
             <div class="media-info">
                 <div class="media-date">
-                    ${new Date(item.upload_date).toLocaleDateString()}
+                    ${new Date(item.uploaded_at).toLocaleDateString()}
                 </div>
                 ${item.description ? `
                     <div class="media-description">
@@ -1017,7 +1022,7 @@ function displayBeforeAfterPairs(comparisons) {
             </div>
             <div class="media-info">
                 <div class="media-date">
-                    ${new Date(comparison.before.upload_date).toLocaleDateString()} → ${new Date(comparison.after.upload_date).toLocaleDateString()}
+                    ${new Date(comparison.before.uploaded_at).toLocaleDateString()} → ${new Date(comparison.after.uploaded_at).toLocaleDateString()}
                 </div>
                 <div class="media-description">
                     Before & After • Week ${comparison.week_number || 'N/A'}
@@ -1109,7 +1114,7 @@ async function showEnhancedMediaModal(media) {
                             ${mediaType.toUpperCase()}
                         </div>
                         <div class="text-white/60 text-sm">
-                            ${new Date(media.upload_date).toLocaleDateString()}
+                            ${new Date(media.uploaded_at).toLocaleDateString()}
                         </div>
                     </div>
                     ${media.description ? `
@@ -1159,6 +1164,35 @@ async function showMediaModal(media) {
     return showEnhancedMediaModal(media);
 }
 
+// Delete media function
+async function deleteMedia(mediaId) {
+    if (!confirm('Are you sure you want to delete this media? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/media/${mediaId}/delete`, {
+            method: 'DELETE',
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(`Media deleted successfully! (-${data.points_deducted} pts)`, 'success');
+            
+            // Reload media gallery and update stats
+            loadMedia();
+            updateDashboardStats();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to delete media', 'error');
+        }
+    } catch (error) {
+        console.error('Delete media error:', error);
+        showNotification('Failed to delete media', 'error');
+    }
+}
+
 async function showComparisonModal(comparison) {
     const modal = document.getElementById('comparison-modal');
     const content = document.getElementById('comparison-content');
@@ -1185,7 +1219,7 @@ async function showComparisonModal(comparison) {
                 <div class="comparison-item">
                     <div class="comparison-header">
                         <h4 class="text-lg font-semibold text-white">📅 Before</h4>
-                        <div class="text-white/60 text-sm">${new Date(comparison.before.upload_date).toLocaleDateString()}</div>
+                        <div class="text-white/60 text-sm">${new Date(comparison.before.uploaded_at).toLocaleDateString()}</div>
                     </div>
                     <div class="comparison-media">
                         ${beforeIsVideo ? `
@@ -1206,7 +1240,7 @@ async function showComparisonModal(comparison) {
                 <div class="comparison-item">
                     <div class="comparison-header">
                         <h4 class="text-lg font-semibold text-white">🎯 After</h4>
-                        <div class="text-white/60 text-sm">${new Date(comparison.after.upload_date).toLocaleDateString()}</div>
+                        <div class="text-white/60 text-sm">${new Date(comparison.after.uploaded_at).toLocaleDateString()}</div>
                     </div>
                     <div class="comparison-media">
                         ${afterIsVideo ? `
@@ -2333,7 +2367,7 @@ function displayAdminMedia(media) {
             </td>
             <td class="py-3 px-4 text-white">${item.filename}</td>
             <td class="py-3 px-4 text-white/70">${item.userEmail}</td>
-            <td class="py-3 px-4 text-white/70">${new Date(item.upload_date).toLocaleDateString()}</td>
+            <td class="py-3 px-4 text-white/70">${new Date(item.uploaded_at).toLocaleDateString()}</td>
             <td class="py-3 px-4 text-white/70">${(item.file_size / 1024 / 1024).toFixed(2)} MB</td>
             <td class="py-3 px-4">
                 <button onclick="toggleAdminMediaFlag(${item.id}, this)" 

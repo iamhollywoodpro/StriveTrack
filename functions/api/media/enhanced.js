@@ -30,11 +30,10 @@ export async function getUserMediaEnhanced(userId, env) {
     
     const media = result.results || [];
     
-    // Add media_type based on description or default to 'progress'
+    // Use existing media_type from database, fallback to 'progress' if null
     const categorizedMedia = media.map(item => ({
         ...item,
-        media_type: item.description?.toLowerCase().includes('before') ? 'before' :
-                   item.description?.toLowerCase().includes('after') ? 'after' : 'progress'
+        media_type: item.media_type || 'progress'
     }));
     
     return categorizedMedia;

@@ -59,10 +59,10 @@ export async function onRequestPost({ request, env }) {
         const progressHints = await env.DB.prepare(`
             SELECT 
                 a.*,
-                uap.progress_count as current_progress,
+                uap.current_progress,
                 CASE 
-                    WHEN uap.progress_count >= a.requirement_value * 0.8 
-                    AND uap.progress_count < a.requirement_value 
+                    WHEN uap.current_progress >= a.requirement_value * 0.8 
+                    AND uap.current_progress < a.requirement_value 
                     THEN 1 
                     ELSE 0 
                 END as show_hint
@@ -70,8 +70,8 @@ export async function onRequestPost({ request, env }) {
             LEFT JOIN user_achievement_progress uap ON a.id = uap.achievement_id AND uap.user_id = ?
             LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
             WHERE ua.id IS NULL 
-            AND uap.progress_count >= a.requirement_value * 0.8
-            AND uap.progress_count < a.requirement_value
+            AND uap.current_progress >= a.requirement_value * 0.8
+            AND uap.current_progress < a.requirement_value
             LIMIT 2
         `).bind(userId, userId).all();
 

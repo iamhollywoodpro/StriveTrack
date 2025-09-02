@@ -8,9 +8,8 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
   get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
 }) : x)(function(x) {
-  if (typeof require !== "undefined")
-    return require.apply(this, arguments);
-  throw new Error('Dynamic require of "' + x + '" is not supported');
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
 });
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
@@ -39,7 +38,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// ../.wrangler/tmp/bundle-ovZuRF/checked-fetch.js
+// ../.wrangler/tmp/bundle-TwJjzZ/checked-fetch.js
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
     (typeof request === "string" ? new Request(request, init) : request).url
@@ -57,7 +56,7 @@ function checkURL(request, init) {
 }
 var urls;
 var init_checked_fetch = __esm({
-  "../.wrangler/tmp/bundle-ovZuRF/checked-fetch.js"() {
+  "../.wrangler/tmp/bundle-TwJjzZ/checked-fetch.js"() {
     urls = /* @__PURE__ */ new Set();
     __name(checkURL, "checkURL");
     globalThis.fetch = new Proxy(globalThis.fetch, {
@@ -65,25 +64,6 @@ var init_checked_fetch = __esm({
         const [request, init] = argArray;
         checkURL(request, init);
         return Reflect.apply(target, thisArg, argArray);
-      }
-    });
-  }
-});
-
-// ../.wrangler/tmp/bundle-ovZuRF/strip-cf-connecting-ip-header.js
-function stripCfConnectingIPHeader(input, init) {
-  const request = new Request(input, init);
-  request.headers.delete("CF-Connecting-IP");
-  return request;
-}
-var init_strip_cf_connecting_ip_header = __esm({
-  "../.wrangler/tmp/bundle-ovZuRF/strip-cf-connecting-ip-header.js"() {
-    __name(stripCfConnectingIPHeader, "stripCfConnectingIPHeader");
-    globalThis.fetch = new Proxy(globalThis.fetch, {
-      apply(target, thisArg, argArray) {
-        return Reflect.apply(target, thisArg, [
-          stripCfConnectingIPHeader.apply(null, argArray)
-        ]);
       }
     });
   }
@@ -102,9 +82,8 @@ function rng() {
 var getRandomValues, rnds8;
 var init_rng = __esm({
   "../node_modules/uuid/dist/esm-browser/rng.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     rnds8 = new Uint8Array(16);
     __name(rng, "rng");
   }
@@ -114,9 +93,8 @@ var init_rng = __esm({
 var regex_default;
 var init_regex = __esm({
   "../node_modules/uuid/dist/esm-browser/regex.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     regex_default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
   }
 });
@@ -128,9 +106,8 @@ function validate(uuid) {
 var validate_default;
 var init_validate = __esm({
   "../node_modules/uuid/dist/esm-browser/validate.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_regex();
     __name(validate, "validate");
     validate_default = validate;
@@ -151,9 +128,8 @@ function stringify(arr, offset = 0) {
 var byteToHex, stringify_default;
 var init_stringify = __esm({
   "../node_modules/uuid/dist/esm-browser/stringify.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_validate();
     byteToHex = [];
     for (let i = 0; i < 256; ++i) {
@@ -217,9 +193,8 @@ function v1(options, buf, offset) {
 var _nodeId, _clockseq, _lastMSecs, _lastNSecs, v1_default;
 var init_v1 = __esm({
   "../node_modules/uuid/dist/esm-browser/v1.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_rng();
     init_stringify();
     _lastMSecs = 0;
@@ -257,9 +232,8 @@ function parse(uuid) {
 var parse_default;
 var init_parse = __esm({
   "../node_modules/uuid/dist/esm-browser/parse.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_validate();
     __name(parse, "parse");
     parse_default = parse;
@@ -314,9 +288,8 @@ function v35(name, version2, hashfunc) {
 var DNS, URL2;
 var init_v35 = __esm({
   "../node_modules/uuid/dist/esm-browser/v35.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_stringify();
     init_parse();
     __name(stringToBytes, "stringToBytes");
@@ -471,9 +444,8 @@ function md5ii(a, b, c, d, x, s, t) {
 var md5_default;
 var init_md5 = __esm({
   "../node_modules/uuid/dist/esm-browser/md5.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     __name(md5, "md5");
     __name(md5ToHexEncodedArray, "md5ToHexEncodedArray");
     __name(getOutputLength, "getOutputLength");
@@ -494,9 +466,8 @@ var init_md5 = __esm({
 var v3, v3_default;
 var init_v3 = __esm({
   "../node_modules/uuid/dist/esm-browser/v3.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_v35();
     init_md5();
     v3 = v35("v3", 48, md5_default);
@@ -508,9 +479,8 @@ var init_v3 = __esm({
 var randomUUID, native_default;
 var init_native = __esm({
   "../node_modules/uuid/dist/esm-browser/native.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
     native_default = {
       randomUUID
@@ -539,9 +509,8 @@ function v4(options, buf, offset) {
 var v4_default;
 var init_v4 = __esm({
   "../node_modules/uuid/dist/esm-browser/v4.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_native();
     init_rng();
     init_stringify();
@@ -625,9 +594,8 @@ function sha1(bytes) {
 var sha1_default;
 var init_sha1 = __esm({
   "../node_modules/uuid/dist/esm-browser/sha1.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     __name(f, "f");
     __name(ROTL, "ROTL");
     __name(sha1, "sha1");
@@ -639,9 +607,8 @@ var init_sha1 = __esm({
 var v5, v5_default;
 var init_v5 = __esm({
   "../node_modules/uuid/dist/esm-browser/v5.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_v35();
     init_sha1();
     v5 = v35("v5", 80, sha1_default);
@@ -653,9 +620,8 @@ var init_v5 = __esm({
 var nil_default;
 var init_nil = __esm({
   "../node_modules/uuid/dist/esm-browser/nil.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     nil_default = "00000000-0000-0000-0000-000000000000";
   }
 });
@@ -670,9 +636,8 @@ function version(uuid) {
 var version_default;
 var init_version = __esm({
   "../node_modules/uuid/dist/esm-browser/version.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_validate();
     __name(version, "version");
     version_default = version;
@@ -694,9 +659,8 @@ __export(esm_browser_exports, {
 });
 var init_esm_browser = __esm({
   "../node_modules/uuid/dist/esm-browser/index.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_v1();
     init_v3();
     init_v4();
@@ -769,8 +733,7 @@ async function createSession(userId, env) {
   return sessionId;
 }
 async function deleteSession(sessionId, env) {
-  if (!sessionId)
-    return;
+  if (!sessionId) return;
   await env.DB.prepare("DELETE FROM sessions WHERE id = ?").bind(sessionId).run();
 }
 async function cleanupExpiredSessions(env) {
@@ -778,9 +741,8 @@ async function cleanupExpiredSessions(env) {
 }
 var init_auth = __esm({
   "utils/auth.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     __name(getCurrentUser, "getCurrentUser");
     __name(requireAuth, "requireAuth");
     __name(requireAdmin, "requireAdmin");
@@ -795,8 +757,7 @@ async function onRequestGet(context) {
   const { request, env, params } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const mediaId = params.id;
     if (!mediaId) {
@@ -831,11 +792,74 @@ async function onRequestGet(context) {
 }
 var init_id = __esm({
   "api/media/file/[id].js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     __name(onRequestGet, "onRequestGet");
+  }
+});
+
+// api/media/[id]/delete.js
+async function onRequestDelete(context) {
+  const { request, env, params } = context;
+  try {
+    const authResult = await requireAuth(request, env);
+    if (authResult instanceof Response) return authResult;
+    const user = authResult;
+    const mediaId = params.id;
+    if (!mediaId) {
+      return new Response(JSON.stringify({
+        error: "Media ID is required"
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const media = await env.DB.prepare(`
+            SELECT * FROM media_uploads 
+            WHERE id = ? AND user_id = ?
+        `).bind(mediaId, user.id).first();
+    if (!media) {
+      return new Response(JSON.stringify({
+        error: "Media not found or you do not have permission to delete it"
+      }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    try {
+      await env.MEDIA_BUCKET.delete(media.r2_key);
+    } catch (r2Error) {
+      console.error("R2 delete error:", r2Error);
+    }
+    await env.DB.prepare(`
+            DELETE FROM media_uploads WHERE id = ? AND user_id = ?
+        `).bind(mediaId, user.id).run();
+    const pointsToDeduct = media.media_type === "before" ? 10 : media.media_type === "after" ? 15 : 5;
+    await env.DB.prepare("UPDATE users SET points = points - ? WHERE id = ?").bind(pointsToDeduct, user.id).run();
+    return new Response(JSON.stringify({
+      message: "Media deleted successfully",
+      points_deducted: pointsToDeduct
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Delete media error:", error);
+    return new Response(JSON.stringify({
+      error: "Internal server error"
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+var init_delete = __esm({
+  "api/media/[id]/delete.js"() {
+    init_functionsRoutes_0_9302165230404282();
+    init_checked_fetch();
+    init_auth();
+    __name(onRequestDelete, "onRequestDelete");
   }
 });
 
@@ -908,6 +932,162 @@ async function checkAndAwardAchievements(userId, actionType, actionData, env) {
           break;
         case "habit_categories":
           shouldUnlock = await checkHabitVariety(userId, achievement.requirement_value, env);
+          break;
+        // Social & Community Achievement Types
+        case "friends_count":
+          shouldUnlock = await checkFriendsCount(userId, achievement.requirement_value, env);
+          break;
+        case "weekly_rank":
+          shouldUnlock = await checkWeeklyRank(userId, achievement.requirement_value, env);
+          break;
+        case "top_5_weeks":
+          shouldUnlock = await checkConsecutiveTopRanking(userId, achievement.requirement_value, env);
+          break;
+        // Analytics & Data Achievement Types
+        case "stats_views":
+          shouldUnlock = await checkStatsViews(userId, achievement.requirement_value, env);
+          break;
+        case "progress_views":
+          shouldUnlock = await checkProgressViews(userId, achievement.requirement_value, env);
+          break;
+        case "leaderboard_views":
+          shouldUnlock = await checkLeaderboardViews(userId, achievement.requirement_value, env);
+          break;
+        // Enhanced Habit & Routine Achievement Types
+        case "routine_consistency":
+          shouldUnlock = await checkRoutineConsistency(userId, achievement.requirement_value, env);
+          break;
+        case "morning_habit_streak":
+          shouldUnlock = await checkMorningHabitStreak(userId, achievement.requirement_value, env);
+          break;
+        case "evening_habit_streak":
+          shouldUnlock = await checkEveningHabitStreak(userId, achievement.requirement_value, env);
+          break;
+        case "weekend_consistency":
+          shouldUnlock = await checkWeekendConsistency(userId, achievement.requirement_value, env);
+          break;
+        // Enhanced Progress Tracking
+        case "monthly_video_comparisons":
+          shouldUnlock = await checkMonthlyVideoComparisons(userId, achievement.requirement_value, env);
+          break;
+        case "described_uploads":
+          shouldUnlock = await checkDescribedUploads(userId, achievement.requirement_value, env);
+          break;
+        case "weekly_photo_streak":
+          shouldUnlock = await checkWeeklyPhotoStreak(userId, achievement.requirement_value, env);
+          break;
+        case "weekly_video_streak":
+          shouldUnlock = await checkWeeklyVideoStreak(userId, achievement.requirement_value, env);
+          break;
+        case "progress_day_streak":
+          shouldUnlock = await checkProgressDayStreak(userId, achievement.requirement_value, env);
+          break;
+        // Advanced Nutrition Achievement Types
+        case "macro_perfect_streak":
+          shouldUnlock = await checkMacroPerfectStreak(userId, achievement.requirement_value, env);
+          break;
+        case "hydration_streak":
+          shouldUnlock = await checkHydrationStreak(userId, achievement.requirement_value, env);
+          break;
+        case "custom_recipes":
+          shouldUnlock = await checkCustomRecipes(userId, achievement.requirement_value, env);
+          break;
+        case "nutrition_tracking_streak":
+          shouldUnlock = await checkNutritionTrackingStreak(userId, achievement.requirement_value, env);
+          break;
+        case "balanced_macro_streak":
+          shouldUnlock = await checkBalancedMacroStreak(userId, achievement.requirement_value, env);
+          break;
+        // Challenge & Goals Achievement Types
+        case "daily_challenges_completed":
+          shouldUnlock = await checkDailyChallengesCompleted(userId, achievement.requirement_value, env);
+          break;
+        case "perfect_challenge_week":
+          shouldUnlock = await checkPerfectChallengeWeek(userId, achievement.requirement_value, env);
+          break;
+        case "weekly_goals_completed":
+          shouldUnlock = await checkWeeklyGoalsCompleted(userId, achievement.requirement_value, env);
+          break;
+        case "simultaneous_streaks":
+          shouldUnlock = await checkSimultaneousStreaks(userId, achievement.requirement_value, env);
+          break;
+        case "streak_comeback":
+          shouldUnlock = await checkStreakComeback(userId, achievement.requirement_value, env);
+          break;
+        // Enhanced Consistency Achievement Types
+        case "login_streak":
+          shouldUnlock = await checkLoginStreak(userId, achievement.requirement_value, env);
+          break;
+        case "single_habit_streak":
+          shouldUnlock = await checkSingleHabitStreak(userId, achievement.requirement_value, env);
+          break;
+        case "multi_habit_streaks":
+          shouldUnlock = await checkMultiHabitStreaks(userId, achievement.requirement_value, env);
+          break;
+        case "yearly_consistency":
+          shouldUnlock = await checkYearlyConsistency(userId, achievement.requirement_value, env);
+          break;
+        case "perfect_consistency":
+          shouldUnlock = await checkPerfectConsistency(userId, achievement.requirement_value, env);
+          break;
+        // Enhanced Onboarding Achievement Types
+        case "feature_exploration":
+          shouldUnlock = await checkFeatureExploration(userId, achievement.requirement_value, env);
+          break;
+        case "early_engagement":
+          shouldUnlock = await checkEarlyEngagement(userId, achievement.requirement_value, env);
+          break;
+        case "early_invites":
+          shouldUnlock = await checkEarlyInvites(userId, achievement.requirement_value, env);
+          break;
+        case "fast_achievements":
+          shouldUnlock = await checkFastAchievements(userId, achievement.requirement_value, env);
+          break;
+        case "commitment_streak":
+          shouldUnlock = await checkCommitmentStreak(userId, achievement.requirement_value, env);
+          break;
+        // Combo & Streak Achievement Types
+        case "achievement_combo":
+          shouldUnlock = false;
+          break;
+        case "daily_achievement_count":
+          shouldUnlock = await checkDailyAchievementCount(userId, achievement.requirement_value, env);
+          break;
+        case "category_mastery":
+          shouldUnlock = await checkCategoryMastery(userId, achievement.category, env);
+          break;
+        case "daily_achievement_streak":
+          shouldUnlock = await checkDailyAchievementStreak(userId, achievement.requirement_value, env);
+          break;
+        case "weekly_achievement_streak":
+          shouldUnlock = await checkWeeklyAchievementStreak(userId, achievement.requirement_value, env);
+          break;
+        case "total_achievements":
+          shouldUnlock = await checkTotalAchievements(userId, achievement.requirement_value, env);
+          break;
+        case "achievements_in_timeframe":
+          shouldUnlock = await checkAchievementsInTimeframe(userId, achievement.requirement_value, env);
+          break;
+        case "seasonal_event":
+          shouldUnlock = await checkSeasonalEvent(userId, achievement.requirement_value, env);
+          break;
+        case "monthly_challenge":
+          shouldUnlock = await checkMonthlyChallenge(userId, achievement.requirement_value, env);
+          break;
+        case "consecutive_monthly":
+          shouldUnlock = await checkConsecutiveMonthly(userId, achievement.requirement_value, env);
+          break;
+        case "achievement_rank":
+          shouldUnlock = await checkAchievementRank(userId, achievement.requirement_value, env);
+          break;
+        case "achievement_leaderboard":
+          shouldUnlock = await checkAchievementLeaderboard(userId, achievement.requirement_value, env);
+          break;
+        case "perfect_category":
+          shouldUnlock = await checkPerfectCategory(userId, achievement.requirement_value, env);
+          break;
+        case "completionist":
+          shouldUnlock = await checkCompletionist(userId, achievement.requirement_value, env);
           break;
       }
       if (shouldUnlock) {
@@ -1008,20 +1188,13 @@ async function checkHabitVariety(userId, targetCategories, env) {
   const categories = /* @__PURE__ */ new Set();
   habitList.forEach((habit) => {
     const name = habit.name.toLowerCase();
-    if (name.includes("\u{1F4A7}") || name.includes("water"))
-      categories.add("hydration");
-    if (name.includes("\u{1F3C3}") || name.includes("cardio") || name.includes("run"))
-      categories.add("cardio");
-    if (name.includes("\u{1F4AA}") || name.includes("strength") || name.includes("gym"))
-      categories.add("strength");
-    if (name.includes("\u{1F34E}") || name.includes("nutrition") || name.includes("eat"))
-      categories.add("nutrition");
-    if (name.includes("\u{1F634}") || name.includes("sleep") || name.includes("rest"))
-      categories.add("wellness");
-    if (name.includes("\u{1F4DA}") || name.includes("read") || name.includes("study"))
-      categories.add("learning");
-    if (name.includes("\u{1F9D8}") || name.includes("meditat") || name.includes("mindful"))
-      categories.add("mindfulness");
+    if (name.includes("\u{1F4A7}") || name.includes("water")) categories.add("hydration");
+    if (name.includes("\u{1F3C3}") || name.includes("cardio") || name.includes("run")) categories.add("cardio");
+    if (name.includes("\u{1F4AA}") || name.includes("strength") || name.includes("gym")) categories.add("strength");
+    if (name.includes("\u{1F34E}") || name.includes("nutrition") || name.includes("eat")) categories.add("nutrition");
+    if (name.includes("\u{1F634}") || name.includes("sleep") || name.includes("rest")) categories.add("wellness");
+    if (name.includes("\u{1F4DA}") || name.includes("read") || name.includes("study")) categories.add("learning");
+    if (name.includes("\u{1F9D8}") || name.includes("meditat") || name.includes("mindful")) categories.add("mindfulness");
   });
   return categories.size >= targetCategories;
 }
@@ -1057,8 +1230,7 @@ async function checkVideoAchievements(db, userId) {
     for (const achievement of achievements) {
       if (achievement.check) {
         const unlocked = await unlockAchievementIfNotEarned(db, userId, achievement.id);
-        if (unlocked)
-          unlockedAchievements.push(unlocked);
+        if (unlocked) unlockedAchievements.push(unlocked);
       }
     }
   } catch (error) {
@@ -1101,8 +1273,7 @@ async function checkNutritionAchievements(db, userId) {
     for (const achievement of achievements) {
       if (achievement.check) {
         const unlocked = await unlockAchievementIfNotEarned(db, userId, achievement.id);
-        if (unlocked)
-          unlockedAchievements.push(unlocked);
+        if (unlocked) unlockedAchievements.push(unlocked);
       }
     }
   } catch (error) {
@@ -1134,21 +1305,15 @@ async function getNutritionStreakStats(db, userId) {
   let waterStreak = 0;
   let macroPerfectDays = 0;
   for (const day of recentDays.results || []) {
-    if (day.macro_balance_score > 0)
-      trackingStreak++;
-    else
-      break;
-    if (day.met_protein_goal && proteinStreak === trackingStreak - 1)
-      proteinStreak++;
-    if (day.met_calorie_goal && calorieStreak === trackingStreak - 1)
-      calorieStreak++;
+    if (day.macro_balance_score > 0) trackingStreak++;
+    else break;
+    if (day.met_protein_goal && proteinStreak === trackingStreak - 1) proteinStreak++;
+    if (day.met_calorie_goal && calorieStreak === trackingStreak - 1) calorieStreak++;
     if (day.met_protein_goal && day.met_carbs_goal && day.met_fat_goal) {
-      if (macroBalanceStreak === trackingStreak - 1)
-        macroBalanceStreak++;
+      if (macroBalanceStreak === trackingStreak - 1) macroBalanceStreak++;
       macroPerfectDays++;
     }
-    if (day.total_water_ml >= 2e3 && waterStreak === trackingStreak - 1)
-      waterStreak++;
+    if (day.total_water_ml >= 2e3 && waterStreak === trackingStreak - 1) waterStreak++;
   }
   return {
     tracking_streak: trackingStreak,
@@ -1164,13 +1329,11 @@ async function unlockAchievementIfNotEarned(db, userId, achievementId) {
         SELECT id FROM user_achievements 
         WHERE user_id = ? AND achievement_id = ?
     `).bind(userId, achievementId).first();
-  if (existing)
-    return null;
+  if (existing) return null;
   const achievement = await db.prepare(`
         SELECT * FROM achievements WHERE id = ?
     `).bind(achievementId).first();
-  if (!achievement)
-    return null;
+  if (!achievement) return null;
   const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
   const userAchievementId = uuidv4();
   await db.prepare(`
@@ -1244,11 +1407,625 @@ async function createUserReminders(userId, env) {
     return [];
   }
 }
+async function checkFriendsCount(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as friend_count 
+        FROM friendships 
+        WHERE (user_id = ? OR friend_id = ?) AND status = 'accepted'
+    `).bind(userId, userId).first();
+  return result.friend_count >= requiredCount;
+}
+async function checkWeeklyRank(userId, maxRank, env) {
+  const weekStart = getWeekStart(/* @__PURE__ */ new Date());
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) + 1 as rank
+        FROM (
+            SELECT u.id, SUM(hc.points) as weekly_points
+            FROM users u
+            LEFT JOIN habit_completions hc ON u.id = hc.user_id 
+                AND date(hc.created_at) >= date(?)
+            GROUP BY u.id
+            HAVING weekly_points > (
+                SELECT SUM(hc2.points) 
+                FROM habit_completions hc2 
+                WHERE hc2.user_id = ? AND date(hc2.created_at) >= date(?)
+            )
+        )
+    `).bind(weekStart, userId, weekStart).first();
+  return result.rank <= maxRank;
+}
+async function checkConsecutiveTopRanking(userId, requiredWeeks, env) {
+  let consecutiveWeeks = 0;
+  const currentDate = /* @__PURE__ */ new Date();
+  for (let i = 0; i < requiredWeeks + 5; i++) {
+    const weekStart = new Date(currentDate.getTime() - i * 7 * 24 * 60 * 60 * 1e3);
+    const rank = await getUserWeeklyRank(userId, weekStart, env);
+    if (rank <= 5) {
+      consecutiveWeeks++;
+      if (consecutiveWeeks >= requiredWeeks) return true;
+    } else {
+      consecutiveWeeks = 0;
+    }
+  }
+  return false;
+}
+async function checkStatsViews(userId, requiredViews, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as view_count 
+        FROM user_activity_log 
+        WHERE user_id = ? AND activity_type = 'stats_view'
+    `).bind(userId).first();
+  return result.view_count >= requiredViews;
+}
+async function checkProgressViews(userId, requiredViews, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as view_count 
+        FROM user_activity_log 
+        WHERE user_id = ? AND activity_type = 'progress_view'
+    `).bind(userId).first();
+  return result.view_count >= requiredViews;
+}
+async function checkLeaderboardViews(userId, requiredViews, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as view_count 
+        FROM user_activity_log 
+        WHERE user_id = ? AND activity_type = 'leaderboard_view'
+    `).bind(userId).first();
+  return result.view_count >= requiredViews;
+}
+async function checkRoutineConsistency(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as consistent_days
+        FROM habit_completions hc1
+        WHERE user_id = ? 
+        AND date(created_at) >= date('now', '-${requiredDays + 10} days')
+        AND EXISTS (
+            SELECT 1 FROM habit_completions hc2
+            WHERE hc2.user_id = hc1.user_id
+            AND date(hc2.created_at) = date(hc1.created_at, '+1 day')
+            AND hc2.habit_id = hc1.habit_id
+        )
+    `).bind(userId).first();
+  return result.consistent_days >= requiredDays;
+}
+async function checkMorningHabitStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as morning_days
+        FROM (
+            SELECT date(created_at) as completion_date
+            FROM habit_completions
+            WHERE user_id = ? 
+            AND time(created_at) <= '08:00:00'
+            AND date(created_at) >= date('now', '-${requiredDays + 5} days')
+            GROUP BY date(created_at)
+            HAVING COUNT(*) > 0
+        )
+    `).bind(userId).first();
+  return result.morning_days >= requiredDays;
+}
+async function checkEveningHabitStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as evening_days
+        FROM (
+            SELECT date(created_at) as completion_date
+            FROM habit_completions
+            WHERE user_id = ? 
+            AND time(created_at) >= '18:00:00'
+            AND date(created_at) >= date('now', '-${requiredDays + 5} days')
+            GROUP BY date(created_at)
+            HAVING COUNT(*) > 0
+        )
+    `).bind(userId).first();
+  return result.evening_days >= requiredDays;
+}
+async function checkWeekendConsistency(userId, requiredWeekends, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as weekend_count
+        FROM (
+            SELECT strftime('%Y-%W', created_at) as week_year
+            FROM habit_completions
+            WHERE user_id = ? 
+            AND strftime('%w', created_at) IN ('0', '6')
+            GROUP BY strftime('%Y-%W', created_at)
+            HAVING COUNT(DISTINCT strftime('%w', created_at)) = 2
+        )
+    `).bind(userId).first();
+  return result.weekend_count >= requiredWeekends;
+}
+async function checkMonthlyVideoComparisons(userId, requiredMonths, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT strftime('%Y-%m', created_at)) as month_count
+        FROM media_uploads
+        WHERE user_id = ? 
+        AND file_type LIKE 'video/%'
+        AND video_type IN ('before', 'after')
+    `).bind(userId).first();
+  return result.month_count >= requiredMonths;
+}
+async function checkDescribedUploads(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as described_count
+        FROM media_uploads
+        WHERE user_id = ? 
+        AND description IS NOT NULL 
+        AND description != ''
+    `).bind(userId).first();
+  return result.described_count >= requiredCount;
+}
+async function checkWeeklyPhotoStreak(userId, requiredWeeks, env) {
+  let consecutiveWeeks = 0;
+  const currentDate = /* @__PURE__ */ new Date();
+  for (let i = 0; i < requiredWeeks + 2; i++) {
+    const weekStart = new Date(currentDate.getTime() - i * 7 * 24 * 60 * 60 * 1e3);
+    const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1e3);
+    const result = await env.DB.prepare(`
+            SELECT COUNT(*) as photo_count
+            FROM media_uploads
+            WHERE user_id = ? 
+            AND file_type LIKE 'image/%'
+            AND date(created_at) BETWEEN date(?) AND date(?)
+        `).bind(userId, weekStart.toISOString().split("T")[0], weekEnd.toISOString().split("T")[0]).first();
+    if (result.photo_count > 0) {
+      consecutiveWeeks++;
+      if (consecutiveWeeks >= requiredWeeks) return true;
+    } else {
+      consecutiveWeeks = 0;
+    }
+  }
+  return false;
+}
+async function checkWeeklyVideoStreak(userId, requiredWeeks, env) {
+  let consecutiveWeeks = 0;
+  const currentDate = /* @__PURE__ */ new Date();
+  for (let i = 0; i < requiredWeeks + 2; i++) {
+    const weekStart = new Date(currentDate.getTime() - i * 7 * 24 * 60 * 60 * 1e3);
+    const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1e3);
+    const result = await env.DB.prepare(`
+            SELECT COUNT(*) as video_count
+            FROM media_uploads
+            WHERE user_id = ? 
+            AND file_type LIKE 'video/%'
+            AND date(created_at) BETWEEN date(?) AND date(?)
+        `).bind(userId, weekStart.toISOString().split("T")[0], weekEnd.toISOString().split("T")[0]).first();
+    if (result.video_count > 0) {
+      consecutiveWeeks++;
+      if (consecutiveWeeks >= requiredWeeks) return true;
+    } else {
+      consecutiveWeeks = 0;
+    }
+  }
+  return false;
+}
+async function checkProgressDayStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as upload_days
+        FROM media_uploads
+        WHERE user_id = ? 
+        AND date(created_at) >= date('now', '-${requiredDays + 5} days')
+    `).bind(userId).first();
+  return result.upload_days >= requiredDays;
+}
+async function checkMacroPerfectStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT MAX(consecutive_days) as max_streak
+        FROM (
+            SELECT COUNT(*) as consecutive_days
+            FROM user_daily_nutrition udn
+            WHERE user_id = ? 
+            AND protein_target_met = 1 
+            AND carbs_target_met = 1 
+            AND fat_target_met = 1
+            AND date >= date('now', '-${requiredDays + 10} days')
+        )
+    `).bind(userId).first();
+  return result.max_streak >= requiredDays;
+}
+async function checkHydrationStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as hydration_days
+        FROM user_daily_nutrition
+        WHERE user_id = ? 
+        AND water_target_met = 1
+        AND date >= date('now', '-${requiredDays + 5} days')
+    `).bind(userId).first();
+  return result.hydration_days >= requiredDays;
+}
+async function checkCustomRecipes(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT food_name) as recipe_count
+        FROM user_nutrition_logs
+        WHERE user_id = ? AND is_custom_recipe = 1
+    `).bind(userId).first();
+  return result.recipe_count >= requiredCount;
+}
+async function checkNutritionTrackingStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as tracking_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND date(created_at) >= date('now', '-${requiredDays + 5} days')
+    `).bind(userId).first();
+  return result.tracking_days >= requiredDays;
+}
+async function checkBalancedMacroStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as balanced_days
+        FROM user_daily_nutrition
+        WHERE user_id = ? 
+        AND ABS(protein_percentage - 25) <= 2.5
+        AND ABS(carbs_percentage - 45) <= 4.5
+        AND ABS(fat_percentage - 30) <= 3.0
+        AND date >= date('now', '-${requiredDays + 5} days')
+    `).bind(userId).first();
+  return result.balanced_days >= requiredDays;
+}
+async function checkDailyChallengesCompleted(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as completed_count
+        FROM daily_challenge_completions dcc
+        JOIN daily_challenges dc ON dcc.challenge_id = dc.id
+        WHERE dcc.user_id = ?
+    `).bind(userId).first();
+  return result.completed_count >= requiredCount;
+}
+async function checkPerfectChallengeWeek(userId, requiredWeeks, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as perfect_weeks
+        FROM (
+            SELECT strftime('%Y-%W', dcc.created_at) as week_year,
+                   COUNT(*) as completed,
+                   (SELECT COUNT(*) FROM daily_challenges 
+                    WHERE date BETWEEN date(?, 'weekday 0', '-6 days') AND date(?)) as total
+            FROM daily_challenge_completions dcc
+            WHERE user_id = ?
+            GROUP BY strftime('%Y-%W', dcc.created_at)
+            HAVING completed = total AND total > 0
+        )
+    `).bind(getWeekStart(/* @__PURE__ */ new Date()).toISOString(), (/* @__PURE__ */ new Date()).toISOString(), userId).first();
+  return result.perfect_weeks >= requiredWeeks;
+}
+async function checkWeeklyGoalsCompleted(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as goals_completed
+        FROM (
+            SELECT strftime('%Y-%W', hc.created_at) as week_year
+            FROM habit_completions hc
+            JOIN habits h ON hc.habit_id = h.id
+            WHERE h.user_id = ?
+            GROUP BY h.id, strftime('%Y-%W', hc.created_at)
+            HAVING COUNT(*) >= h.weekly_target
+        )
+    `).bind(userId).first();
+  return result.goals_completed >= requiredCount;
+}
+async function checkSimultaneousStreaks(userId, requiredStreaks, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as active_streaks
+        FROM habits h
+        WHERE h.user_id = ? AND (
+            SELECT COUNT(DISTINCT date(hc.created_at))
+            FROM habit_completions hc
+            WHERE hc.habit_id = h.id
+            AND date(hc.created_at) >= date('now', '-35 days')
+        ) >= 30
+    `).bind(userId).first();
+  return result.active_streaks >= requiredStreaks;
+}
+async function checkStreakComeback(userId, requiredCount, env) {
+  return false;
+}
+async function checkLoginStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as login_days
+        FROM user_activity_log
+        WHERE user_id = ? 
+        AND activity_type = 'login'
+        AND date(created_at) >= date('now', '-${requiredDays + 5} days')
+    `).bind(userId).first();
+  return result.login_days >= requiredDays;
+}
+async function checkSingleHabitStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT MAX(streak_days) as max_streak
+        FROM (
+            SELECT habit_id, COUNT(DISTINCT date(created_at)) as streak_days
+            FROM habit_completions
+            WHERE user_id = ?
+            AND date(created_at) >= date('now', '-${requiredDays + 10} days')
+            GROUP BY habit_id
+        )
+    `).bind(userId).first();
+  return result.max_streak >= requiredDays;
+}
+async function checkMultiHabitStreaks(userId, requiredStreaks, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as active_streaks
+        FROM (
+            SELECT habit_id, COUNT(DISTINCT date(created_at)) as streak_days
+            FROM habit_completions
+            WHERE user_id = ?
+            AND date(created_at) >= date('now', '-20 days')
+            GROUP BY habit_id
+            HAVING streak_days >= 14
+        )
+    `).bind(userId).first();
+  return result.active_streaks >= requiredStreaks;
+}
+async function checkYearlyConsistency(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as active_days
+        FROM habit_completions
+        WHERE user_id = ?
+        AND date(created_at) >= date('now', '-366 days')
+    `).bind(userId).first();
+  return result.active_days >= requiredDays;
+}
+async function checkPerfectConsistency(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as perfect_days
+        FROM habit_completions hc1
+        WHERE user_id = ?
+        AND date(created_at) >= date('now', '-${requiredDays + 10} days')
+        AND NOT EXISTS (
+            SELECT 1 FROM habits h
+            WHERE h.user_id = hc1.user_id
+            AND h.created_at <= date(hc1.created_at)
+            AND NOT EXISTS (
+                SELECT 1 FROM habit_completions hc2
+                WHERE hc2.habit_id = h.id
+                AND date(hc2.created_at) = date(hc1.created_at)
+            )
+        )
+    `).bind(userId).first();
+  return result.perfect_days >= requiredDays;
+}
+async function checkFeatureExploration(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT activity_type) as features_used
+        FROM user_activity_log
+        WHERE user_id = ?
+        AND activity_type IN ('habit_creation', 'media_upload', 'nutrition_log', 'achievement_view')
+        AND date(created_at) = date('now')
+    `).bind(userId).first();
+  return result.features_used >= 4;
+}
+async function checkEarlyEngagement(userId, requiredDays, env) {
+  const userCreated = await env.DB.prepare(`
+        SELECT created_at FROM users WHERE id = ?
+    `).bind(userId).first();
+  if (!userCreated) return false;
+  const createdDate = new Date(userCreated.created_at);
+  const twoWeeksLater = new Date(createdDate.getTime() + 14 * 24 * 60 * 60 * 1e3);
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as active_days
+        FROM user_activity_log
+        WHERE user_id = ?
+        AND activity_type = 'login'
+        AND created_at BETWEEN ? AND ?
+    `).bind(userId, createdDate.toISOString(), twoWeeksLater.toISOString()).first();
+  return result.active_days >= requiredDays;
+}
+async function checkEarlyInvites(userId, requiredCount, env) {
+  const userCreated = await env.DB.prepare(`
+        SELECT created_at FROM users WHERE id = ?
+    `).bind(userId).first();
+  if (!userCreated) return false;
+  const createdDate = new Date(userCreated.created_at);
+  const oneMonthLater = new Date(createdDate.getTime() + 30 * 24 * 60 * 60 * 1e3);
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as invite_count
+        FROM friendships
+        WHERE user_id = ?
+        AND created_at BETWEEN ? AND ?
+    `).bind(userId, createdDate.toISOString(), oneMonthLater.toISOString()).first();
+  return result.invite_count >= requiredCount;
+}
+async function checkFastAchievements(userId, requiredCount, env) {
+  const userCreated = await env.DB.prepare(`
+        SELECT created_at FROM users WHERE id = ?
+    `).bind(userId).first();
+  if (!userCreated) return false;
+  const createdDate = new Date(userCreated.created_at);
+  const twoWeeksLater = new Date(createdDate.getTime() + 14 * 24 * 60 * 60 * 1e3);
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as achievement_count
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ?
+        AND ua.created_at BETWEEN ? AND ?
+    `).bind(userId, createdDate.toISOString(), twoWeeksLater.toISOString()).first();
+  return result.achievement_count >= requiredCount;
+}
+async function checkCommitmentStreak(userId, requiredDays, env) {
+  const userCreated = await env.DB.prepare(`
+        SELECT created_at FROM users WHERE id = ?
+    `).bind(userId).first();
+  if (!userCreated) return false;
+  const createdDate = new Date(userCreated.created_at);
+  const thirtyDaysLater = new Date(createdDate.getTime() + 30 * 24 * 60 * 60 * 1e3);
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as login_days
+        FROM user_activity_log
+        WHERE user_id = ?
+        AND activity_type = 'login'
+        AND created_at BETWEEN ? AND ?
+    `).bind(userId, createdDate.toISOString(), thirtyDaysLater.toISOString()).first();
+  return result.login_days >= requiredDays;
+}
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day;
+  return new Date(d.setDate(diff));
+}
+async function getUserWeeklyRank(userId, weekStart, env) {
+  const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1e3);
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) + 1 as rank
+        FROM (
+            SELECT u.id, COALESCE(SUM(hc.points), 0) as weekly_points
+            FROM users u
+            LEFT JOIN habit_completions hc ON u.id = hc.user_id 
+                AND date(hc.created_at) BETWEEN date(?) AND date(?)
+            GROUP BY u.id
+            HAVING weekly_points > (
+                SELECT COALESCE(SUM(hc2.points), 0)
+                FROM habit_completions hc2 
+                WHERE hc2.user_id = ? 
+                AND date(hc2.created_at) BETWEEN date(?) AND date(?)
+            )
+        )
+    `).bind(
+    weekStart.toISOString().split("T")[0],
+    weekEnd.toISOString().split("T")[0],
+    userId,
+    weekStart.toISOString().split("T")[0],
+    weekEnd.toISOString().split("T")[0]
+  ).first();
+  return result.rank;
+}
+async function checkDailyAchievementCount(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as achievement_count
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ?
+        AND date(ua.created_at) = date('now')
+    `).bind(userId).first();
+  return result.achievement_count >= requiredCount;
+}
+async function checkCategoryMastery(userId, category, env) {
+  const categoryAchievements = await env.DB.prepare(`
+        SELECT COUNT(*) as total_in_category
+        FROM achievements
+        WHERE category = ? AND is_hidden = 0
+    `).bind(category).first();
+  const userCategoryAchievements = await env.DB.prepare(`
+        SELECT COUNT(*) as earned_in_category
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ? AND a.category = ? AND a.is_hidden = 0
+    `).bind(userId, category).first();
+  return userCategoryAchievements.earned_in_category >= categoryAchievements.total_in_category;
+}
+async function checkDailyAchievementStreak(userId, requiredDays, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(ua.created_at)) as achievement_days
+        FROM user_achievements ua
+        WHERE ua.user_id = ?
+        AND date(ua.created_at) >= date('now', '-${requiredDays} days')
+    `).bind(userId).first();
+  return result.achievement_days >= requiredDays;
+}
+async function checkWeeklyAchievementStreak(userId, requiredWeeks, env) {
+  let consecutiveWeeks = 0;
+  const currentDate = /* @__PURE__ */ new Date();
+  for (let i = 0; i < requiredWeeks + 2; i++) {
+    const weekStart = new Date(currentDate.getTime() - i * 7 * 24 * 60 * 60 * 1e3);
+    const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1e3);
+    const result = await env.DB.prepare(`
+            SELECT COUNT(*) as weekly_achievements
+            FROM user_achievements ua
+            WHERE ua.user_id = ?
+            AND date(ua.created_at) BETWEEN date(?) AND date(?)
+        `).bind(userId, weekStart.toISOString().split("T")[0], weekEnd.toISOString().split("T")[0]).first();
+    if (result.weekly_achievements > 0) {
+      consecutiveWeeks++;
+      if (consecutiveWeeks >= requiredWeeks) return true;
+    } else {
+      consecutiveWeeks = 0;
+    }
+  }
+  return false;
+}
+async function checkTotalAchievements(userId, requiredCount, env) {
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as total_achievements
+        FROM user_achievements
+        WHERE user_id = ?
+    `).bind(userId).first();
+  return result.total_achievements >= requiredCount;
+}
+async function checkAchievementsInTimeframe(userId, requiredCount, env) {
+  const userCreated = await env.DB.prepare(`
+        SELECT created_at FROM users WHERE id = ?
+    `).bind(userId).first();
+  if (!userCreated) return false;
+  const createdDate = new Date(userCreated.created_at);
+  const oneMonthLater = new Date(createdDate.getTime() + 30 * 24 * 60 * 60 * 1e3);
+  const result = await env.DB.prepare(`
+        SELECT COUNT(*) as achievement_count
+        FROM user_achievements ua
+        WHERE ua.user_id = ?
+        AND ua.created_at BETWEEN ? AND ?
+    `).bind(userId, createdDate.toISOString(), oneMonthLater.toISOString()).first();
+  return result.achievement_count >= requiredCount;
+}
+async function checkSeasonalEvent(userId, requiredCount, env) {
+  return false;
+}
+async function checkMonthlyChallenge(userId, requiredCount, env) {
+  return false;
+}
+async function checkConsecutiveMonthly(userId, requiredCount, env) {
+  return false;
+}
+async function checkAchievementRank(userId, percentile, env) {
+  const friendsCount = await env.DB.prepare(`
+        SELECT COUNT(*) as friends_count
+        FROM friendships
+        WHERE (user_id = ? OR friend_id = ?) AND status = 'accepted'
+    `).bind(userId, userId).first();
+  if (friendsCount.friends_count === 0) return false;
+  const userAchievementCount = await env.DB.prepare(`
+        SELECT COUNT(*) as user_achievements
+        FROM user_achievements
+        WHERE user_id = ?
+    `).bind(userId).first();
+  const betterFriends = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT f.friend_id) as better_count
+        FROM friendships f
+        LEFT JOIN user_achievements ua ON (
+            f.friend_id = ua.user_id OR 
+            (f.user_id = ua.user_id AND f.friend_id = ?)
+        )
+        WHERE (f.user_id = ? OR f.friend_id = ?) 
+        AND f.status = 'accepted'
+        GROUP BY f.friend_id
+        HAVING COUNT(ua.id) > ?
+    `).bind(userId, userId, userId, userAchievementCount.user_achievements).first();
+  const percentileRank = (friendsCount.friends_count - (betterFriends?.better_count || 0)) / friendsCount.friends_count * 100;
+  return percentileRank >= percentile;
+}
+async function checkAchievementLeaderboard(userId, requiredRank, env) {
+  return await checkAchievementRank(userId, 100, env);
+}
+async function checkPerfectCategory(userId, requiredCount, env) {
+  const categories = ["onboarding", "habits", "progress", "nutrition", "social", "consistency", "challenges", "analytics"];
+  for (const category of categories) {
+    const mastery = await checkCategoryMastery(userId, category, env);
+    if (mastery) return true;
+  }
+  return false;
+}
+async function checkCompletionist(userId, requiredCount, env) {
+  const totalNonHidden = await env.DB.prepare(`
+        SELECT COUNT(*) as total_achievements
+        FROM achievements
+        WHERE is_hidden = 0
+    `).first();
+  const userAchievements = await env.DB.prepare(`
+        SELECT COUNT(*) as user_achievements
+        FROM user_achievements ua
+        JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ? AND a.is_hidden = 0
+    `).bind(userId).first();
+  return userAchievements.user_achievements >= totalNonHidden.total_achievements * 0.95;
+}
 var init_achievements = __esm({
   "utils/achievements.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     __name(checkAndAwardAchievements, "checkAndAwardAchievements");
     __name(getUserStats, "getUserStats");
     __name(unlockAchievement, "unlockAchievement");
@@ -1263,6 +2040,56 @@ var init_achievements = __esm({
     __name(getNutritionStreakStats, "getNutritionStreakStats");
     __name(unlockAchievementIfNotEarned, "unlockAchievementIfNotEarned");
     __name(createUserReminders, "createUserReminders");
+    __name(checkFriendsCount, "checkFriendsCount");
+    __name(checkWeeklyRank, "checkWeeklyRank");
+    __name(checkConsecutiveTopRanking, "checkConsecutiveTopRanking");
+    __name(checkStatsViews, "checkStatsViews");
+    __name(checkProgressViews, "checkProgressViews");
+    __name(checkLeaderboardViews, "checkLeaderboardViews");
+    __name(checkRoutineConsistency, "checkRoutineConsistency");
+    __name(checkMorningHabitStreak, "checkMorningHabitStreak");
+    __name(checkEveningHabitStreak, "checkEveningHabitStreak");
+    __name(checkWeekendConsistency, "checkWeekendConsistency");
+    __name(checkMonthlyVideoComparisons, "checkMonthlyVideoComparisons");
+    __name(checkDescribedUploads, "checkDescribedUploads");
+    __name(checkWeeklyPhotoStreak, "checkWeeklyPhotoStreak");
+    __name(checkWeeklyVideoStreak, "checkWeeklyVideoStreak");
+    __name(checkProgressDayStreak, "checkProgressDayStreak");
+    __name(checkMacroPerfectStreak, "checkMacroPerfectStreak");
+    __name(checkHydrationStreak, "checkHydrationStreak");
+    __name(checkCustomRecipes, "checkCustomRecipes");
+    __name(checkNutritionTrackingStreak, "checkNutritionTrackingStreak");
+    __name(checkBalancedMacroStreak, "checkBalancedMacroStreak");
+    __name(checkDailyChallengesCompleted, "checkDailyChallengesCompleted");
+    __name(checkPerfectChallengeWeek, "checkPerfectChallengeWeek");
+    __name(checkWeeklyGoalsCompleted, "checkWeeklyGoalsCompleted");
+    __name(checkSimultaneousStreaks, "checkSimultaneousStreaks");
+    __name(checkStreakComeback, "checkStreakComeback");
+    __name(checkLoginStreak, "checkLoginStreak");
+    __name(checkSingleHabitStreak, "checkSingleHabitStreak");
+    __name(checkMultiHabitStreaks, "checkMultiHabitStreaks");
+    __name(checkYearlyConsistency, "checkYearlyConsistency");
+    __name(checkPerfectConsistency, "checkPerfectConsistency");
+    __name(checkFeatureExploration, "checkFeatureExploration");
+    __name(checkEarlyEngagement, "checkEarlyEngagement");
+    __name(checkEarlyInvites, "checkEarlyInvites");
+    __name(checkFastAchievements, "checkFastAchievements");
+    __name(checkCommitmentStreak, "checkCommitmentStreak");
+    __name(getWeekStart, "getWeekStart");
+    __name(getUserWeeklyRank, "getUserWeeklyRank");
+    __name(checkDailyAchievementCount, "checkDailyAchievementCount");
+    __name(checkCategoryMastery, "checkCategoryMastery");
+    __name(checkDailyAchievementStreak, "checkDailyAchievementStreak");
+    __name(checkWeeklyAchievementStreak, "checkWeeklyAchievementStreak");
+    __name(checkTotalAchievements, "checkTotalAchievements");
+    __name(checkAchievementsInTimeframe, "checkAchievementsInTimeframe");
+    __name(checkSeasonalEvent, "checkSeasonalEvent");
+    __name(checkMonthlyChallenge, "checkMonthlyChallenge");
+    __name(checkConsecutiveMonthly, "checkConsecutiveMonthly");
+    __name(checkAchievementRank, "checkAchievementRank");
+    __name(checkAchievementLeaderboard, "checkAchievementLeaderboard");
+    __name(checkPerfectCategory, "checkPerfectCategory");
+    __name(checkCompletionist, "checkCompletionist");
   }
 });
 
@@ -1366,9 +2193,8 @@ async function updateDailyChallengeProgress(db, userId, challengeType, progressA
 }
 var init_streaks = __esm({
   "utils/streaks.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     __name(updateStreak, "updateStreak");
     __name(updateDailyChallengeProgress, "updateDailyChallengeProgress");
   }
@@ -1418,10 +2244,10 @@ async function onRequestPost({ request, env }) {
     const progressHints = await env.DB.prepare(`
             SELECT 
                 a.*,
-                uap.progress_count as current_progress,
+                uap.current_progress,
                 CASE 
-                    WHEN uap.progress_count >= a.requirement_value * 0.8 
-                    AND uap.progress_count < a.requirement_value 
+                    WHEN uap.current_progress >= a.requirement_value * 0.8 
+                    AND uap.current_progress < a.requirement_value 
                     THEN 1 
                     ELSE 0 
                 END as show_hint
@@ -1429,8 +2255,8 @@ async function onRequestPost({ request, env }) {
             LEFT JOIN user_achievement_progress uap ON a.id = uap.achievement_id AND uap.user_id = ?
             LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
             WHERE ua.id IS NULL 
-            AND uap.progress_count >= a.requirement_value * 0.8
-            AND uap.progress_count < a.requirement_value
+            AND uap.current_progress >= a.requirement_value * 0.8
+            AND uap.current_progress < a.requirement_value
             LIMIT 2
         `).bind(userId, userId).all();
     const hints = progressHints.results?.map((hint) => ({
@@ -1463,9 +2289,8 @@ async function onRequestPost({ request, env }) {
 }
 var init_check = __esm({
   "api/achievements/check.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_achievements();
     init_streaks();
     __name(onRequestPost, "onRequestPost");
@@ -1475,9 +2300,8 @@ var init_check = __esm({
 // ../node_modules/bcryptjs/dist/bcrypt.js
 var require_bcrypt = __commonJS({
   "../node_modules/bcryptjs/dist/bcrypt.js"(exports, module) {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     (function(global, factory) {
       if (typeof define === "function" && define["amd"])
         define([], factory);
@@ -1672,8 +2496,7 @@ var require_bcrypt = __commonJS({
       function stringToBytes2(str) {
         var out = [], i = 0;
         utfx.encodeUTF16toUTF8(function() {
-          if (i >= str.length)
-            return null;
+          if (i >= str.length) return null;
           return str.charCodeAt(i++);
         }, function(b) {
           out.push(b);
@@ -1918,8 +2741,7 @@ var require_bcrypt = __commonJS({
               ((b = src()) === null || (c = src()) === null) && fail([a, b, c]), dst((a & 15) << 12 | (b & 63) << 6 | c & 63);
             else if ((a & 248) === 240)
               ((b = src()) === null || (c = src()) === null || (d = src()) === null) && fail([a, b, c, d]), dst((a & 7) << 18 | (b & 63) << 12 | (c & 63) << 6 | d & 63);
-            else
-              throw RangeError("Illegal starting byte: " + a);
+            else throw RangeError("Illegal starting byte: " + a);
           }
         };
         utfx2.UTF16toUTF8 = function(src, dst) {
@@ -1938,8 +2760,7 @@ var require_bcrypt = __commonJS({
             }
             dst(c1);
           }
-          if (c2 !== null)
-            dst(c2);
+          if (c2 !== null) dst(c2);
         };
         utfx2.UTF8toUTF16 = function(src, dst) {
           var cp = null;
@@ -3406,9 +4227,8 @@ async function checkAndAwardAchievements2(userId, env) {
 }
 var init_database = __esm({
   "utils/database.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     __name(getUserByEmail, "getUserByEmail");
     __name(getUserById, "getUserById");
     __name(createUser, "createUser");
@@ -3428,8 +4248,7 @@ async function onRequestGet2(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAdmin(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const media = await getAllMedia(env);
     const mediaWithUrls = media.map((item) => ({
       ...item,
@@ -3454,8 +4273,7 @@ async function onRequestPost2(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAdmin(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const body = await request.json();
     const { mediaId, action } = body;
     if (!mediaId || !action) {
@@ -3531,9 +4349,8 @@ async function onRequestPost2(context) {
 }
 var init_media = __esm({
   "api/admin/media.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     init_database();
     __name(onRequestGet2, "onRequestGet");
@@ -3546,8 +4363,7 @@ async function onRequestGet3(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAdmin(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const users = await env.DB.prepare(`
             SELECT u.id, u.email, u.role, u.points, u.created_at,
                    COUNT(DISTINCT h.id) as total_habits,
@@ -3586,12 +4402,11 @@ async function onRequestGet3(context) {
     });
   }
 }
-async function onRequestDelete(context) {
+async function onRequestDelete2(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAdmin(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const url = new URL(request.url);
     const userId = url.searchParams.get("userId");
     if (!userId) {
@@ -3650,12 +4465,11 @@ async function onRequestDelete(context) {
 }
 var init_users = __esm({
   "api/admin/users.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     __name(onRequestGet3, "onRequestGet");
-    __name(onRequestDelete, "onRequestDelete");
+    __name(onRequestDelete2, "onRequestDelete");
   }
 });
 
@@ -3717,9 +4531,8 @@ async function onRequestPost3(context) {
 }
 var init_login = __esm({
   "api/auth/login.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_database();
     init_auth();
     __name(onRequestPost3, "onRequestPost");
@@ -3752,9 +4565,8 @@ async function onRequestPost4(context) {
 }
 var init_logout = __esm({
   "api/auth/logout.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     __name(onRequestPost4, "onRequestPost");
   }
@@ -3827,9 +4639,8 @@ async function onRequestPost5(context) {
 }
 var init_register = __esm({
   "api/auth/register.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_database();
     init_auth();
     __name(onRequestPost5, "onRequestPost");
@@ -3872,9 +4683,8 @@ async function onRequestGet4(context) {
 }
 var init_validate_session = __esm({
   "api/auth/validate-session.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     __name(onRequestGet4, "onRequestGet");
   }
@@ -3958,9 +4768,8 @@ async function onRequestGet5({ request, env }) {
 }
 var init_daily = __esm({
   "api/challenges/daily.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     __name(onRequestGet5, "onRequestGet");
   }
 });
@@ -3970,8 +4779,7 @@ async function onRequestPost6(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const body = await request.json();
     const { habitId, notes } = body;
@@ -4029,9 +4837,8 @@ async function onRequestPost6(context) {
 }
 var init_complete = __esm({
   "api/habits/complete.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     init_database();
     __name(onRequestPost6, "onRequestPost");
@@ -4043,8 +4850,7 @@ async function onRequestGet6(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const url = new URL(request.url);
     const weekStart = url.searchParams.get("weekStart") || getCurrentWeekStart();
@@ -4094,8 +4900,7 @@ async function onRequestPost7(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const body = await request.json();
     const { habitId, date, dayOfWeek } = body;
@@ -4182,9 +4987,8 @@ function getWeekEnd(weekStartStr) {
 }
 var init_weekly = __esm({
   "api/habits/weekly.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     __name(onRequestGet6, "onRequestGet");
     __name(onRequestPost7, "onRequestPost");
@@ -4194,8 +4998,258 @@ var init_weekly = __esm({
   }
 });
 
+// api/media/enhanced.js
+function getWeekStartFromDate2(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day;
+  const weekStart = new Date(d.setDate(diff));
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart;
+}
+function getWeekEndFromDate(date) {
+  const weekStart = getWeekStartFromDate2(date);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+  return weekEnd;
+}
+async function getUserMediaEnhanced(userId, env) {
+  const result = await env.DB.prepare(`
+        SELECT * FROM media_uploads 
+        WHERE user_id = ? 
+        ORDER BY uploaded_at DESC
+    `).bind(userId).all();
+  const media = result.results || [];
+  const categorizedMedia = media.map((item) => ({
+    ...item,
+    media_type: item.media_type || "progress"
+  }));
+  return categorizedMedia;
+}
+async function pairBeforeAfterMedia(media) {
+  const pairs = [];
+  const beforeMedia = media.filter((m) => m.media_type === "before");
+  const afterMedia = media.filter((m) => m.media_type === "after");
+  beforeMedia.forEach((beforeItem) => {
+    const beforeDate = new Date(beforeItem.uploaded_at);
+    const weekStart = getWeekStartFromDate2(beforeDate);
+    const weekEnd = getWeekEndFromDate(beforeDate);
+    const matchingAfter = afterMedia.find((afterItem) => {
+      const afterDate = new Date(afterItem.uploaded_at);
+      return afterDate >= weekStart && afterDate <= weekEnd;
+    });
+    if (matchingAfter) {
+      pairs.push({
+        id: `pair_${beforeItem.id}_${matchingAfter.id}`,
+        before: beforeItem,
+        after: matchingAfter,
+        week_start: weekStart.toISOString().split("T")[0],
+        week_end: weekEnd.toISOString().split("T")[0]
+      });
+    }
+  });
+  return pairs;
+}
+async function calculateMediaStats(media) {
+  const totalUploads = media.length;
+  const beforeCount = media.filter((m) => m.media_type === "before").length;
+  const afterCount = media.filter((m) => m.media_type === "after").length;
+  const progressCount = media.filter((m) => m.media_type === "progress").length;
+  const weeklyUploads = {};
+  media.forEach((item) => {
+    const date = new Date(item.uploaded_at);
+    const weekStart = getWeekStartFromDate2(date).toISOString().split("T")[0];
+    if (!weeklyUploads[weekStart]) {
+      weeklyUploads[weekStart] = { before: 0, after: 0, progress: 0, total: 0 };
+    }
+    weeklyUploads[weekStart][item.media_type]++;
+    weeklyUploads[weekStart].total++;
+  });
+  const mostActiveWeek = Object.keys(weeklyUploads).reduce((max, week) => {
+    return weeklyUploads[week].total > (weeklyUploads[max]?.total || 0) ? week : max;
+  }, null);
+  return {
+    total_uploads: totalUploads,
+    before_count: beforeCount,
+    after_count: afterCount,
+    progress_count: progressCount,
+    weekly_uploads: weeklyUploads,
+    most_active_week: mostActiveWeek,
+    most_active_week_count: mostActiveWeek ? weeklyUploads[mostActiveWeek].total : 0
+  };
+}
+async function onRequestGet7(context) {
+  const { request, env } = context;
+  try {
+    const authResult = await requireAuth(request, env);
+    if (authResult instanceof Response) return authResult;
+    const user = authResult;
+    const url = new URL(request.url);
+    const includeStats = url.searchParams.get("stats") === "true";
+    const includePairs = url.searchParams.get("pairs") === "true";
+    const filterType = url.searchParams.get("type");
+    const media = await getUserMediaEnhanced(user.id, env);
+    const mediaWithUrls = await Promise.all(media.map(async (item) => {
+      try {
+        const object = await env.MEDIA_BUCKET.get(item.r2_key);
+        if (object) {
+          return {
+            ...item,
+            url: `/api/media/file/${item.id}`,
+            thumbnail: `/api/media/thumbnail/${item.id}`
+          };
+        }
+        return item;
+      } catch (error) {
+        console.error("Error getting media URL:", error);
+        return item;
+      }
+    }));
+    const filteredMedia = filterType ? mediaWithUrls.filter((m) => m.media_type === filterType) : mediaWithUrls;
+    const response = {
+      media: filteredMedia
+    };
+    if (includeStats) {
+      response.stats = await calculateMediaStats(mediaWithUrls);
+    }
+    if (includePairs) {
+      const pairs = await pairBeforeAfterMedia(mediaWithUrls);
+      response.pairs = pairs;
+    }
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Get enhanced media error:", error);
+    return new Response(JSON.stringify({
+      error: "Internal server error"
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+async function onRequestPost8(context) {
+  const { request, env } = context;
+  try {
+    const authResult = await requireAuth(request, env);
+    if (authResult instanceof Response) return authResult;
+    const user = authResult;
+    const formData = await request.formData();
+    const file = formData.get("file");
+    const description = formData.get("description") || "";
+    const mediaType = formData.get("media_type") || "progress";
+    if (!file || !file.name) {
+      return new Response(JSON.stringify({
+        error: "File is required"
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const validTypes = ["before", "after", "progress"];
+    if (!validTypes.includes(mediaType)) {
+      return new Response(JSON.stringify({
+        error: "Invalid media type. Must be: before, after, or progress"
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "video/mp4", "video/quicktime"];
+    if (!allowedTypes.includes(file.type)) {
+      return new Response(JSON.stringify({
+        error: "Invalid file type. Only images and videos are allowed."
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      return new Response(JSON.stringify({
+        error: "File size too large. Maximum 50MB allowed."
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
+    const mediaId = uuidv4();
+    const fileExtension = file.name.split(".").pop();
+    const r2Key = `uploads/${user.id}/${mediaId}.${fileExtension}`;
+    await env.MEDIA_BUCKET.put(r2Key, file.stream());
+    await env.DB.prepare(`
+            INSERT INTO media_uploads (id, user_id, filename, original_name, file_type, file_size, r2_key, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+      mediaId,
+      user.id,
+      `${mediaId}.${fileExtension}`,
+      file.name,
+      file.type,
+      file.size,
+      r2Key,
+      `${mediaType}: ${description}`.trim()
+      // Prefix description with media type
+    ).run();
+    const points = mediaType === "before" ? 10 : mediaType === "after" ? 15 : 5;
+    await env.DB.prepare("UPDATE users SET points = points + ? WHERE id = ?").bind(points, user.id).run();
+    let pairBonus = 0;
+    if (mediaType === "after") {
+      const userMedia = await getUserMediaEnhanced(user.id, env);
+      const pairs = await pairBeforeAfterMedia(userMedia);
+      const newPair = pairs.find((pair) => pair.after.id === mediaId);
+      if (newPair) {
+        pairBonus = 25;
+        await env.DB.prepare("UPDATE users SET points = points + ? WHERE id = ?").bind(pairBonus, user.id).run();
+      }
+    }
+    const { checkAndAwardAchievements: checkAndAwardAchievements3 } = await Promise.resolve().then(() => (init_achievements(), achievements_exports));
+    const newAchievements = await checkAndAwardAchievements3(user.id, "media_upload", {
+      media_type: mediaType,
+      total_points: points + pairBonus
+    }, env);
+    return new Response(JSON.stringify({
+      message: "Media uploaded successfully",
+      mediaId,
+      media_type: mediaType,
+      points,
+      pair_bonus: pairBonus,
+      total_points: points + pairBonus,
+      newAchievements
+    }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Upload enhanced media error:", error);
+    return new Response(JSON.stringify({
+      error: "Internal server error"
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+var init_enhanced = __esm({
+  "api/media/enhanced.js"() {
+    init_functionsRoutes_0_9302165230404282();
+    init_checked_fetch();
+    init_auth();
+    __name(getWeekStartFromDate2, "getWeekStartFromDate");
+    __name(getWeekEndFromDate, "getWeekEndFromDate");
+    __name(getUserMediaEnhanced, "getUserMediaEnhanced");
+    __name(pairBeforeAfterMedia, "pairBeforeAfterMedia");
+    __name(calculateMediaStats, "calculateMediaStats");
+    __name(onRequestGet7, "onRequestGet");
+    __name(onRequestPost8, "onRequestPost");
+  }
+});
+
 // api/media/videos.js
-async function onRequestPost8({ request, env }) {
+async function onRequestPost9({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
     if (!sessionId) {
@@ -4324,7 +5378,7 @@ async function onRequestPost8({ request, env }) {
     });
   }
 }
-async function onRequestGet7({ request, env }) {
+async function onRequestGet8({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
     if (!sessionId) {
@@ -4396,22 +5450,286 @@ function getWeekNumber(date) {
 }
 var init_videos = __esm({
   "api/media/videos.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
-    __name(onRequestPost8, "onRequestPost");
-    __name(onRequestGet7, "onRequestGet");
+    __name(onRequestPost9, "onRequestPost");
+    __name(onRequestGet8, "onRequestGet");
     __name(getWeekNumber, "getWeekNumber");
   }
 });
 
+// api/achievements/unlock.js
+async function onRequest(context) {
+  const { request, env } = context;
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+  try {
+    const sessionId = request.headers.get("x-session-id");
+    if (!sessionId) {
+      return new Response(JSON.stringify({ error: "Session required" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const session = await env.DB.prepare(
+      'SELECT user_id FROM user_sessions WHERE session_id = ? AND expires_at > datetime("now")'
+    ).bind(sessionId).first();
+    if (!session) {
+      return new Response(JSON.stringify({ error: "Invalid session" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const userId = session.user_id;
+    const body = await request.json();
+    const { achievement_id } = body;
+    if (!achievement_id) {
+      return new Response(JSON.stringify({ error: "Achievement ID required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const achievement = await env.DB.prepare(`
+            SELECT a.*, 
+                   CASE WHEN ua.id IS NULL THEN 0 ELSE 1 END as is_completed,
+                   ua.created_at as earned_at
+            FROM achievements a
+            LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
+            WHERE a.id = ?
+        `).bind(userId, achievement_id).first();
+    if (!achievement) {
+      return new Response(JSON.stringify({ error: "Achievement not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (achievement.is_completed) {
+      return new Response(JSON.stringify({ error: "Achievement already unlocked" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const { checkAndAwardAchievements: checkAndAwardAchievements3 } = await Promise.resolve().then(() => (init_achievements(), achievements_exports));
+    const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
+    const userAchievementId = uuidv4();
+    await env.DB.prepare(`
+            INSERT INTO user_achievements (id, user_id, achievement_id, created_at)
+            VALUES (?, ?, ?, datetime('now'))
+        `).bind(userAchievementId, userId, achievement_id).run();
+    if (achievement.points > 0) {
+      await env.DB.prepare(`
+                UPDATE users SET points = points + ? WHERE id = ?
+            `).bind(achievement.points, userId).run();
+    }
+    const unlockedAchievement = await env.DB.prepare(`
+            SELECT a.*, ua.created_at as earned_at, 1 as is_completed
+            FROM achievements a
+            JOIN user_achievements ua ON a.id = ua.achievement_id
+            WHERE ua.id = ?
+        `).bind(userAchievementId).first();
+    try {
+      const activityId = uuidv4();
+      await env.DB.prepare(`
+                INSERT INTO user_activity_log (id, user_id, activity_type, activity_data, created_at)
+                VALUES (?, ?, 'achievement_unlock', ?, datetime('now'))
+            `).bind(activityId, userId, JSON.stringify({
+        achievement_id,
+        achievement_name: achievement.name,
+        rarity: achievement.rarity,
+        points: achievement.points
+      })).run();
+    } catch (error) {
+      console.error("Failed to log achievement activity:", error);
+    }
+    await checkComboAchievements(userId, env);
+    return new Response(JSON.stringify({
+      success: true,
+      achievement: unlockedAchievement,
+      message: `Achievement "${achievement.name}" unlocked! +${achievement.points} points`
+    }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Achievement unlock error:", error);
+    return new Response(JSON.stringify({ error: "Failed to unlock achievement" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+async function checkComboAchievements(userId, env) {
+  try {
+    const todayAchievements = await env.DB.prepare(`
+            SELECT COUNT(*) as count
+            FROM user_achievements
+            WHERE user_id = ? AND date(created_at) = date('now')
+        `).bind(userId).first();
+    if (todayAchievements.count >= 3) {
+      await awardComboAchievement(userId, "Achievement Spree", 3, env);
+    }
+    if (todayAchievements.count >= 5) {
+      await awardComboAchievement(userId, "Achievement Frenzy", 5, env);
+    }
+    if (todayAchievements.count >= 10) {
+      await awardComboAchievement(userId, "Achievement Hurricane", 10, env);
+    }
+  } catch (error) {
+    console.error("Combo achievement check error:", error);
+  }
+}
+async function awardComboAchievement(userId, achievementName, count, env) {
+  try {
+    const existingCombo = await env.DB.prepare(`
+            SELECT ua.id
+            FROM user_achievements ua
+            JOIN achievements a ON ua.achievement_id = a.id
+            WHERE ua.user_id = ? AND a.name = ?
+        `).bind(userId, achievementName).first();
+    if (existingCombo) return;
+    const comboAchievement = await env.DB.prepare(`
+            SELECT * FROM achievements WHERE name = ?
+        `).bind(achievementName).first();
+    if (!comboAchievement) return;
+    const { v4: uuidv4 } = await Promise.resolve().then(() => (init_esm_browser(), esm_browser_exports));
+    const comboId = uuidv4();
+    await env.DB.prepare(`
+            INSERT INTO user_achievements (id, user_id, achievement_id, created_at)
+            VALUES (?, ?, ?, datetime('now'))
+        `).bind(comboId, userId, comboAchievement.id).run();
+    if (comboAchievement.points > 0) {
+      await env.DB.prepare(`
+                UPDATE users SET points = points + ? WHERE id = ?
+            `).bind(comboAchievement.points, userId).run();
+    }
+  } catch (error) {
+    console.error("Award combo achievement error:", error);
+  }
+}
+var init_unlock = __esm({
+  "api/achievements/unlock.js"() {
+    init_functionsRoutes_0_9302165230404282();
+    init_checked_fetch();
+    __name(onRequest, "onRequest");
+    __name(checkComboAchievements, "checkComboAchievements");
+    __name(awardComboAchievement, "awardComboAchievement");
+  }
+});
+
+// api/leaderboards/achievements.js
+async function onRequest2(context) {
+  const { request, env } = context;
+  if (request.method !== "GET") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+  try {
+    const sessionId = request.headers.get("x-session-id");
+    if (!sessionId) {
+      return new Response(JSON.stringify({ error: "Session required" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const session = await env.DB.prepare(
+      'SELECT user_id FROM user_sessions WHERE session_id = ? AND expires_at > datetime("now")'
+    ).bind(sessionId).first();
+    if (!session) {
+      return new Response(JSON.stringify({ error: "Invalid session" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const userId = session.user_id;
+    const weekStart = /* @__PURE__ */ new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const weekStartStr = weekStart.toISOString().split("T")[0];
+    const leaderboard = await env.DB.prepare(`
+            SELECT 
+                u.id,
+                u.email,
+                COALESCE(u.display_name, SUBSTR(u.email, 1, INSTR(u.email, '@') - 1)) as display_name,
+                COUNT(ua.id) as weekly_achievements,
+                (SELECT COUNT(*) FROM user_achievements ua2 WHERE ua2.user_id = u.id) as total_achievements,
+                u.points as total_points,
+                CASE WHEN u.id = ? THEN 1 ELSE 0 END as is_current_user,
+                ROW_NUMBER() OVER (ORDER BY COUNT(ua.id) DESC, u.points DESC) as rank
+            FROM users u
+            LEFT JOIN user_achievements ua ON u.id = ua.user_id 
+                AND date(ua.created_at) >= date(?)
+            WHERE u.id IN (
+                SELECT CASE 
+                    WHEN f.user_id = ? THEN f.friend_id
+                    WHEN f.friend_id = ? THEN f.user_id
+                END as friend_id
+                FROM friendships f 
+                WHERE (f.user_id = ? OR f.friend_id = ?) 
+                AND f.status = 'accepted'
+                UNION
+                SELECT ? -- Include current user
+            )
+            GROUP BY u.id, u.email, u.display_name, u.points
+            ORDER BY COUNT(ua.id) DESC, u.points DESC
+            LIMIT 10
+        `).bind(userId, weekStartStr, userId, userId, userId, userId, userId).all();
+    const results = leaderboard.results || [];
+    const formattedLeaderboard = results.map((entry) => ({
+      id: entry.id,
+      display_name: entry.display_name,
+      score: entry.weekly_achievements,
+      total_achievements: entry.total_achievements,
+      total_points: entry.total_points,
+      rank: entry.rank,
+      is_current_user: entry.is_current_user === 1
+    }));
+    const userStats = await env.DB.prepare(`
+            SELECT 
+                COUNT(CASE WHEN date(ua.created_at) >= date(?) THEN 1 END) as weekly_achievements,
+                COUNT(*) as total_achievements,
+                COUNT(CASE WHEN a.rarity = 'legendary' THEN 1 END) as legendary_count,
+                COUNT(CASE WHEN a.rarity = 'epic' THEN 1 END) as epic_count,
+                COUNT(CASE WHEN a.rarity = 'rare' THEN 1 END) as rare_count,
+                COUNT(CASE WHEN a.rarity = 'common' THEN 1 END) as common_count
+            FROM user_achievements ua
+            JOIN achievements a ON ua.achievement_id = a.id
+            WHERE ua.user_id = ?
+        `).bind(weekStartStr, userId).first();
+    return new Response(JSON.stringify({
+      leaderboard: formattedLeaderboard,
+      user_stats: userStats || {
+        weekly_achievements: 0,
+        total_achievements: 0,
+        legendary_count: 0,
+        epic_count: 0,
+        rare_count: 0,
+        common_count: 0
+      },
+      week_start: weekStartStr,
+      leaderboard_type: "achievements"
+    }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Achievement leaderboard error:", error);
+    return new Response(JSON.stringify({ error: "Failed to load achievement leaderboard" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+var init_achievements2 = __esm({
+  "api/leaderboards/achievements.js"() {
+    init_functionsRoutes_0_9302165230404282();
+    init_checked_fetch();
+    __name(onRequest2, "onRequest");
+  }
+});
+
 // api/habits/[id].js
-async function onRequestDelete2(context) {
+async function onRequestDelete3(context) {
   const { request, env, params } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const habitId = params.id;
     if (!habitId) {
@@ -4453,21 +5771,19 @@ async function onRequestDelete2(context) {
 }
 var init_id2 = __esm({
   "api/habits/[id].js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
-    __name(onRequestDelete2, "onRequestDelete");
+    __name(onRequestDelete3, "onRequestDelete");
   }
 });
 
 // api/achievements/index.js
-async function onRequestGet8(context) {
+async function onRequestGet9(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const achievementsResult = await env.DB.prepare(`
             SELECT 
@@ -4572,12 +5888,11 @@ async function onRequestGet8(context) {
     });
   }
 }
-async function onRequestPost9(context) {
+async function onRequestPost10(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const body = await request.json();
     const { achievement_id } = body;
@@ -4638,19 +5953,18 @@ async function onRequestPost9(context) {
     });
   }
 }
-var init_achievements2 = __esm({
+var init_achievements3 = __esm({
   "api/achievements/index.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
-    __name(onRequestGet8, "onRequestGet");
-    __name(onRequestPost9, "onRequestPost");
+    __name(onRequestGet9, "onRequestGet");
+    __name(onRequestPost10, "onRequestPost");
   }
 });
 
 // api/friends/index.js
-async function onRequestGet9({ request, env }) {
+async function onRequestGet10({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
     if (!sessionId) {
@@ -4723,7 +6037,7 @@ async function onRequestGet9({ request, env }) {
     });
   }
 }
-async function onRequestPost10({ request, env }) {
+async function onRequestPost11({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
     const { action, email, request_id } = await request.json();
@@ -4845,21 +6159,19 @@ async function onRequestPost10({ request, env }) {
 }
 var init_friends = __esm({
   "api/friends/index.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
-    __name(onRequestGet9, "onRequestGet");
-    __name(onRequestPost10, "onRequestPost");
+    __name(onRequestGet10, "onRequestGet");
+    __name(onRequestPost11, "onRequestPost");
   }
 });
 
 // api/habits/index.js
-async function onRequestGet10(context) {
+async function onRequestGet11(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const habits = await getUserHabits(user.id, env);
     return new Response(JSON.stringify({ habits }), {
@@ -4876,12 +6188,11 @@ async function onRequestGet10(context) {
     });
   }
 }
-async function onRequestPost11(context) {
+async function onRequestPost12(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const body = await request.json();
     const { name, description, target_frequency, color, weekly_target } = body;
@@ -4923,18 +6234,17 @@ async function onRequestPost11(context) {
 }
 var init_habits = __esm({
   "api/habits/index.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     init_database();
-    __name(onRequestGet10, "onRequestGet");
-    __name(onRequestPost11, "onRequestPost");
+    __name(onRequestGet11, "onRequestGet");
+    __name(onRequestPost12, "onRequestPost");
   }
 });
 
 // api/leaderboards/index.js
-async function onRequestGet11({ request, env }) {
+async function onRequestGet12({ request, env }) {
   try {
     const url = new URL(request.url);
     const sessionId = request.headers.get("x-session-id");
@@ -5068,20 +6378,18 @@ async function onRequestGet11({ request, env }) {
 }
 var init_leaderboards = __esm({
   "api/leaderboards/index.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
-    __name(onRequestGet11, "onRequestGet");
+    __name(onRequestGet12, "onRequestGet");
   }
 });
 
 // api/media/index.js
-async function onRequestGet12(context) {
+async function onRequestGet13(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const media = await getUserMedia(user.id, env);
     const mediaWithUrls = await Promise.all(media.map(async (item) => {
@@ -5115,16 +6423,16 @@ async function onRequestGet12(context) {
     });
   }
 }
-async function onRequestPost12(context) {
+async function onRequestPost13(context) {
   const { request, env } = context;
   try {
     const authResult = await requireAuth(request, env);
-    if (authResult instanceof Response)
-      return authResult;
+    if (authResult instanceof Response) return authResult;
     const user = authResult;
     const formData = await request.formData();
     const file = formData.get("file");
     const description = formData.get("description") || "";
+    const mediaType = formData.get("media_type") || "progress";
     if (!file || !file.name) {
       return new Response(JSON.stringify({
         error: "File is required"
@@ -5155,9 +6463,18 @@ async function onRequestPost12(context) {
     const fileExtension = file.name.split(".").pop();
     const r2Key = `uploads/${user.id}/${mediaId}.${fileExtension}`;
     await env.MEDIA_BUCKET.put(r2Key, file.stream());
+    const validTypes = ["before", "after", "progress"];
+    if (!validTypes.includes(mediaType)) {
+      return new Response(JSON.stringify({
+        error: "Invalid media type. Must be: before, after, or progress"
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
     await env.DB.prepare(`
-            INSERT INTO media_uploads (id, user_id, filename, original_name, file_type, file_size, r2_key, description)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO media_uploads (id, user_id, filename, original_name, file_type, file_size, r2_key, description, media_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
       mediaId,
       user.id,
@@ -5166,14 +6483,17 @@ async function onRequestPost12(context) {
       file.type,
       file.size,
       r2Key,
-      description
+      description,
+      mediaType
     ).run();
-    await env.DB.prepare("UPDATE users SET points = points + 5 WHERE id = ?").bind(user.id).run();
+    const points = mediaType === "before" ? 10 : mediaType === "after" ? 15 : 5;
+    await env.DB.prepare("UPDATE users SET points = points + ? WHERE id = ?").bind(points, user.id).run();
     const newAchievements = await checkAndAwardAchievements2(user.id, env);
     return new Response(JSON.stringify({
       message: "Media uploaded successfully",
       mediaId,
-      points: 5,
+      media_type: mediaType,
+      points,
       newAchievements
     }), {
       status: 201,
@@ -5191,18 +6511,17 @@ async function onRequestPost12(context) {
 }
 var init_media2 = __esm({
   "api/media/index.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
     init_auth();
     init_database();
-    __name(onRequestGet12, "onRequestGet");
-    __name(onRequestPost12, "onRequestPost");
+    __name(onRequestGet13, "onRequestGet");
+    __name(onRequestPost13, "onRequestPost");
   }
 });
 
 // api/nutrition/index.js
-async function onRequestPost13({ request, env }) {
+async function onRequestPost14({ request, env }) {
   try {
     const sessionId = request.headers.get("x-session-id");
     if (!sessionId) {
@@ -5264,10 +6583,8 @@ async function onRequestPost13({ request, env }) {
     ).run();
     await updateDailyNutrition(env.DB, userId, today);
     let pointsEarned = 5;
-    if (is_custom_recipe)
-      pointsEarned += 10;
-    if (water_ml > 0)
-      pointsEarned += 2;
+    if (is_custom_recipe) pointsEarned += 10;
+    if (water_ml > 0) pointsEarned += 2;
     await env.DB.prepare(
       "UPDATE users SET points = points + ?, weekly_points = weekly_points + ? WHERE id = ?"
     ).bind(pointsEarned, pointsEarned, userId).run();
@@ -5294,7 +6611,7 @@ async function onRequestPost13({ request, env }) {
     });
   }
 }
-async function onRequestGet13({ request, env }) {
+async function onRequestGet14({ request, env }) {
   try {
     const url = new URL(request.url);
     const sessionId = request.headers.get("x-session-id");
@@ -5364,14 +6681,10 @@ async function updateDailyNutrition(db, userId, date) {
   const metCarbsGoal = (totals.total_carbs_g || 0) >= carbsGoal * 0.8 && (totals.total_carbs_g || 0) <= carbsGoal * 1.2;
   const metFatGoal = (totals.total_fat_g || 0) >= fatGoal * 0.8 && (totals.total_fat_g || 0) <= fatGoal * 1.2;
   let balanceScore = 0;
-  if (metCalorieGoal)
-    balanceScore += 25;
-  if (metProteinGoal)
-    balanceScore += 25;
-  if (metCarbsGoal)
-    balanceScore += 25;
-  if (metFatGoal)
-    balanceScore += 25;
+  if (metCalorieGoal) balanceScore += 25;
+  if (metProteinGoal) balanceScore += 25;
+  if (metCarbsGoal) balanceScore += 25;
+  if (metFatGoal) balanceScore += 25;
   await db.prepare(`
         INSERT OR REPLACE INTO user_daily_nutrition (
             id, user_id, log_date,
@@ -5449,18 +6762,17 @@ async function getNutritionStreaks(db, userId) {
 }
 var init_nutrition = __esm({
   "api/nutrition/index.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
-    __name(onRequestPost13, "onRequestPost");
-    __name(onRequestGet13, "onRequestGet");
+    __name(onRequestPost14, "onRequestPost");
+    __name(onRequestGet14, "onRequestGet");
     __name(updateDailyNutrition, "updateDailyNutrition");
     __name(getNutritionStreaks, "getNutritionStreaks");
   }
 });
 
 // _middleware.js
-async function onRequest(context) {
+async function onRequest3(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
   const corsHeaders = {
@@ -5508,19 +6820,19 @@ async function initializeDatabase(env) {
 }
 var init_middleware = __esm({
   "_middleware.js"() {
-    init_functionsRoutes_0_35696942694498124();
+    init_functionsRoutes_0_9302165230404282();
     init_checked_fetch();
-    init_strip_cf_connecting_ip_header();
-    __name(onRequest, "onRequest");
+    __name(onRequest3, "onRequest");
     __name(initializeDatabase, "initializeDatabase");
   }
 });
 
-// ../.wrangler/tmp/pages-yUenFa/functionsRoutes-0.35696942694498124.mjs
+// ../.wrangler/tmp/pages-vSI4IG/functionsRoutes-0.9302165230404282.mjs
 var routes;
-var init_functionsRoutes_0_35696942694498124 = __esm({
-  "../.wrangler/tmp/pages-yUenFa/functionsRoutes-0.35696942694498124.mjs"() {
+var init_functionsRoutes_0_9302165230404282 = __esm({
+  "../.wrangler/tmp/pages-vSI4IG/functionsRoutes-0.9302165230404282.mjs"() {
     init_id();
+    init_delete();
     init_check();
     init_media();
     init_media();
@@ -5534,11 +6846,15 @@ var init_functionsRoutes_0_35696942694498124 = __esm({
     init_complete();
     init_weekly();
     init_weekly();
+    init_enhanced();
+    init_enhanced();
     init_videos();
     init_videos();
+    init_unlock();
+    init_achievements2();
     init_id2();
-    init_achievements2();
-    init_achievements2();
+    init_achievements3();
+    init_achievements3();
     init_friends();
     init_friends();
     init_habits();
@@ -5556,6 +6872,13 @@ var init_functionsRoutes_0_35696942694498124 = __esm({
         method: "GET",
         middlewares: [],
         modules: [onRequestGet]
+      },
+      {
+        routePath: "/api/media/:id/delete",
+        mountPath: "/api/media/:id",
+        method: "DELETE",
+        middlewares: [],
+        modules: [onRequestDelete]
       },
       {
         routePath: "/api/achievements/check",
@@ -5583,7 +6906,7 @@ var init_functionsRoutes_0_35696942694498124 = __esm({
         mountPath: "/api/admin",
         method: "DELETE",
         middlewares: [],
-        modules: [onRequestDelete]
+        modules: [onRequestDelete2]
       },
       {
         routePath: "/api/admin/users",
@@ -5649,78 +6972,99 @@ var init_functionsRoutes_0_35696942694498124 = __esm({
         modules: [onRequestPost7]
       },
       {
-        routePath: "/api/media/videos",
+        routePath: "/api/media/enhanced",
         mountPath: "/api/media",
         method: "GET",
         middlewares: [],
         modules: [onRequestGet7]
       },
       {
-        routePath: "/api/media/videos",
+        routePath: "/api/media/enhanced",
         mountPath: "/api/media",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost8]
       },
       {
-        routePath: "/api/habits/:id",
-        mountPath: "/api/habits",
-        method: "DELETE",
-        middlewares: [],
-        modules: [onRequestDelete2]
-      },
-      {
-        routePath: "/api/achievements",
-        mountPath: "/api/achievements",
+        routePath: "/api/media/videos",
+        mountPath: "/api/media",
         method: "GET",
         middlewares: [],
         modules: [onRequestGet8]
       },
       {
-        routePath: "/api/achievements",
-        mountPath: "/api/achievements",
+        routePath: "/api/media/videos",
+        mountPath: "/api/media",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost9]
       },
       {
-        routePath: "/api/friends",
-        mountPath: "/api/friends",
+        routePath: "/api/achievements/unlock",
+        mountPath: "/api/achievements",
+        method: "",
+        middlewares: [],
+        modules: [onRequest]
+      },
+      {
+        routePath: "/api/leaderboards/achievements",
+        mountPath: "/api/leaderboards",
+        method: "",
+        middlewares: [],
+        modules: [onRequest2]
+      },
+      {
+        routePath: "/api/habits/:id",
+        mountPath: "/api/habits",
+        method: "DELETE",
+        middlewares: [],
+        modules: [onRequestDelete3]
+      },
+      {
+        routePath: "/api/achievements",
+        mountPath: "/api/achievements",
         method: "GET",
         middlewares: [],
         modules: [onRequestGet9]
       },
       {
-        routePath: "/api/friends",
-        mountPath: "/api/friends",
+        routePath: "/api/achievements",
+        mountPath: "/api/achievements",
         method: "POST",
         middlewares: [],
         modules: [onRequestPost10]
       },
       {
+        routePath: "/api/friends",
+        mountPath: "/api/friends",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet10]
+      },
+      {
+        routePath: "/api/friends",
+        mountPath: "/api/friends",
+        method: "POST",
+        middlewares: [],
+        modules: [onRequestPost11]
+      },
+      {
         routePath: "/api/habits",
         mountPath: "/api/habits",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet10]
+        modules: [onRequestGet11]
       },
       {
         routePath: "/api/habits",
         mountPath: "/api/habits",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost11]
+        modules: [onRequestPost12]
       },
       {
         routePath: "/api/leaderboards",
         mountPath: "/api/leaderboards",
-        method: "GET",
-        middlewares: [],
-        modules: [onRequestGet11]
-      },
-      {
-        routePath: "/api/media",
-        mountPath: "/api/media",
         method: "GET",
         middlewares: [],
         modules: [onRequestGet12]
@@ -5728,54 +7072,57 @@ var init_functionsRoutes_0_35696942694498124 = __esm({
       {
         routePath: "/api/media",
         mountPath: "/api/media",
+        method: "GET",
+        middlewares: [],
+        modules: [onRequestGet13]
+      },
+      {
+        routePath: "/api/media",
+        mountPath: "/api/media",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost12]
+        modules: [onRequestPost13]
       },
       {
         routePath: "/api/nutrition",
         mountPath: "/api/nutrition",
         method: "GET",
         middlewares: [],
-        modules: [onRequestGet13]
+        modules: [onRequestGet14]
       },
       {
         routePath: "/api/nutrition",
         mountPath: "/api/nutrition",
         method: "POST",
         middlewares: [],
-        modules: [onRequestPost13]
+        modules: [onRequestPost14]
       },
       {
         routePath: "/",
         mountPath: "/",
         method: "",
-        middlewares: [onRequest],
+        middlewares: [onRequest3],
         modules: []
       }
     ];
   }
 });
 
-// ../.wrangler/tmp/bundle-ovZuRF/middleware-loader.entry.ts
-init_functionsRoutes_0_35696942694498124();
+// ../.wrangler/tmp/bundle-TwJjzZ/middleware-loader.entry.ts
+init_functionsRoutes_0_9302165230404282();
 init_checked_fetch();
-init_strip_cf_connecting_ip_header();
 
-// ../.wrangler/tmp/bundle-ovZuRF/middleware-insertion-facade.js
-init_functionsRoutes_0_35696942694498124();
+// ../.wrangler/tmp/bundle-TwJjzZ/middleware-insertion-facade.js
+init_functionsRoutes_0_9302165230404282();
 init_checked_fetch();
-init_strip_cf_connecting_ip_header();
 
-// ../node_modules/wrangler/templates/pages-template-worker.ts
-init_functionsRoutes_0_35696942694498124();
+// ../../../../usr/lib/node_modules/wrangler/templates/pages-template-worker.ts
+init_functionsRoutes_0_9302165230404282();
 init_checked_fetch();
-init_strip_cf_connecting_ip_header();
 
-// ../node_modules/path-to-regexp/dist.es2015/index.js
-init_functionsRoutes_0_35696942694498124();
+// ../../../../usr/lib/node_modules/wrangler/node_modules/path-to-regexp/dist.es2015/index.js
+init_functionsRoutes_0_9302165230404282();
 init_checked_fetch();
-init_strip_cf_connecting_ip_header();
 function lexer(str) {
   var tokens = [];
   var i = 0;
@@ -6101,7 +7448,7 @@ function pathToRegexp(path, keys, options) {
 }
 __name(pathToRegexp, "pathToRegexp");
 
-// ../node_modules/wrangler/templates/pages-template-worker.ts
+// ../../../../usr/lib/node_modules/wrangler/templates/pages-template-worker.ts
 var escapeRegex = /[.+?^${}()|[\]\\]/g;
 function* executeRequest(request) {
   const requestPath = new URL(request.url).pathname;
@@ -6185,9 +7532,9 @@ var pages_template_worker_default = {
           },
           env,
           waitUntil: workerContext.waitUntil.bind(workerContext),
-          passThroughOnException: () => {
+          passThroughOnException: /* @__PURE__ */ __name(() => {
             isFailOpen = true;
-          }
+          }, "passThroughOnException")
         };
         const response = await handler(context);
         if (!(response instanceof Response)) {
@@ -6221,10 +7568,9 @@ var cloneResponse = /* @__PURE__ */ __name((response) => (
   )
 ), "cloneResponse");
 
-// ../node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
-init_functionsRoutes_0_35696942694498124();
+// ../../../../usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
+init_functionsRoutes_0_9302165230404282();
 init_checked_fetch();
-init_strip_cf_connecting_ip_header();
 var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
   try {
     return await middlewareCtx.next(request, env);
@@ -6242,10 +7588,9 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
 
-// ../node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts
-init_functionsRoutes_0_35696942694498124();
+// ../../../../usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts
+init_functionsRoutes_0_9302165230404282();
 init_checked_fetch();
-init_strip_cf_connecting_ip_header();
 function reduceError(e) {
   return {
     name: e?.name,
@@ -6268,17 +7613,16 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-ovZuRF/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-TwJjzZ/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
 ];
 var middleware_insertion_facade_default = pages_template_worker_default;
 
-// ../node_modules/wrangler/templates/middleware/common.ts
-init_functionsRoutes_0_35696942694498124();
+// ../../../../usr/lib/node_modules/wrangler/templates/middleware/common.ts
+init_functionsRoutes_0_9302165230404282();
 init_checked_fetch();
-init_strip_cf_connecting_ip_header();
 var __facade_middleware__ = [];
 function __facade_register__(...args) {
   __facade_middleware__.push(...args.flat());
@@ -6303,22 +7647,24 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-ovZuRF/middleware-loader.entry.ts
-var __Facade_ScheduledController__ = class {
+// ../.wrangler/tmp/bundle-TwJjzZ/middleware-loader.entry.ts
+var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
     this.cron = cron;
     this.#noRetry = noRetry;
   }
+  static {
+    __name(this, "__Facade_ScheduledController__");
+  }
   #noRetry;
   noRetry() {
-    if (!(this instanceof __Facade_ScheduledController__)) {
+    if (!(this instanceof ___Facade_ScheduledController__)) {
       throw new TypeError("Illegal invocation");
     }
     this.#noRetry();
   }
 };
-__name(__Facade_ScheduledController__, "__Facade_ScheduledController__");
 function wrapExportedHandler(worker) {
   if (__INTERNAL_WRANGLER_MIDDLEWARE__ === void 0 || __INTERNAL_WRANGLER_MIDDLEWARE__.length === 0) {
     return worker;
@@ -6359,15 +7705,15 @@ function wrapWorkerEntrypoint(klass) {
     __facade_register__(middleware);
   }
   return class extends klass {
-    #fetchDispatcher = (request, env, ctx) => {
+    #fetchDispatcher = /* @__PURE__ */ __name((request, env, ctx) => {
       this.env = env;
       this.ctx = ctx;
       if (super.fetch === void 0) {
         throw new Error("Entrypoint class does not define a fetch() function.");
       }
       return super.fetch(request);
-    };
-    #dispatcher = (type, init) => {
+    }, "#fetchDispatcher");
+    #dispatcher = /* @__PURE__ */ __name((type, init) => {
       if (type === "scheduled" && super.scheduled !== void 0) {
         const controller = new __Facade_ScheduledController__(
           Date.now(),
@@ -6377,7 +7723,7 @@ function wrapWorkerEntrypoint(klass) {
         );
         return super.scheduled(controller);
       }
-    };
+    }, "#dispatcher");
     fetch(request) {
       return __facade_invoke__(
         request,
@@ -6410,4 +7756,4 @@ bcryptjs/dist/bcrypt.js:
    * see: https://github.com/dcodeIO/bcrypt.js for details
    *)
 */
-//# sourceMappingURL=functionsWorker-0.38688196996161084.mjs.map
+//# sourceMappingURL=functionsWorker-0.1734108418323579.mjs.map

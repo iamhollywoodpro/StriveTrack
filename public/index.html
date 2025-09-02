@@ -370,6 +370,36 @@
             align-items: center;
             justify-content: center;
             color: rgba(255, 255, 255, 0.4);
+            position: relative;
+        }
+        
+        .media-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .media-item:hover .media-actions {
+            opacity: 1;
+        }
+        
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.05);
         }
         
         .notification {

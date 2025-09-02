@@ -1,4 +1,5 @@
 import { onRequestGet as __api_media_file__id__js_onRequestGet } from "/home/user/webapp/functions/api/media/file/[id].js"
+import { onRequestDelete as __api_media__id__delete_js_onRequestDelete } from "/home/user/webapp/functions/api/media/[id]/delete.js"
 import { onRequestPost as __api_achievements_check_js_onRequestPost } from "/home/user/webapp/functions/api/achievements/check.js"
 import { onRequestGet as __api_admin_media_js_onRequestGet } from "/home/user/webapp/functions/api/admin/media.js"
 import { onRequestPost as __api_admin_media_js_onRequestPost } from "/home/user/webapp/functions/api/admin/media.js"
@@ -12,8 +13,12 @@ import { onRequestGet as __api_challenges_daily_js_onRequestGet } from "/home/us
 import { onRequestPost as __api_habits_complete_js_onRequestPost } from "/home/user/webapp/functions/api/habits/complete.js"
 import { onRequestGet as __api_habits_weekly_js_onRequestGet } from "/home/user/webapp/functions/api/habits/weekly.js"
 import { onRequestPost as __api_habits_weekly_js_onRequestPost } from "/home/user/webapp/functions/api/habits/weekly.js"
+import { onRequestGet as __api_media_enhanced_js_onRequestGet } from "/home/user/webapp/functions/api/media/enhanced.js"
+import { onRequestPost as __api_media_enhanced_js_onRequestPost } from "/home/user/webapp/functions/api/media/enhanced.js"
 import { onRequestGet as __api_media_videos_js_onRequestGet } from "/home/user/webapp/functions/api/media/videos.js"
 import { onRequestPost as __api_media_videos_js_onRequestPost } from "/home/user/webapp/functions/api/media/videos.js"
+import { onRequest as __api_achievements_unlock_js_onRequest } from "/home/user/webapp/functions/api/achievements/unlock.js"
+import { onRequest as __api_leaderboards_achievements_js_onRequest } from "/home/user/webapp/functions/api/leaderboards/achievements.js"
 import { onRequestDelete as __api_habits__id__js_onRequestDelete } from "/home/user/webapp/functions/api/habits/[id].js"
 import { onRequestGet as __api_achievements_index_js_onRequestGet } from "/home/user/webapp/functions/api/achievements/index.js"
 import { onRequestPost as __api_achievements_index_js_onRequestPost } from "/home/user/webapp/functions/api/achievements/index.js"
@@ -35,6 +40,13 @@ export const routes = [
       method: "GET",
       middlewares: [],
       modules: [__api_media_file__id__js_onRequestGet],
+    },
+  {
+      routePath: "/api/media/:id/delete",
+      mountPath: "/api/media/:id",
+      method: "DELETE",
+      middlewares: [],
+      modules: [__api_media__id__delete_js_onRequestDelete],
     },
   {
       routePath: "/api/achievements/check",
@@ -128,6 +140,20 @@ export const routes = [
       modules: [__api_habits_weekly_js_onRequestPost],
     },
   {
+      routePath: "/api/media/enhanced",
+      mountPath: "/api/media",
+      method: "GET",
+      middlewares: [],
+      modules: [__api_media_enhanced_js_onRequestGet],
+    },
+  {
+      routePath: "/api/media/enhanced",
+      mountPath: "/api/media",
+      method: "POST",
+      middlewares: [],
+      modules: [__api_media_enhanced_js_onRequestPost],
+    },
+  {
       routePath: "/api/media/videos",
       mountPath: "/api/media",
       method: "GET",
@@ -140,6 +166,20 @@ export const routes = [
       method: "POST",
       middlewares: [],
       modules: [__api_media_videos_js_onRequestPost],
+    },
+  {
+      routePath: "/api/achievements/unlock",
+      mountPath: "/api/achievements",
+      method: "",
+      middlewares: [],
+      modules: [__api_achievements_unlock_js_onRequest],
+    },
+  {
+      routePath: "/api/leaderboards/achievements",
+      mountPath: "/api/leaderboards",
+      method: "",
+      middlewares: [],
+      modules: [__api_leaderboards_achievements_js_onRequest],
     },
   {
       routePath: "/api/habits/:id",

@@ -2115,9 +2115,11 @@ async function showMediaModal(media) {
 
 // Delete media function with confirmation (for modal button)
 async function deleteMediaFromModal(mediaId) {
+    console.log('🗑️ Delete media from modal called for:', mediaId);
     showConfirmationModal(
         'Are you sure you want to delete this media? This action cannot be undone and will deduct points from your account.',
         async function() {
+            console.log('🗑️ Confirmation callback executed for:', mediaId);
             await performMediaDeletion(mediaId);
         }
     );
@@ -2125,14 +2127,19 @@ async function deleteMediaFromModal(mediaId) {
 
 // Core media deletion function (no confirmation)
 async function performMediaDeletion(mediaId) {
+    console.log('🚀 Performing media deletion for:', mediaId);
     try {
+        console.log('📡 Sending DELETE request to:', `/api/media/${mediaId}/delete`);
         const response = await fetch(`/api/media/${mediaId}/delete`, {
             method: 'DELETE',
             headers: { 'x-session-id': sessionId }
         });
         
+        console.log('📡 Response received:', response.status, response.statusText);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('✅ Delete successful:', data);
             showNotification(`Media deleted successfully! (-${data.points_deducted} pts)`, 'success');
             
             // Close modal first
@@ -2143,10 +2150,11 @@ async function performMediaDeletion(mediaId) {
             updateDashboardStats();
         } else {
             const error = await response.json();
+            console.error('❌ Delete failed:', error);
             showNotification(error.error || 'Failed to delete media', 'error');
         }
     } catch (error) {
-        console.error('Delete media error:', error);
+        console.error('💥 Delete media error:', error);
         showNotification('Failed to delete media', 'error');
     }
 }
@@ -4577,16 +4585,21 @@ function updateDashboardStats() {
 let confirmationCallback = null;
 
 function showConfirmationModal(message, onConfirm) {
+    console.log('🎯 Showing confirmation modal:', message);
     document.getElementById('confirmation-message').textContent = message;
     confirmationCallback = onConfirm;
     document.getElementById('confirmation-modal').classList.remove('hidden');
     
     // Set up the confirm button click handler
     document.getElementById('confirm-delete-btn').onclick = function() {
+        console.log('✅ Confirm button clicked');
         closeConfirmationModal();
         if (confirmationCallback) {
+            console.log('🚀 Executing confirmation callback');
             confirmationCallback();
             confirmationCallback = null;
+        } else {
+            console.log('❌ No confirmation callback found');
         }
     };
 }
@@ -5594,10 +5607,9 @@ async function refreshHabitsDisplay() {
         // Reload habits data from server
         await loadHabits();
         
-        // If we're on dashboard, reload dashboard habits too
-        if (currentView === 'dashboard') {
-            await loadDashboardHabits();
-        }
+        // Always reload dashboard habits to keep dashboard in sync
+        await loadDashboardHabits();
+        console.log('✅ Dashboard habits also refreshed');
         
         console.log('✅ Habits display refreshed');
     } catch (error) {

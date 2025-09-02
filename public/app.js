@@ -4340,8 +4340,6 @@ window.testHabitToggle = async function(habitId = '25f5c19c-d4d8-4fef-83f7-6cc22
         console.error('🧪 Test failed:', error);
     }
 };
-    }
-};
 
 function updateDashboardStats() {
     // This will be called after loading habits to update the dashboard stats

@@ -1228,19 +1228,6 @@ async function loadDashboardData() {
 // ==============================
 // This section contained old habit management code that has been replaced 
 // by the comprehensive habit management system at the end of this file.
-    const container = document.getElementById('habits-container');
-    container.innerHTML = '';
-    
-    if (habits.length === 0) {
-        container.innerHTML = '<p class="text-white/70">No habits created yet. Create your first habit to get started!</p>';
-        return;
-    }
-    
-    habits.forEach(habit => {
-        const habitElement = createWeeklyHabitElement(habit);
-        container.appendChild(habitElement);
-    });
-}
 
 
 

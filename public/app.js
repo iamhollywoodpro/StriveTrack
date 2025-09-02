@@ -5630,47 +5630,70 @@ function updateWeeklyProgressForHabit(habitId) {
         console.log('  - Cells with .completed class:', completedCount);
         console.log('  - Completed cells:', completedCells);
         
-        // Additional check: count by visual indicators (checkmarks and numbers)
+        // Enhanced visual completion detection for createHabitCard structure
         let visualCompletedCount = 0;
         dayCells.forEach(cell => {
             const textContent = cell.textContent || '';
-            const hasCheckmark = textContent.includes('✓');
-            const hasNumber = /\d/.test(textContent) && !textContent.includes('Sun') && !textContent.includes('Mon'); // Exclude day names
-            const isCompleted = hasCheckmark || hasNumber || cell.classList.contains('completed');
+            const innerHTML = cell.innerHTML || '';
+            
+            // Check for different completion indicators
+            const hasCheckmark = textContent.includes('✓') || textContent.includes('✓');
+            const hasFasCheck = innerHTML.includes('fas fa-check');
+            const hasCompletedClass = cell.classList.contains('completed');
+            const hasNumber = /\d/.test(textContent) && !['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].some(day => textContent.includes(day));
+            
+            const isCompleted = hasCheckmark || hasFasCheck || hasCompletedClass || hasNumber;
             if (isCompleted) visualCompletedCount++;
             
             console.log(`📅 Cell analysis:`, {
                 text: textContent.trim(),
                 hasCheckmark,
+                hasFasCheck,
                 hasNumber,
-                hasCompletedClass: cell.classList.contains('completed'),
-                isCompleted
+                hasCompletedClass,
+                isCompleted,
+                innerHTML: innerHTML.substring(0, 100) + (innerHTML.length > 100 ? '...' : '')
             });
         });
         
         console.log('👁️ Visual completed count:', visualCompletedCount);
+        console.log('🔢 CSS class completed count:', completedCount);
         
-        // Use the visual count as it's more accurate for UI updates
+        // Use the higher count to be more accurate
         const finalCompletedCount = Math.max(completedCount, visualCompletedCount);
         
-        // Find the progress text element - look for the specific pattern
-        const progressTextElements = habitCard.querySelectorAll('p');
-        let progressTextElement = null;
+        // Find the weekly counter in the createHabitCard structure (X/Y format)
+        const counterElements = habitCard.querySelectorAll('.text-2xl.font-bold.text-white');
+        let counterElement = null;
         let target = 7; // default
         
-        for (const p of progressTextElements) {
-            if (p.textContent && p.textContent.includes(' / ') && p.textContent.includes('days this week')) {
-                progressTextElement = p;
-                // Extract target from existing text
-                const targetMatch = p.textContent.match(/\/\s*(\d+)\s*days/);
-                if (targetMatch) target = parseInt(targetMatch[1]);
+        for (const element of counterElements) {
+            if (element.textContent && element.textContent.includes('/')) {
+                counterElement = element;
+                // Extract target from existing text (format: "3/5")
+                const match = element.textContent.match(/(\d+)\/(\d+)/);
+                if (match) target = parseInt(match[2]);
                 break;
             }
         }
         
-        if (progressTextElement) {
-            progressTextElement.innerHTML = `<span class="text-green-400 font-semibold">${finalCompletedCount}</span> / ${target} days this week`;
-            console.log('✅ Updated progress text to:', `${finalCompletedCount}/${target}`);
+        if (counterElement) {
+            counterElement.textContent = `${finalCompletedCount}/${target}`;
+            console.log('✅ Updated counter to:', `${finalCompletedCount}/${target}`);
+        } else {
+            // Fallback: look for any element with X/Y pattern
+            const allElements = habitCard.querySelectorAll('*');
+            for (const element of allElements) {
+                if (element.textContent && /^\d+\/\d+$/.test(element.textContent.trim())) {
+                    const match = element.textContent.match(/(\d+)\/(\d+)/);
+                    if (match) {
+                        target = parseInt(match[2]);
+                        element.textContent = `${finalCompletedCount}/${target}`;
+                        console.log('✅ Updated counter (fallback) to:', `${finalCompletedCount}/${target}`);
+                        break;
+                    }
+                }
+            }
         }
         
         // Update progress bar width
@@ -5681,8 +5704,8 @@ function updateWeeklyProgressForHabit(habitId) {
             console.log('✅ Updated progress bar to:', percentage + '%');
         }
         
-        // Update percentage display in the weekly progress section
-        const percentageElements = habitCard.querySelectorAll('.text-white\\/70 span');
+        // Update percentage display in the weekly progress section  
+        const percentageElements = habitCard.querySelectorAll('span');
         for (const span of percentageElements) {
             if (span.textContent && span.textContent.includes('%')) {
                 const newPercentage = Math.round((finalCompletedCount / target) * 100);

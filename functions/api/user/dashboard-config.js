@@ -60,7 +60,7 @@ export async function onRequestGet(context) {
 
 function getRoleBasedDashboardConfig(userType) {
     const baseSections = [
-        { id: 'overview', name: 'Overview', icon: 'fas fa-chart-line' },
+        { id: 'dashboard', name: 'Dashboard', icon: 'fas fa-chart-line' },
         { id: 'habits', name: 'Habits & Goals', icon: 'fas fa-target' },
         { id: 'nutrition', name: 'Nutrition', icon: 'fas fa-apple-alt' },
         { id: 'achievements', name: 'Achievements', icon: 'fas fa-trophy' },

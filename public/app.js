@@ -479,8 +479,8 @@ function generateSectionContent(section, features) {
     }
     
     switch (section.id) {
-        case 'overview':
-            return generateOverviewContent();
+        case 'dashboard':
+            return generateDashboardContent();
         case 'habits':
             return generateDefaultHabitsContent();
         case 'nutrition':
@@ -542,7 +542,7 @@ function showRoleWelcomeMessage(userType) {
 }
 
 // Content generators for role-specific sections
-function generateOverviewContent() {
+function generateDashboardContent() {
     return `
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -584,6 +584,22 @@ function generateOverviewContent() {
                 <i class="fas fa-trophy text-3xl text-yellow-400 mb-4"></i>
                 <h3 class="text-lg font-bold text-white mb-2">View Achievements</h3>
                 <p class="text-white/70 text-sm">Track your milestones</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Habits Section -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-white">Your Active Habits</h3>
+                <button onclick="showSection('habits')" class="text-blue-400 hover:text-blue-300 text-sm">
+                    View All <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+            <div id="dashboard-habits-container">
+                <div class="text-center py-8 text-white/50">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading your habits...</p>
+                </div>
             </div>
         </div>
     `;
@@ -1224,6 +1240,7 @@ async function loadDashboardData() {
     await Promise.all([
         loadDashboardWeeklyProgress(),
         loadHabits(),
+        loadDashboardHabits(), // Load habits for dashboard display
         loadMedia(),
         loadAchievements(),
         loadDailyChallenges(),
@@ -4359,8 +4376,12 @@ function setupHabitEventListeners() {
 
     // Create Habit Form Submit Handler
     const createHabitForm = document.getElementById('create-habit-form');
+    console.log('🔧 Setting up form handler, form element:', createHabitForm);
     if (createHabitForm) {
         createHabitForm.addEventListener('submit', handleCreateHabit);
+        console.log('✅ Form submit listener attached to create-habit-form');
+    } else {
+        console.error('❌ create-habit-form element not found during setup!');
     }
 
     // Habit Name Input Change Handler for Emoji Preview
@@ -4378,14 +4399,143 @@ function setupHabitEventListeners() {
     console.log('Habit event listeners set up successfully');
 }
 
+// Delete habit function
+async function deleteHabit(habitId) {
+    if (!confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        console.log('🗑️ Deleting habit:', habitId);
+        const response = await fetch(`/api/habits/${habitId}`, {
+            method: 'DELETE',
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+
+        if (response.ok) {
+            showNotification('Habit deleted successfully!', 'success');
+            // Refresh both dashboard and habits sections
+            await loadHabits();
+            await loadDashboardHabits();
+            updateDashboardStats();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to delete habit', 'error');
+        }
+    } catch (error) {
+        console.error('Delete habit error:', error);
+        showNotification('Failed to delete habit', 'error');
+    }
+}
+
+// Load habits for dashboard display
+async function loadDashboardHabits() {
+    try {
+        const response = await fetch('/api/habits', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayDashboardHabits(data.habits);
+        } else {
+            console.error('Failed to load dashboard habits');
+        }
+    } catch (error) {
+        console.error('Load dashboard habits error:', error);
+    }
+}
+
+// Display habits in dashboard
+function displayDashboardHabits(habits) {
+    const container = document.getElementById('dashboard-habits-container');
+    if (!container) return;
+    
+    if (!habits || habits.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-white/50">
+                <i class="fas fa-target text-3xl mb-4"></i>
+                <h3 class="text-lg font-bold mb-2">No Habits Yet</h3>
+                <p class="mb-4">Create your first fitness habit to get started!</p>
+                <button onclick="showCreateHabitModal()" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create Your First Habit
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Show up to 3 most recent habits in dashboard
+    const recentHabits = habits.slice(0, 3);
+    container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${recentHabits.map(habit => createDashboardHabitCard(habit)).join('')}
+        </div>
+        ${habits.length > 3 ? `
+            <div class="text-center mt-4">
+                <button onclick="showSection('habits')" class="btn-secondary">
+                    View All ${habits.length} Habits
+                </button>
+            </div>
+        ` : ''}
+    `;
+}
+
+// Create compact habit card for dashboard
+function createDashboardHabitCard(habit) {
+    const emoji = getHabitEmoji(habit.name, habit.category);
+    const completionsThisWeek = habit.completions ? habit.completions.filter(date => {
+        const completionDate = new Date(date);
+        const now = new Date();
+        const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+        return completionDate >= weekStart;
+    }).length : 0;
+    
+    const progress = Math.round((completionsThisWeek / (habit.weekly_target || 7)) * 100);
+    
+    return `
+        <div class="glass-card p-4">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">${emoji}</span>
+                    <div>
+                        <h4 class="text-white font-medium text-sm">${habit.name}</h4>
+                        <p class="text-white/60 text-xs">${completionsThisWeek}/${habit.weekly_target || 7} this week</p>
+                    </div>
+                </div>
+                <button onclick="deleteHabit('${habit.id}')" class="text-red-400 hover:text-red-300 text-sm" title="Delete habit">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-2">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all" 
+                     style="width: ${progress}%"></div>
+            </div>
+            <div class="text-right text-xs text-white/60 mt-1">${progress}%</div>
+        </div>
+    `;
+}
+
 // Show Create Habit Modal
 function showCreateHabitModal() {
+    console.log('🎭 showCreateHabitModal called');
     const modal = document.getElementById('create-habit-modal');
+    console.log('🎭 Modal element:', modal);
     if (modal) {
         modal.classList.remove('hidden');
+        console.log('🎭 Modal shown, resetting form');
         // Reset form
-        document.getElementById('create-habit-form').reset();
-        updateEmojiPreview();
+        const form = document.getElementById('create-habit-form');
+        console.log('🎭 Form element:', form);
+        if (form) {
+            form.reset();
+            updateEmojiPreview();
+        }
+    } else {
+        console.error('❌ Modal element not found!');
     }
 }
 
@@ -4434,9 +4584,18 @@ function getCategoryColor(category) {
 }
 
 async function handleCreateHabit(e) {
+    console.log('🚀 handleCreateHabit called');
     e.preventDefault();
     
+    console.log('📝 Form target:', e.target);
     const formData = new FormData(e.target);
+    
+    // Debug form data
+    console.log('📋 FormData entries:');
+    for (let [key, value] of formData.entries()) {
+        console.log(`  ${key}: ${value}`);
+    }
+    
     const habitData = {
         name: formData.get('habit-name') || document.getElementById('habit-name').value,
         description: formData.get('habit-description') || document.getElementById('habit-description').value,
@@ -4444,6 +4603,9 @@ async function handleCreateHabit(e) {
         target_frequency: 1, // Default frequency - can be enhanced later
         color: getCategoryColor(formData.get('habit-category') || document.getElementById('habit-category').value)
     };
+    
+    console.log('💾 Habit data to send:', habitData);
+    console.log('🔑 Session ID:', sessionId);
 
     // Validate required fields
     if (!habitData.name || habitData.name.trim() === '') {
@@ -4459,6 +4621,7 @@ async function handleCreateHabit(e) {
     console.log('Creating habit with data:', habitData);
 
     try {
+        console.log('🌐 Making API request to /api/habits');
         const response = await fetch('/api/habits', {
             method: 'POST',
             headers: {
@@ -4468,24 +4631,38 @@ async function handleCreateHabit(e) {
             body: JSON.stringify(habitData)
         });
 
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', [...response.headers.entries()]);
+
         if (response.ok) {
             const result = await response.json();
+            console.log('✅ Success response:', result);
             showNotification('Habit created successfully!', 'success');
             closeModal('create-habit-modal');
             
             // Reload habits and dashboard data
             await loadHabits();
-            await loadDashboardData();
+            await loadDashboardHabits();
+            updateDashboardStats();
             
             // Check for achievements
             checkAchievements();
         } else {
-            const error = await response.json();
-            showNotification(error.error || 'Failed to create habit', 'error');
+            const errorText = await response.text();
+            console.error('❌ Error response status:', response.status);
+            console.error('❌ Error response text:', errorText);
+            let errorMessage = 'Failed to create habit';
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.error || errorMessage;
+            } catch (parseError) {
+                console.error('❌ Error parsing error response:', parseError);
+            }
+            showNotification(errorMessage, 'error');
         }
     } catch (error) {
-        console.error('Create habit error:', error);
-        showNotification('Failed to create habit', 'error');
+        console.error('💥 Create habit network/JS error:', error);
+        showNotification('Failed to create habit - network error', 'error');
     }
 }
 

@@ -2,36 +2,54 @@
 
 let sessionId = localStorage.getItem('sessionId');
 let currentUser = null;
+let isInitializing = false;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
-    // CRITICAL FIX: Always show login screen first, then validate session
-    showLoginScreen();
+    if (isInitializing) {
+        console.warn('⚠️ App already initializing, skipping duplicate initialization');
+        return;
+    }
     
-    // Check URL on startup
+    isInitializing = true;
     console.log('🚀 StriveTrack starting up...');
     console.log('📍 Current URL:', window.location.href);
+    console.log('🔑 Found sessionId:', sessionId ? 'Yes' : 'No');
     
-    // Quick URL validation
+    // Setup event listeners first
+    try {
+        setupEventListeners();
+    } catch (error) {
+        console.error('💥 Error setting up event listeners:', error);
+    }
+    
+    // Check URL validation
     if (!window.location.href.includes('8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev')) {
         console.warn('⚠️ Warning: You might not be on the correct development server.');
         console.warn('⚠️ Expected URL should contain: 8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
         console.warn('⚠️ If API calls fail, try: https://8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
-        
-        // Show a helpful notification
-        setTimeout(() => {
-            const urlIssue = !window.location.href.includes('8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
-            if (urlIssue) {
-                showNotification('URL Notice: If you experience connectivity issues, make sure you\'re accessing the correct development server URL. Check console for details.', 'info', true);
+    }
+    
+    // Add debug info to help troubleshoot
+    console.log('🔧 Debug functions available: debugAuth(), testAdminLogin(), testNetwork(), checkUrl()');
+    
+    // Authentication flow with error handling
+    setTimeout(() => {
+        try {
+            if (sessionId && sessionId.trim() !== '') {
+                console.log('🔍 Validating existing session...');
+                validateSession();
+            } else {
+                console.log('🔑 No valid session found, showing login screen');
+                showLoginScreen();
             }
-        }, 3000);
-    }
-    
-    if (sessionId) {
-        validateSession();
-    }
-    
-    setupEventListeners();
+        } catch (error) {
+            console.error('💥 Error in authentication flow:', error);
+            showLoginScreen();
+        } finally {
+            isInitializing = false;
+        }
+    }, 100);
 });
 
 // Setup event listeners
@@ -151,24 +169,47 @@ function setupEventListeners() {
 
 // Authentication functions
 async function validateSession() {
+    console.log('🔍 Validating session with ID:', sessionId);
+    
+    if (!sessionId || sessionId.trim() === '') {
+        console.log('❌ No session ID to validate');
+        clearSessionAndShowLogin();
+        return;
+    }
+    
     try {
         const response = await fetch('/api/auth/validate-session', {
             headers: { 'x-session-id': sessionId }
         });
         
+        console.log('📊 Session validation response:', response.status, response.statusText);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('✅ Session valid, user data:', data.user);
             currentUser = data.user;
             showDashboard();
         } else {
-            localStorage.removeItem('sessionId');
-            sessionId = null;
+            console.log('❌ Session invalid, clearing and showing login');
+            clearSessionAndShowLogin();
         }
     } catch (error) {
-        console.error('Session validation error:', error);
-        localStorage.removeItem('sessionId');
-        sessionId = null;
+        console.error('💥 Session validation error:', error);
+        clearSessionAndShowLogin();
     }
+}
+
+// Helper function to clear session and show login
+function clearSessionAndShowLogin() {
+    console.log('🧹 Clearing session and showing login screen');
+    localStorage.removeItem('sessionId');
+    sessionId = null;
+    currentUser = null;
+    
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+        showLoginScreen();
+    }, 100);
 }
 
 async function handleLogin(event) {
@@ -355,8 +396,37 @@ function logout() {
 
 // UI Navigation functions
 function showLoginScreen() {
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('dashboard').classList.add('hidden');
+    console.log('🔑 Showing login screen');
+    
+    // Wait for DOM elements to be available
+    const loginScreen = document.getElementById('login-screen');
+    const dashboard = document.getElementById('dashboard');
+    
+    if (!loginScreen) {
+        console.error('❌ Login screen element not found');
+        console.log('🔍 Available elements:', document.querySelectorAll('[id]').length);
+        // Retry after a short delay
+        setTimeout(() => {
+            const retryLoginScreen = document.getElementById('login-screen');
+            if (retryLoginScreen) {
+                retryLoginScreen.classList.remove('hidden');
+                console.log('✅ Login screen found on retry');
+            } else {
+                console.error('❌ Login screen still not found after retry');
+            }
+        }, 500);
+        return;
+    }
+    
+    loginScreen.classList.remove('hidden');
+    
+    if (dashboard) {
+        dashboard.classList.add('hidden');
+    } else {
+        console.warn('⚠️ Dashboard element not found (this might be normal on first load)');
+    }
+    
+    console.log('✅ Login screen should now be visible');
 }
 
 // Dashboard functions
@@ -369,12 +439,17 @@ async function showDashboard() {
     document.getElementById('user-points').textContent = `⭐ ${currentUser.points || 0} pts`;
     
     // Show admin tab only for designated admin (iamhollywoodpro@protonmail.com)
-    if (currentUser.email === 'iamhollywoodpro@protonmail.com') {
-        document.getElementById('admin-tab').classList.remove('hidden');
-    } else {
-        // Ensure admin tab stays hidden for all other users
-        document.getElementById('admin-tab').classList.add('hidden');
+    const adminTab = document.getElementById('admin-tab');
+    if (adminTab) {
+        if (currentUser.email === 'iamhollywoodpro@protonmail.com') {
+            adminTab.classList.remove('hidden');
+        } else {
+            // Ensure admin tab stays hidden for all other users
+            adminTab.classList.add('hidden');
+        }
     }
+    
+    console.log('✅ Dashboard display completed');
     
     // Load role-based dashboard configuration
     await loadRoleBasedDashboard();
@@ -4153,6 +4228,91 @@ window.checkUrl = function() {
         if (confirm('Would you like to redirect to the correct URL?')) {
             window.location.href = expectedUrl;
         }
+        return false;
+    }
+};
+
+// Debug function to diagnose login loop issues
+window.debugAuth = function() {
+    console.log('🔍 Authentication Debug Information:');
+    console.log('=================================');
+    
+    // Check localStorage
+    const storedSession = localStorage.getItem('sessionId');
+    console.log('📁 localStorage sessionId:', storedSession);
+    console.log('🔑 Global sessionId variable:', sessionId);
+    console.log('👤 Current user:', currentUser);
+    
+    // Check DOM elements
+    const loginScreen = document.getElementById('login-screen');
+    const dashboard = document.getElementById('dashboard');
+    
+    console.log('📺 DOM Elements:');
+    console.log('  - login-screen exists:', !!loginScreen);
+    console.log('  - login-screen hidden:', loginScreen ? loginScreen.classList.contains('hidden') : 'N/A');
+    console.log('  - dashboard exists:', !!dashboard);
+    console.log('  - dashboard hidden:', dashboard ? dashboard.classList.contains('hidden') : 'N/A');
+    
+    // Check which screen is currently visible
+    const loginVisible = loginScreen && !loginScreen.classList.contains('hidden');
+    const dashboardVisible = dashboard && !dashboard.classList.contains('hidden');
+    
+    console.log('👁️ Currently Visible:');
+    console.log('  - Login screen:', loginVisible);
+    console.log('  - Dashboard:', dashboardVisible);
+    
+    if (loginVisible && dashboardVisible) {
+        console.warn('⚠️ Both screens are visible - this might cause issues!');
+    } else if (!loginVisible && !dashboardVisible) {
+        console.warn('⚠️ No screens are visible - this is a problem!');
+    }
+    
+    // Test login with admin credentials
+    console.log('🧪 Quick login test available:');
+    console.log('Run: testAdminLogin() to test login with admin credentials');
+    
+    return {
+        sessionId,
+        currentUser,
+        storedSession,
+        loginVisible,
+        dashboardVisible
+    };
+};
+
+// Test function for admin login
+window.testAdminLogin = async function() {
+    console.log('🧪 Testing admin login...');
+    
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                email: 'iamhollywoodpro@protonmail.com', 
+                password: 'password@1981' 
+            })
+        });
+        
+        const data = await response.json();
+        console.log('📊 Test login response:', data);
+        
+        if (response.ok && data.sessionId) {
+            console.log('✅ Login test successful!');
+            console.log('Setting session and showing dashboard...');
+            
+            sessionId = data.sessionId;
+            currentUser = data.user;
+            localStorage.setItem('sessionId', sessionId);
+            
+            showDashboard();
+            return true;
+        } else {
+            console.log('❌ Login test failed:', data.error);
+            return false;
+        }
+    } catch (error) {
+        console.error('💥 Login test error:', error);
         return false;
     }
 };

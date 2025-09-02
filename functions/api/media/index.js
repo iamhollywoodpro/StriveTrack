@@ -61,6 +61,7 @@ export async function onRequestPost(context) {
         const formData = await request.formData();
         const file = formData.get('file');
         const description = formData.get('description') || '';
+        const mediaType = formData.get('media_type') || 'progress'; // 'before', 'after', 'progress'
         
         if (!file || !file.name) {
             return new Response(JSON.stringify({ 
@@ -100,10 +101,21 @@ export async function onRequestPost(context) {
         // Upload to R2
         await env.MEDIA_BUCKET.put(r2Key, file.stream());
         
+        // Validate media type
+        const validTypes = ['before', 'after', 'progress'];
+        if (!validTypes.includes(mediaType)) {
+            return new Response(JSON.stringify({ 
+                error: 'Invalid media type. Must be: before, after, or progress' 
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        
         // Save to database
         await env.DB.prepare(`
-            INSERT INTO media_uploads (id, user_id, filename, original_name, file_type, file_size, r2_key, description)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO media_uploads (id, user_id, filename, original_name, file_type, file_size, r2_key, description, media_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
             mediaId,
             user.id,
@@ -112,12 +124,14 @@ export async function onRequestPost(context) {
             file.type,
             file.size,
             r2Key,
-            description
+            description,
+            mediaType
         ).run();
         
-        // Award points for media upload
-        await env.DB.prepare('UPDATE users SET points = points + 5 WHERE id = ?')
-            .bind(user.id).run();
+        // Award points based on media type
+        const points = mediaType === 'before' ? 10 : mediaType === 'after' ? 15 : 5;
+        await env.DB.prepare('UPDATE users SET points = points + ? WHERE id = ?')
+            .bind(points, user.id).run();
         
         // Check and award achievements
         const newAchievements = await checkAndAwardAchievements(user.id, env);
@@ -125,7 +139,8 @@ export async function onRequestPost(context) {
         return new Response(JSON.stringify({
             message: 'Media uploaded successfully',
             mediaId,
-            points: 5,
+            media_type: mediaType,
+            points,
             newAchievements
         }), {
             status: 201,

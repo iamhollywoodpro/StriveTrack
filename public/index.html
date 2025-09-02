@@ -370,6 +370,44 @@
             align-items: center;
             justify-content: center;
             color: rgba(255, 255, 255, 0.4);
+            position: relative;
+        }
+        
+        .media-actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            opacity: 0;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+        
+        .media-item:hover .media-actions {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.9);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            min-width: 32px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.05);
         }
         
         .notification {
@@ -617,6 +655,157 @@
             height: 10px;
             border-radius: 50%;
             background: #10b981;
+        }
+        
+        /* Enhanced Media Gallery Styles */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .media-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .media-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .media-preview {
+            width: 100%;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .media-preview img, .media-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .media-type-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            backdrop-filter: blur(10px);
+        }
+        
+        .media-type-badge.before {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+        }
+        
+        .media-type-badge.progress {
+            background: rgba(139, 92, 246, 0.9);
+            color: white;
+        }
+        
+        .media-type-badge.after {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+        }
+        
+        .media-info {
+            padding: 16px;
+        }
+        
+        .media-date {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+        
+        .media-description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+        
+        /* Media Upload Modal Styles */
+        .media-type-option {
+            cursor: pointer;
+        }
+        
+        .media-type-card {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .media-type-option:hover .media-type-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .media-type-option input:checked + .media-type-card {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+            color: white;
+        }
+        
+        /* Comparison View Styles */
+        .comparison-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .comparison-header {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .comparison-media {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .comparison-media img, .comparison-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .pairing-indicator {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 4px 8px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
         
         .week-calendar {
@@ -1184,16 +1373,68 @@
                     <div class="flex items-center justify-between mb-6">
                         <div>
                             <h2 class="text-2xl font-bold text-white">Progress Gallery</h2>
-                            <p class="text-white/70">Document your fitness transformation journey</p>
+                            <p class="text-white/70">Document your fitness transformation journey with photos and videos</p>
                         </div>
-                        <input type="file" id="media-upload" accept="image/*,video/*" class="hidden">
-                        <button id="upload-media-btn" class="btn-primary">
-                            <i class="fas fa-upload mr-2"></i>
-                            Upload New Media
-                        </button>
+                        <div class="flex space-x-3">
+                            <select id="gallery-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                                <option value="all">All Media</option>
+                                <option value="before">Before</option>
+                                <option value="progress">Progress</option>
+                                <option value="after">After</option>
+                                <option value="comparisons">Before/After Pairs</option>
+                            </select>
+                            <input type="file" id="media-upload" accept="image/*,video/*" class="hidden">
+                            <button id="upload-media-btn" class="btn-primary">
+                                <i class="fas fa-upload mr-2"></i>
+                                Upload Media
+                            </button>
+                        </div>
                     </div>
+                    
+                    <!-- Upload Progress Indicator -->
+                    <div id="upload-progress" class="hidden mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex-1 bg-white/10 rounded-full h-2">
+                                <div id="upload-progress-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <span id="upload-progress-text" class="text-white/70 text-sm">0%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Overview -->
+                    <div id="media-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-white" id="total-uploads">0</div>
+                            <div class="text-white/60 text-sm">Total Uploads</div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-400" id="before-count">0</div>
+                            <div class="text-white/60 text-sm">Before Photos</div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-green-400" id="after-count">0</div>
+                            <div class="text-white/60 text-sm">After Photos</div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-purple-400" id="comparison-count">0</div>
+                            <div class="text-white/60 text-sm">Comparisons</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Media Gallery -->
                     <div id="media-container" class="media-grid">
                         <!-- Media items will be loaded here -->
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="media-empty-state" class="text-center py-12 hidden">
+                        <div class="text-6xl mb-4">📸</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Start Your Transformation Journey</h3>
+                        <p class="text-white/70 mb-6">Upload your first progress photo or video to begin tracking your fitness transformation.</p>
+                        <button onclick="showMediaUploadModal()" class="btn-primary">
+                            <i class="fas fa-camera mr-2"></i>
+                            Upload Your First Photo
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1489,6 +1730,73 @@
         </div>
     </div>
     
+    <!-- Media Upload Modal -->
+    <div id="media-upload-modal" class="modal hidden">
+        <div class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Upload Progress Media</h3>
+                <button onclick="closeModal('media-upload-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="media-upload-form" enctype="multipart/form-data">
+                <div class="mb-6">
+                    <label class="block text-white/90 text-sm font-medium mb-2">Media Type</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="media-type-option">
+                            <input type="radio" name="media_type" value="before" class="sr-only">
+                            <div class="media-type-card">
+                                <div class="text-2xl mb-2">📅</div>
+                                <div class="font-medium">Before</div>
+                                <div class="text-xs opacity-70">Start of journey</div>
+                            </div>
+                        </label>
+                        <label class="media-type-option">
+                            <input type="radio" name="media_type" value="progress" class="sr-only" checked>
+                            <div class="media-type-card">
+                                <div class="text-2xl mb-2">📈</div>
+                                <div class="font-medium">Progress</div>
+                                <div class="text-xs opacity-70">Journey update</div>
+                            </div>
+                        </label>
+                        <label class="media-type-option">
+                            <input type="radio" name="media_type" value="after" class="sr-only">
+                            <div class="media-type-card">
+                                <div class="text-2xl mb-2">🎯</div>
+                                <div class="font-medium">After</div>
+                                <div class="text-xs opacity-70">Goal achieved</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="media-file" class="block text-white/90 text-sm font-medium mb-2">Select Photo or Video</label>
+                    <input type="file" id="media-file" name="file" accept="image/*,video/*" class="input-field" required>
+                    <div class="text-white/60 text-xs mt-1">Supported: JPG, PNG, MP4, MOV (Max 50MB)</div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="media-description" class="block text-white/90 text-sm font-medium mb-2">Description (Optional)</label>
+                    <textarea id="media-description" name="description" class="input-field" rows="3" 
+                             placeholder="Describe your progress, what you've achieved, or how you're feeling..."></textarea>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-upload mr-2"></i>
+                        Upload Media
+                    </button>
+                    <button type="button" onclick="closeModal('media-upload-modal')" class="btn-secondary flex-1">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Media Preview Modal -->
     <div id="media-modal" class="modal hidden">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-4">
@@ -1499,6 +1807,21 @@
             </div>
             <div id="media-modal-content">
                 <!-- Media content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Before/After Comparison Modal -->
+    <div id="comparison-modal" class="modal hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Before & After Comparison</h3>
+                <button onclick="closeModal('comparison-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="comparison-content" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Comparison content will be loaded here -->
             </div>
         </div>
     </div>

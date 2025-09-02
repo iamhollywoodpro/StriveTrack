@@ -5383,8 +5383,8 @@ async function simpleToggleHabit(habitId, date) {
             // Update the specific day cell immediately
             updateDayCellVisualState(habitId, date, result.completed);
             
-            // CRITICAL FIX: Refresh the entire habits display to update weekly counters
-            await refreshHabitsDisplay();
+            // Update weekly counter for this specific habit
+            updateWeeklyProgressForHabit(habitId);
             
         } else {
             const errorText = await response.text();
@@ -5417,6 +5417,68 @@ async function refreshHabitsDisplay() {
     }
 }
 
+// Function to update weekly progress for a specific habit
+function updateWeeklyProgressForHabit(habitId) {
+    console.log('📊 Updating weekly progress for habit:', habitId);
+    
+    try {
+        // Find the habit card by looking for day cells with this habit ID
+        const firstDayCell = document.querySelector(`[data-habit-id="${habitId}"]`);
+        if (!firstDayCell) {
+            console.log('❌ No day cell found for habit:', habitId);
+            return;
+        }
+        
+        const habitCard = firstDayCell.closest('.habit-card');
+        if (!habitCard) {
+            console.log('❌ Habit card not found');
+            return;
+        }
+        
+        // Count completed days for this week within this habit card
+        const completedCells = habitCard.querySelectorAll(`[data-habit-id="${habitId}"].completed`);
+        const completedCount = completedCells.length;
+        
+        // Find the progress text - look for text containing "/ X days"
+        const allSpans = habitCard.querySelectorAll('span, p');
+        let progressText = null;
+        let target = 7;
+        
+        for (const span of allSpans) {
+            if (span.textContent && span.textContent.includes(' / ') && span.textContent.includes('days')) {
+                progressText = span;
+                const targetMatch = span.textContent.match(/\/\s*(\d+)/);
+                if (targetMatch) target = parseInt(targetMatch[1]);
+                break;
+            }
+        }
+        
+        if (progressText) {
+            progressText.innerHTML = `<span class="text-green-400 font-semibold">${completedCount}</span> / ${target} days this week`;
+        }
+        
+        // Update progress bar
+        const progressBar = habitCard.querySelector('.progress-bar');
+        if (progressBar) {
+            const percentage = (completedCount / target) * 100;
+            progressBar.style.width = `${Math.min(percentage, 100)}%`;
+        }
+        
+        // Update percentage display
+        const percentageSpans = habitCard.querySelectorAll('span');
+        for (const span of percentageSpans) {
+            if (span.textContent && span.textContent.includes('%')) {
+                span.textContent = `${Math.round((completedCount / target) * 100)}%`;
+                break;
+            }
+        }
+        
+        console.log('✅ Weekly progress updated:', completedCount, '/', target);
+    } catch (error) {
+        console.error('❌ Error updating weekly progress:', error);
+    }
+}
+
 // Function to immediately update day cell visual state
 function updateDayCellVisualState(habitId, date, isCompleted) {
     console.log('🎨 Updating visual state:', habitId, date, isCompleted);
@@ -5426,14 +5488,15 @@ function updateDayCellVisualState(habitId, date, isCompleted) {
     
     if (dayCell) {
         console.log('📍 Found day cell:', dayCell);
+        console.log('📍 Current classes:', dayCell.className);
         
         // Update classes
         if (isCompleted) {
             dayCell.classList.add('completed');
-            console.log('✅ Added completed class');
+            console.log('✅ Added completed class - new classes:', dayCell.className);
         } else {
             dayCell.classList.remove('completed');
-            console.log('⭕ Removed completed class');
+            console.log('⭕ Removed completed class - new classes:', dayCell.className);
         }
         
         // Update the checkmark/circle icon
@@ -5441,6 +5504,8 @@ function updateDayCellVisualState(habitId, date, isCompleted) {
         if (iconElement) {
             iconElement.textContent = isCompleted ? '✓' : '○';
             console.log('🔄 Updated icon:', isCompleted ? '✓' : '○');
+        } else {
+            console.log('❌ No .text-lg element found in day cell');
         }
         
         // Update fas fa-check icon if present

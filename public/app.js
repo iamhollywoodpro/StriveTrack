@@ -1179,12 +1179,18 @@ async function showMediaModal(media) {
     return showEnhancedMediaModal(media);
 }
 
-// Delete media function from modal
+// Delete media function with confirmation (for modal button)
 async function deleteMediaFromModal(mediaId) {
-    if (!confirm('Are you sure you want to delete this media? This action cannot be undone and will deduct points from your account.')) {
-        return;
-    }
-    
+    showConfirmationModal(
+        'Are you sure you want to delete this media? This action cannot be undone and will deduct points from your account.',
+        async function() {
+            await performMediaDeletion(mediaId);
+        }
+    );
+}
+
+// Core media deletion function (no confirmation)
+async function performMediaDeletion(mediaId) {
     try {
         const response = await fetch(`/api/media/${mediaId}/delete`, {
             method: 'DELETE',
@@ -1216,7 +1222,7 @@ function deleteMediaWithConfirmation(mediaId) {
     showConfirmationModal(
         'Are you sure you want to delete this media? This action cannot be undone and will deduct points from your account.',
         async function() {
-            await deleteMediaFromModal(mediaId);
+            await performMediaDeletion(mediaId);
         }
     );
 }

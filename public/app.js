@@ -20,8 +20,15 @@ function setupEventListeners() {
     // Login form
     document.getElementById('login-form').addEventListener('submit', handleLogin);
     
-    // Register button
-    document.getElementById('show-register').addEventListener('click', showRegisterForm);
+    // Signup form
+    document.getElementById('signup-form').addEventListener('submit', handleSignup);
+    
+    // User type selection change handler
+    document.getElementById('signup-user-type').addEventListener('change', updateUserTypeDescription);
+    
+    // Register buttons
+    document.getElementById('show-register').addEventListener('click', showSignupForm);
+    document.getElementById('show-login').addEventListener('click', showLoginForm);
     
     // Logout button
     document.getElementById('logout-btn').addEventListener('click', logout);
@@ -160,38 +167,114 @@ async function handleLogin(event) {
     }
 }
 
-function showRegisterForm() {
-    const email = prompt('Enter your email address:');
-    if (!email) return;
+function showSignupForm() {
+    document.getElementById('login-form-card').classList.add('hidden');
+    document.getElementById('signup-form-card').classList.remove('hidden');
+    document.getElementById('signup-name').focus();
+}
+
+function showLoginForm() {
+    document.getElementById('signup-form-card').classList.add('hidden');
+    document.getElementById('login-form-card').classList.remove('hidden');
+    document.getElementById('email').focus();
+}
+
+function updateUserTypeDescription() {
+    const userType = document.getElementById('signup-user-type').value;
+    const descriptionDiv = document.getElementById('user-type-description');
+    const descriptionText = document.getElementById('description-text');
     
-    const password = prompt('Create a password (min 6 characters):');
-    if (!password || password.length < 6) {
-        showNotification('Password must be at least 6 characters', 'error');
+    const descriptions = {
+        'beginner': 'Perfect for newcomers! Get guided workouts, learning resources, form tutorials, and connect with other beginners for motivation.',
+        'intermediate': 'Level up your fitness! Access advanced analytics, workout variations, challenge creation, and integration with fitness apps.',
+        'advanced': 'Maximize performance! Get detailed biometric tracking, custom program builders, mentorship opportunities, and peak performance tools.',
+        'competition': 'Compete at your best! Track competitions, plan peak timing, analyze performance data, and manage team relationships.',
+        'coach': 'Grow your business! Manage multiple clients, create program templates, track client progress, and access professional business tools.'
+    };
+    
+    if (userType && descriptions[userType]) {
+        descriptionText.textContent = descriptions[userType];
+        descriptionDiv.classList.remove('hidden');
+    } else {
+        descriptionDiv.classList.add('hidden');
+    }
+}
+
+async function handleSignup(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const name = formData.get('name')?.trim();
+    const email = formData.get('email')?.trim();
+    const password = formData.get('password');
+    const phone = formData.get('phone')?.trim();
+    const user_type = formData.get('user_type');
+    
+    // Client-side validation
+    if (!name || name.length < 2) {
+        showNotification('Please enter your full name (at least 2 characters)', 'error');
         return;
     }
     
-    register(email, password);
-}
-
-async function register(email, password) {
+    if (!email || !email.includes('@')) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    if (!password || password.length < 6) {
+        showNotification('Password must be at least 6 characters long', 'error');
+        return;
+    }
+    
+    if (!user_type) {
+        showNotification('Please select your fitness level', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Account...';
+    submitBtn.disabled = true;
+    
     try {
         const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ name, email, password, phone, user_type })
         });
         
         const data = await response.json();
         
         if (response.ok) {
-            showNotification('Account created successfully! Please log in.', 'success');
-            document.getElementById('email').value = email;
+            // Store session and user data
+            localStorage.setItem('sessionId', data.sessionId);
+            currentUser = data.user;
+            
+            showNotification(`Welcome to StriveTrack, ${data.user.name}! 🎉`, 'success');
+            
+            // Trigger confetti animation
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            
+            // Show dashboard after a short delay
+            setTimeout(() => {
+                showDashboard();
+            }, 1500);
+            
         } else {
             showNotification(data.error || 'Registration failed', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
         }
     } catch (error) {
         console.error('Registration error:', error);
-        showNotification('Registration failed. Please try again.', 'error');
+        showNotification('Network error. Please check your connection and try again.', 'error');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
 }
 

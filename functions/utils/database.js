@@ -17,15 +17,94 @@ export async function createUser(userData, env) {
     const userId = uuidv4();
     const hashedPassword = await bcrypt.hash(userData.password, 12);
     
-    // Set admin role for specific email
+    // Set admin role for specific email, otherwise use provided user_type
     const role = userData.email === env.ADMIN_EMAIL ? 'admin' : 'user';
+    const userType = userData.user_type || 'beginner';
+    
+    // Validate user_type
+    const validTypes = ['beginner', 'intermediate', 'advanced', 'competition', 'coach'];
+    if (!validTypes.includes(userType)) {
+        throw new Error(`Invalid user type: ${userType}`);
+    }
+    
+    // Create profile data object
+    const profileData = {
+        fitness_level: userType,
+        goals: [],
+        preferences: {},
+        onboarding_step: 1,
+        dashboard_layout: getRoleBasedDashboardConfig(userType)
+    };
     
     await env.DB.prepare(`
-        INSERT INTO users (id, email, password_hash, role, points)
-        VALUES (?, ?, ?, ?, 0)
-    `).bind(userId, userData.email, hashedPassword, role).run();
+        INSERT INTO users (
+            id, email, password_hash, role, points, 
+            name, phone, user_type, onboarding_completed, 
+            profile_data, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, 0, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))
+    `).bind(
+        userId, 
+        userData.email, 
+        hashedPassword, 
+        role, 
+        userData.name || '', 
+        userData.phone || '', 
+        userType, 
+        JSON.stringify(profileData)
+    ).run();
     
     return await getUserById(userId, env);
+}
+
+/**
+ * Get dashboard configuration based on user role
+ */
+function getRoleBasedDashboardConfig(userType) {
+    const baseDashboard = {
+        sections: ['habits', 'nutrition', 'achievements', 'progress'],
+        widgets: []
+    };
+    
+    switch (userType) {
+        case 'beginner':
+            return {
+                ...baseDashboard,
+                sections: [...baseDashboard.sections, 'learning_hub', 'guided_workouts', 'milestones'],
+                widgets: ['progress_streak', 'next_milestone', 'daily_tip']
+            };
+            
+        case 'intermediate':
+            return {
+                ...baseDashboard,
+                sections: [...baseDashboard.sections, 'analytics', 'challenges', 'integrations'],
+                widgets: ['trend_analysis', 'plateau_detection', 'goal_optimizer']
+            };
+            
+        case 'advanced':
+            return {
+                ...baseDashboard,
+                sections: [...baseDashboard.sections, 'performance', 'program_builder', 'biometrics', 'mentorship'],
+                widgets: ['performance_metrics', 'recovery_status', 'training_load']
+            };
+            
+        case 'competition':
+            return {
+                ...baseDashboard,
+                sections: [...baseDashboard.sections, 'competitions', 'peak_timing', 'team_management'],
+                widgets: ['next_competition', 'performance_prediction', 'training_phase']
+            };
+            
+        case 'coach':
+            return {
+                ...baseDashboard,
+                sections: [...baseDashboard.sections, 'clients', 'programs', 'business_tools', 'resources'],
+                widgets: ['client_overview', 'schedule', 'revenue_metrics']
+            };
+            
+        default:
+            return baseDashboard;
+    }
 }
 
 export async function validatePassword(password, hash) {

@@ -62,25 +62,14 @@ function setupEventListeners() {
     // Connect media upload form to submit handler
     document.getElementById('media-upload-form').addEventListener('submit', submitMediaUpload);
     
-    // Admin tabs
-    document.getElementById('admin-users-tab').addEventListener('click', () => {
-        showAdminSection('users');
-    });
-    
-    document.getElementById('admin-media-tab').addEventListener('click', () => {
-        showAdminSection('media');
-    });
-    
     // Admin search and filter functionality (bind when elements exist)
-    const adminUserSearch = document.getElementById('admin-user-search');
-    const adminUserFilter = document.getElementById('admin-user-filter');
-    const adminMediaSearch = document.getElementById('admin-media-search');
-    const adminMediaFilter = document.getElementById('admin-media-filter');
-    
-    if (adminUserSearch) adminUserSearch.addEventListener('input', debounce(filterAdminUsers, 300));
-    if (adminUserFilter) adminUserFilter.addEventListener('change', filterAdminUsers);
-    if (adminMediaSearch) adminMediaSearch.addEventListener('input', debounce(filterAdminMediaBySearch, 300));
-    if (adminMediaFilter) adminMediaFilter.addEventListener('change', () => loadAdminMedia(adminMediaFilter.value));
+    setTimeout(() => {
+        const adminUserSearch = document.getElementById('admin-user-search');
+        const adminUserFilter = document.getElementById('admin-user-filter');
+        
+        if (adminUserSearch) adminUserSearch.addEventListener('input', debounce(filterAdminUsers, 300));
+        if (adminUserFilter) adminUserFilter.addEventListener('change', filterAdminUsers);
+    }, 100);
     
     // Install app
     document.getElementById('install-app').addEventListener('click', installPWA);
@@ -2319,14 +2308,22 @@ async function submitNutrition(event) {
 }
 
 // Admin functions
-async function loadAdminData() {
-    // Only load admin data for the designated admin
-    if (currentUser && currentUser.email === 'iamhollywoodpro@protonmail.com') {
-        await Promise.all([
-            loadAdminUsers(),
-            loadAdminMedia()
-        ]);
-    }
+// Global variable to track current admin user being viewed
+let currentAdminUserId = null;
+
+// Show admin user list view
+function showAdminUserList() {
+    document.getElementById('admin-user-list').classList.remove('hidden');
+    document.getElementById('admin-user-detail').classList.add('hidden');
+    currentAdminUserId = null;
+}
+
+// Show user detail view
+function showAdminUserDetail(userId) {
+    document.getElementById('admin-user-list').classList.add('hidden');
+    document.getElementById('admin-user-detail').classList.remove('hidden');
+    currentAdminUserId = userId;
+    loadAdminUserDetail(userId);
 }
 
 // Admin stats are now loaded as part of loadAdminUsers()
@@ -2349,16 +2346,8 @@ async function loadAdminUsers() {
 }
 
 function displayAdminUsers(users) {
-    const container = document.getElementById('admin-users-table').parentElement.parentElement;
-    
-    // Replace table with card layout
-    container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="admin-users-grid">
-            <!-- User cards will be loaded here -->
-        </div>
-    `;
-    
     const grid = document.getElementById('admin-users-grid');
+    grid.innerHTML = '';
     
     // Filter out admin account from display (extra security layer)
     const filteredUsers = users.filter(user => user.email !== 'iamhollywoodpro@protonmail.com');
@@ -2367,24 +2356,24 @@ function displayAdminUsers(users) {
         const joinedDate = new Date(user.created_at).toLocaleDateString();
         const lastSeen = user.last_session ? new Date(user.last_session).toLocaleDateString() : 'Never';
         const isOnline = user.active_sessions > 0;
-        const hasActivity = (user.total_habits > 0 || user.total_media > 0);
         
         const card = document.createElement('div');
-        card.className = 'bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-colors';
+        card.className = 'bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer';
+        card.onclick = () => showAdminUserDetail(user.id);
         
         card.innerHTML = `
             <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center space-x-3">
-                    <div class="w-3 h-3 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-400'}" title="${isOnline ? 'Online' : 'Offline'}"></div>
+                    <div class="w-4 h-4 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-400'}" title="${isOnline ? 'Online' : 'Offline'}"></div>
                     <div>
-                        <div class="text-white font-medium">${user.email.split('@')[0]}</div>
-                        <div class="text-white/50 text-xs">${user.email}</div>
+                        <div class="text-white font-medium text-lg cursor-pointer hover:text-blue-400">${user.email.split('@')[0]}</div>
+                        <div class="text-white/50 text-sm">${isOnline ? '🟢 Online' : '⚫ Offline'}</div>
                     </div>
                 </div>
-                ${user.flagged_media > 0 ? `<div class="text-red-400 text-xs font-medium">⚠️ ${user.flagged_media}</div>` : ''}
+                ${user.flagged_media > 0 ? `<div class="text-red-400 text-sm font-medium">⚠️ ${user.flagged_media} flagged</div>` : ''}
             </div>
             
-            <div class="grid grid-cols-2 gap-3 mb-3 text-xs">
+            <div class="grid grid-cols-4 gap-2 mb-3 text-xs">
                 <div class="bg-white/5 rounded p-2 text-center">
                     <div class="text-white font-medium">${user.points || 0}</div>
                     <div class="text-white/50">Points</div>
@@ -2403,19 +2392,12 @@ function displayAdminUsers(users) {
                 </div>
             </div>
             
-            <div class="text-xs text-white/50 mb-3">
-                <div>Joined: ${joinedDate}</div>
-                <div>Last seen: ${lastSeen}</div>
-                ${isOnline ? '<div class="text-green-400">🟢 Currently online</div>' : ''}
+            <div class="text-xs text-white/60 text-center">
+                Joined ${joinedDate} • Last seen ${lastSeen}
             </div>
             
-            <div class="flex space-x-2">
-                <button onclick="viewUserMedia('${user.id}', '${user.email}')" class="btn-secondary text-xs flex-1">
-                    <i class="fas fa-images mr-1"></i>Media (${user.total_media})
-                </button>
-                <button onclick="deleteAdminUser('${user.id}')" class="btn-danger text-xs">
-                    <i class="fas fa-trash"></i>
-                </button>
+            <div class="mt-3 text-center">
+                <div class="text-blue-400 text-sm">👆 Click to view full profile & media</div>
             </div>
         `;
         
@@ -2606,17 +2588,20 @@ let allAdminMedia = [];
 
 // Filter admin users
 function filterAdminUsers() {
-    const searchTerm = document.getElementById('admin-user-search').value.toLowerCase();
-    const filterType = document.getElementById('admin-user-filter').value;
+    const searchTerm = document.getElementById('admin-user-search')?.value?.toLowerCase() || '';
+    const filterType = document.getElementById('admin-user-filter')?.value || 'all';
     
     let filteredUsers = allAdminUsers.filter(user => {
         // Search filter
         const matchesSearch = user.email.toLowerCase().includes(searchTerm) || 
                              user.email.split('@')[0].toLowerCase().includes(searchTerm);
         
-        // Type filter (admin filter removed for security)
+        // Type filter
         let matchesType = true;
         switch (filterType) {
+            case 'online':
+                matchesType = user.active_sessions > 0;
+                break;
             case 'active':
                 matchesType = user.total_habits > 0 || user.total_media > 0;
                 break;
@@ -2857,11 +2842,160 @@ function filterAdminMediaBySearch() {
     displayAdminMedia(filteredMedia);
 }
 
-// View specific user's media
-function viewUserMedia(userId, userEmail) {
-    // Switch to media management tab and filter by user
-    showAdminSection('media');
-    // Add user filter functionality here if needed
+// Load admin user detail view
+async function loadAdminUserDetail(userId) {
+    try {
+        const response = await fetch(`/api/admin/user-detail/${userId}`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayAdminUserDetail(data);
+        } else {
+            showNotification('Failed to load user details', 'error');
+            showAdminUserList();
+        }
+    } catch (error) {
+        console.error('Load admin user detail error:', error);
+        showNotification('Failed to load user details', 'error');
+        showAdminUserList();
+    }
+}
+
+// Display admin user detail
+function displayAdminUserDetail(data) {
+    const user = data.user;
+    const media = data.media;
+    const habits = data.habits;
+    const recentActivity = data.recent_activity;
+    
+    // Update user info header
+    const userInfoContainer = document.getElementById('admin-user-info');
+    const joinedDate = new Date(user.created_at).toLocaleDateString();
+    const lastSeen = user.last_session ? new Date(user.last_session).toLocaleDateString() : 'Never';
+    const isOnline = user.active_sessions > 0;
+    const lastUpload = user.last_upload ? new Date(user.last_upload).toLocaleDateString() : 'Never';
+    const lastCompletion = user.last_completion ? new Date(user.last_completion).toLocaleDateString() : 'Never';
+    
+    userInfoContainer.innerHTML = `
+        <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-6 h-6 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-400'}"></div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">${user.email.split('@')[0]}</h2>
+                        <p class="text-white/60">${user.email}</p>
+                        <p class="text-sm ${isOnline ? 'text-green-400' : 'text-white/50'}">${isOnline ? '🟢 Online Now' : '⚫ Offline'}</p>
+                    </div>
+                </div>
+                ${user.flagged_media > 0 ? `
+                    <div class="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-center">
+                        <div class="text-red-400 font-bold text-xl">${user.flagged_media}</div>
+                        <div class="text-red-400 text-xs">Flagged Media</div>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-white">${user.points || 0}</div>
+                    <div class="text-white/60 text-sm">Total Points</div>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-400">${user.total_habits}</div>
+                    <div class="text-white/60 text-sm">Active Habits</div>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-green-400">${user.total_media}</div>
+                    <div class="text-white/60 text-sm">Media Files</div>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-400">${user.total_completions}</div>
+                    <div class="text-white/60 text-sm">Completions</div>
+                </div>
+            </div>
+            
+            <!-- User Timeline -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="text-white/60 mb-2">Account Info</div>
+                    <div class="text-white">Joined: ${joinedDate}</div>
+                    <div class="text-white">Last seen: ${lastSeen}</div>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="text-white/60 mb-2">Media Activity</div>
+                    <div class="text-white">${user.total_images} Images • ${user.total_videos} Videos</div>
+                    <div class="text-white">Last upload: ${lastUpload}</div>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="text-white/60 mb-2">Habit Activity</div>
+                    <div class="text-white">${user.total_habits} Habits created</div>
+                    <div class="text-white">Last completion: ${lastCompletion}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Display user media
+    const mediaGrid = document.getElementById('admin-user-media-grid');
+    const mediaEmpty = document.getElementById('admin-user-media-empty');
+    
+    if (media.length === 0) {
+        mediaGrid.classList.add('hidden');
+        mediaEmpty.classList.remove('hidden');
+    } else {
+        mediaGrid.classList.remove('hidden');
+        mediaEmpty.classList.add('hidden');
+        mediaGrid.innerHTML = '';
+        
+        media.forEach(item => {
+            const mediaItem = document.createElement('div');
+            mediaItem.className = 'relative group bg-white/5 rounded-lg overflow-hidden aspect-square cursor-pointer hover:bg-white/10 transition-colors';
+            
+            mediaItem.innerHTML = `
+                <div class="w-full h-full flex items-center justify-center" id="media-preview-${item.id}">
+                    <i class="fas fa-${item.media_type === 'video' ? 'video' : 'image'} text-2xl text-white/40"></i>
+                </div>
+                
+                <!-- Media Type Badge -->
+                <div class="absolute top-2 left-2 px-2 py-1 bg-black/60 rounded text-xs text-white">
+                    ${item.media_type.toUpperCase()}
+                </div>
+                
+                <!-- Flag Badge -->
+                ${item.is_flagged ? '<div class="absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"><i class="fas fa-flag text-xs text-white"></i></div>' : ''}
+                
+                <!-- Hover Actions -->
+                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                    <button onclick="viewAdminMediaModal('${item.id}')" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="Full View">
+                        <i class="fas fa-eye text-white"></i>
+                    </button>
+                    <button onclick="toggleAdminMediaFlag('${item.id}', this)" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="Flag">
+                        <i class="fas fa-flag text-white"></i>
+                    </button>
+                    <button onclick="downloadAdminMedia('${item.id}', '${item.original_name}')" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors" title="Download">
+                        <i class="fas fa-download text-white"></i>
+                    </button>
+                    <button onclick="deleteAdminMedia('${item.id}')" class="w-10 h-10 bg-red-500/80 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors" title="Delete">
+                        <i class="fas fa-trash text-white"></i>
+                    </button>
+                </div>
+                
+                <!-- File Info -->
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                    <div class="text-white text-xs truncate">${item.original_name}</div>
+                    <div class="text-white/60 text-xs">${(item.file_size / 1024 / 1024).toFixed(1)}MB • ${new Date(item.uploaded_at).toLocaleDateString()}</div>
+                </div>
+            `;
+            
+            mediaGrid.appendChild(mediaItem);
+            
+            // Load actual media preview
+            loadAdminMediaPreview(item.id, `media-preview-${item.id}`, item.media_type === 'video');
+        });
+    }
 }
 
 // Download all media for a specific user
@@ -3002,32 +3136,12 @@ function showSection(section) {
         loadDailyChallenges();
         loadLeaderboards();
     } else if (section === 'admin') {
-        loadAdminData();
-        // Default to user management tab
-        showAdminSection('users');
+        loadAdminUsers(); // Load users immediately
+        showAdminUserList(); // Ensure user list is visible
     }
 }
 
-function showAdminSection(section) {
-    // Hide all sections
-    document.getElementById('admin-users-section').classList.add('hidden');
-    document.getElementById('admin-media-section').classList.add('hidden');
-    
-    // Remove active state from all tabs
-    document.getElementById('admin-users-tab').classList.remove('active');
-    document.getElementById('admin-media-tab').classList.remove('active');
-    
-    // Show selected section and make tab active
-    document.getElementById(`admin-${section}-section`).classList.remove('hidden');
-    document.getElementById(`admin-${section}-tab`).classList.add('active');
-    
-    // Load data immediately when switching sections
-    if (section === 'users') {
-        loadAdminUsers();
-    } else if (section === 'media') {
-        loadAdminMediaByUser();
-    }
-}
+// Remove old showAdminSection function - no longer needed with new design
 
 function showModal(modalId) {
     document.getElementById(modalId).classList.remove('hidden');

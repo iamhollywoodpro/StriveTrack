@@ -5112,6 +5112,13 @@ function setupHabitEventListeners() {
             event.preventDefault();
             event.stopPropagation();
             
+            // Check if the cell is disabled
+            if (habitCell.classList.contains('disabled')) {
+                console.log('❌ Cell is disabled - weekly target reached');
+                showNotification('Weekly target reached for this habit', 'info');
+                return;
+            }
+            
             const habitId = habitCell.getAttribute('data-habit-id') || habitCell.dataset.habitId;
             const date = habitCell.getAttribute('data-date') || habitCell.dataset.date;
             
@@ -5692,13 +5699,26 @@ function createHabitCard(habit) {
                     const isToday = date.toDateString() === new Date().toDateString();
                     const isPast = date < new Date().setHours(0, 0, 0, 0);
                     
+                    // Calculate total completions for the week
+                    const totalCompletedThisWeek = weekCompletions.filter(Boolean).length;
+                    const maxCompletions = habit.weekly_target || 7;
+                    
+                    // Logic for clickability:
+                    // - Always allow unchecking (if already completed)
+                    // - Only allow checking new days if under weekly target
+                    const canCheck = !isCompleted && (totalCompletedThisWeek < maxCompletions);
+                    const canUncheck = isCompleted;
+                    const isClickable = canCheck || canUncheck;
+                    
                     return `
-                        <div class="day-cell habit-day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}"
+                        <div class="day-cell habit-day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''} ${!isClickable ? 'disabled' : ''}"
                              data-habit-id="${habit.id}" 
-                             data-date="${date.toISOString().split('T')[0]}">
+                             data-date="${date.toISOString().split('T')[0]}"
+                             ${!isClickable ? 'style="opacity: 0.4; cursor: not-allowed;" title="Weekly target of ' + maxCompletions + ' days reached"' : ''}
+                             title="${isCompleted ? 'Click to uncheck (-10 pts)' : (canCheck ? 'Click to check (+10 pts)' : 'Weekly target reached')}">
                             <div class="text-xs font-medium">${date.toLocaleDateString('en', {weekday: 'short'})}</div>
                             <div class="text-lg font-bold">${date.getDate()}</div>
-                            ${isCompleted ? '<i class="fas fa-check text-xs mt-1"></i>' : ''}
+                            ${isCompleted ? '<i class="fas fa-check text-xs mt-1"></i>' : (!isClickable ? '<i class="fas fa-ban text-xs mt-1 text-red-400"></i>' : '')}
                         </div>
                     `;
                 }).join('')}
@@ -5713,6 +5733,9 @@ function createHabitCard(habit) {
     `;
 }
 
+// Track ongoing toggles to prevent double-clicking
+const activeToggles = new Set();
+
 // Fixed habit toggle function - NO PAGE RELOAD
 async function simpleToggleHabit(habitId, date) {
     console.log('🚀 Toggle habit called:', habitId, date);
@@ -5726,6 +5749,15 @@ async function simpleToggleHabit(habitId, date) {
         showNotification('Missing habit data', 'error');
         return;
     }
+    
+    // Prevent double-clicking
+    const toggleKey = `${habitId}-${date}`;
+    if (activeToggles.has(toggleKey)) {
+        console.log('⏳ Toggle already in progress, ignoring...');
+        return;
+    }
+    
+    activeToggles.add(toggleKey);
     
     try {
         const response = await fetch('/api/habits/toggle', {
@@ -5789,6 +5821,9 @@ async function simpleToggleHabit(habitId, date) {
     } catch (error) {
         console.error('💥 Network error:', error);
         showNotification('Network error occurred', 'error');
+    } finally {
+        // Always remove the toggle key when done
+        activeToggles.delete(toggleKey);
     }
 }
 
@@ -6261,4 +6296,454 @@ document.addEventListener('DOMContentLoaded', function() {
         setupAllEventListeners();
     }, 100);
 });
+
+// ===============================================
+// COMPREHENSIVE HABIT MANAGEMENT SYSTEM - FIXED
+// ===============================================
+
+// Anti-cheat tracking for double-click prevention
+const activeToggles = new Set();
+
+// Current week offset for navigation
+let currentWeekOffset = 0;
+
+// Unified data loading function to ensure consistency between dashboard and habits page
+async function loadHabitsAndUpdateDashboard() {
+    console.log('🔄 Loading habits and updating both dashboard and habits page...');
+    
+    try {
+        const response = await fetch('/api/habits', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const habitsData = data.habits;
+            
+            console.log('📊 Habits data loaded:', habitsData);
+            
+            // Update both sections with SAME data
+            displayHabits(habitsData);           // Updates habits page
+            displayDashboardHabits(habitsData);  // Updates dashboard habits section
+            updateHabitsStats(habitsData);       // Updates dashboard stats
+            
+            console.log('✅ Both dashboard and habits page updated with same data');
+        } else {
+            console.error('Failed to load habits:', response.status);
+            showNotification('Failed to load habits', 'error');
+        }
+    } catch (error) {
+        console.error('Load habits error:', error);
+        showNotification('Failed to load habits', 'error');
+    }
+}
+
+// Display habits in the main habits page
+function displayHabits(habits) {
+    const container = document.getElementById('habits-container');
+    container.innerHTML = '';
+    
+    if (habits.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-12 text-white/50">
+                <i class="fas fa-plus-circle text-4xl mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">No Habits Yet</h3>
+                <p class="mb-4">Create your first fitness habit to start tracking your progress!</p>
+                <button onclick="showModal('create-habit-modal')" class="btn-primary">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create Your First Habit
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    habits.forEach(habit => {
+        const habitCard = createWeeklyHabitCard(habit);
+        container.appendChild(habitCard);
+    });
+    
+    // Setup event listeners for habit cards
+    setupHabitEventListeners();
+}
+
+// Display habits in the dashboard section (simplified view)
+function displayDashboardHabits(habits) {
+    const container = document.getElementById('dashboard-habits-container');
+    container.innerHTML = '';
+    
+    if (habits.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-white/50">
+                <i class="fas fa-plus-circle text-2xl mb-2"></i>
+                <p class="mb-4">No habits created yet</p>
+                <button onclick="showModal('create-habit-modal')" class="btn-primary">
+                    Create Your First Habit
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Show first 3 habits in dashboard
+    const habitsToShow = habits.slice(0, 3);
+    habitsToShow.forEach(habit => {
+        const habitCard = createDashboardHabitCard(habit);
+        container.appendChild(habitCard);
+    });
+    
+    if (habits.length > 3) {
+        const moreCard = document.createElement('div');
+        moreCard.className = 'habit-card text-center cursor-pointer';
+        moreCard.onclick = () => showSection('habits');
+        moreCard.innerHTML = `
+            <div class="text-white/70">
+                <i class="fas fa-plus text-2xl mb-2"></i>
+                <p>+${habits.length - 3} more habits</p>
+                <p class="text-sm">View all habits</p>
+            </div>
+        `;
+        container.appendChild(moreCard);
+    }
+}
+
+// Create weekly habit card with anti-cheat logic
+function createWeeklyHabitCard(habit) {
+    const div = document.createElement('div');
+    div.className = 'habit-card';
+    
+    const weekStart = getWeekStart(currentWeekOffset || 0);
+    const weekDays = Array.from({length: 7}, (_, i) => {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        return date;
+    });
+    
+    const completions = habit.completions || [];
+    const weekCompletions = weekDays.map(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        return completions.includes(dateStr);
+    });
+    
+    const completedCount = weekCompletions.filter(Boolean).length;
+    const targetCount = habit.weekly_target || 7;
+    const progressPercent = Math.round((completedCount / targetCount) * 100);
+    
+    // Generate week calendar with anti-cheat logic
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekCalendar = weekDays.map((date, index) => {
+        const dateStr = date.toISOString().split('T')[0];
+        const isCompleted = weekCompletions[index];
+        const isToday = date.toDateString() === new Date().toDateString();
+        
+        // ANTI-CHEAT LOGIC: Prevent clicking more days than weekly target
+        const totalCompletedThisWeek = weekCompletions.filter(Boolean).length;
+        const maxCompletions = targetCount;
+        
+        const canCheck = !isCompleted && (totalCompletedThisWeek < maxCompletions);
+        const canUncheck = isCompleted;
+        const isClickable = canCheck || canUncheck;
+        
+        return `
+            <div class="day-cell habit-day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''} ${!isClickable ? 'disabled' : ''}" 
+                 data-habit-id="${habit.id}" 
+                 data-date="${dateStr}"
+                 data-clickable="${isClickable}"
+                 title="${!isClickable && !isCompleted ? `Limit reached: ${targetCount} days per week` : ''}">
+                <div class="text-xs text-white/70 font-medium">${days[index]}</div>
+                <div class="text-lg mt-1">${isCompleted ? '✓' : (isClickable ? '○' : '✕')}</div>
+                <div class="text-xs text-white/60">${date.getDate()}</div>
+            </div>
+        `;
+    }).join('');
+    
+    div.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
+                ${habit.description ? `<p class="text-white/60 text-sm mt-1">${habit.description}</p>` : ''}
+                <p class="text-white/70 text-sm mt-2">
+                    <span class="text-green-400 font-semibold">${completedCount}</span> / ${targetCount} days this week
+                </p>
+            </div>
+            <button class="btn-danger delete-habit-btn" data-habit-id="${habit.id}" title="Delete habit">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        
+        <div class="mb-4">
+            <div class="flex justify-between text-sm text-white/70 mb-2">
+                <span>Weekly Progress</span>
+                <span>${progressPercent}%</span>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-2">
+                <div class="progress-bar h-2 rounded-full" style="width: ${Math.min(progressPercent, 100)}%"></div>
+            </div>
+        </div>
+        
+        <div class="week-calendar">
+            ${weekCalendar}
+        </div>
+    `;
+    
+    return div;
+}
+
+// Create simplified dashboard habit card
+function createDashboardHabitCard(habit) {
+    const div = document.createElement('div');
+    div.className = 'habit-card mb-4';
+    
+    const weekStart = getWeekStart(currentWeekOffset || 0);
+    const weekDays = Array.from({length: 7}, (_, i) => {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        return date;
+    });
+    
+    const completions = habit.completions || [];
+    const weekCompletions = weekDays.map(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        return completions.includes(dateStr);
+    });
+    
+    const completedCount = weekCompletions.filter(Boolean).length;
+    const targetCount = habit.weekly_target || 7;
+    const progressPercent = Math.round((completedCount / targetCount) * 100);
+    
+    let statusColor = 'text-red-400';
+    if (progressPercent >= 100) statusColor = 'text-green-400';
+    else if (progressPercent >= 70) statusColor = 'text-yellow-400';
+    
+    div.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-3">
+                <div class="text-lg text-white font-medium">${habit.name}</div>
+            </div>
+            <div class="text-right">
+                <div class="${statusColor} font-semibold">${completedCount}/${targetCount} days</div>
+                <div class="text-white/60 text-sm">${progressPercent}%</div>
+            </div>
+        </div>
+        <div class="relative">
+            <div class="w-full bg-white/10 rounded-full h-3">
+                <div class="progress-bar h-3 rounded-full transition-all duration-300" 
+                     style="width: ${Math.min(progressPercent, 100)}%"></div>
+            </div>
+        </div>
+        <div class="flex justify-between text-xs text-white/60 mt-2">
+            <span>This week's target: ${targetCount} days</span>
+            <span>${targetCount - completedCount > 0 ? `${targetCount - completedCount} more to go` : 'Target achieved! 🎉'}</span>
+        </div>
+    `;
+    
+    return div;
+}
+
+// Set up habit event listeners with double-click protection
+function setupHabitEventListeners() {
+    // Remove existing listeners to prevent duplicates
+    document.querySelectorAll('.habit-day-cell').forEach(cell => {
+        cell.removeEventListener('click', handleHabitDayClick);
+    });
+    
+    document.querySelectorAll('.delete-habit-btn').forEach(btn => {
+        btn.removeEventListener('click', handleDeleteHabit);
+    });
+    
+    // Add new listeners
+    document.querySelectorAll('.habit-day-cell').forEach(cell => {
+        cell.addEventListener('click', handleHabitDayClick);
+    });
+    
+    document.querySelectorAll('.delete-habit-btn').forEach(btn => {
+        btn.addEventListener('click', handleDeleteHabit);
+    });
+    
+    // Create habit form
+    const createForm = document.getElementById('create-habit-form');
+    if (createForm) {
+        createForm.removeEventListener('submit', handleCreateHabit);
+        createForm.addEventListener('submit', handleCreateHabit);
+    }
+}
+
+// Handle habit day cell clicks with anti-cheat protection
+async function handleHabitDayClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const cell = event.currentTarget;
+    const habitId = cell.getAttribute('data-habit-id');
+    const date = cell.getAttribute('data-date');
+    const isClickable = cell.getAttribute('data-clickable') === 'true';
+    
+    if (!isClickable) {
+        showNotification('Weekly target reached! Cannot check more days this week.', 'error');
+        return;
+    }
+    
+    await simpleToggleHabit(habitId, date);
+}
+
+// Enhanced toggle function with double-click protection
+async function simpleToggleHabit(habitId, date) {
+    const toggleKey = `${habitId}-${date}`;
+    
+    // Prevent multiple simultaneous toggles
+    if (activeToggles.has(toggleKey)) {
+        console.log('⚠️ Toggle already in progress for:', toggleKey);
+        return;
+    }
+    
+    activeToggles.add(toggleKey);
+    
+    try {
+        console.log('🎯 Toggling habit:', { habitId, date, sessionId });
+        
+        const response = await fetch('/api/habits/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({
+                habit_id: habitId,
+                date: date
+            })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Toggle response:', result);
+            
+            // Show notification based on result
+            if (result.completed) {
+                showNotification(`Habit completed! ${result.message}`, 'success');
+            } else {
+                showNotification(`Habit unchecked! ${result.message}`, 'info');
+            }
+            
+            // Update user points display
+            if (result.points !== 0) {
+                const userPointsEl = document.getElementById('user-points');
+                if (userPointsEl && currentUser) {
+                    currentUser.points = (currentUser.points || 0) + result.points;
+                    userPointsEl.textContent = `⭐ ${currentUser.points} pts`;
+                }
+            }
+            
+            // Reload both sections with same data
+            await loadHabitsAndUpdateDashboard();
+            
+        } else {
+            const errorData = await response.json();
+            console.error('❌ Toggle error:', errorData);
+            showNotification(errorData.error || 'Failed to update habit', 'error');
+        }
+    } catch (error) {
+        console.error('💥 Toggle error:', error);
+        showNotification('Failed to update habit', 'error');
+    } finally {
+        activeToggles.delete(toggleKey);
+    }
+}
+
+// Handle habit deletion
+async function handleDeleteHabit(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const btn = event.currentTarget;
+    const habitId = btn.getAttribute('data-habit-id');
+    
+    if (confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
+        await deleteHabit(habitId);
+    }
+}
+
+// Delete habit function
+async function deleteHabit(habitId) {
+    try {
+        const response = await fetch('/api/habits/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ habitId })
+        });
+        
+        if (response.ok) {
+            showNotification('Habit deleted successfully', 'success');
+            await loadHabitsAndUpdateDashboard();
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to delete habit', 'error');
+        }
+    } catch (error) {
+        console.error('Delete habit error:', error);
+        showNotification('Failed to delete habit', 'error');
+    }
+}
+
+// Handle create habit form submission
+async function handleCreateHabit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const habitData = {
+        name: formData.get('habit-name'),
+        category: formData.get('habit-category'),
+        weekly_target: parseInt(formData.get('weekly-target')),
+        difficulty: formData.get('habit-difficulty'),
+        description: formData.get('habit-description')
+    };
+    
+    try {
+        const response = await fetch('/api/habits/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(habitData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            showNotification('Habit created successfully! 🎉', 'success');
+            closeModal('create-habit-modal');
+            form.reset();
+            updateEmojiPreview(); // Reset preview
+            
+            // Reload both sections
+            await loadHabitsAndUpdateDashboard();
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to create habit', 'error');
+        }
+    } catch (error) {
+        console.error('Create habit error:', error);
+        showNotification('Failed to create habit', 'error');
+    }
+}
+
+// Utility function to show modal
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+// Utility function to show create habit modal (for dashboard buttons)
+function showCreateHabitModal() {
+    showModal('create-habit-modal');
+    updateEmojiPreview(); // Initialize emoji preview
+}
+
+console.log('✅ Comprehensive habit management system loaded with anti-cheat protection');
 

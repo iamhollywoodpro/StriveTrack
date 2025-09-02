@@ -8,6 +8,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // CRITICAL FIX: Always show login screen first, then validate session
     showLoginScreen();
     
+    // Check URL on startup
+    console.log('🚀 StriveTrack starting up...');
+    console.log('📍 Current URL:', window.location.href);
+    
+    // Quick URL validation
+    if (!window.location.href.includes('8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev')) {
+        console.warn('⚠️ Warning: You might not be on the correct development server.');
+        console.warn('⚠️ Expected URL should contain: 8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
+        console.warn('⚠️ If API calls fail, try: https://8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
+        
+        // Show a helpful notification
+        setTimeout(() => {
+            const urlIssue = !window.location.href.includes('8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
+            if (urlIssue) {
+                showNotification('URL Notice: If you experience connectivity issues, make sure you\'re accessing the correct development server URL. Check console for details.', 'info', true);
+            }
+        }, 3000);
+    }
+    
     if (sessionId) {
         validateSession();
     }
@@ -3991,8 +4010,152 @@ function showNotification(message, type = 'info', persistent = false) {
 // Hide notification manually
 function hideNotification() {
     const notification = document.getElementById('notification');
-    notification.classList.remove('show');
+    if (notification) {
+        notification.classList.remove('show');
+        // Also clear the content to prevent stale notifications
+        setTimeout(() => {
+            if (notification && !notification.classList.contains('show')) {
+                notification.innerHTML = '';
+            }
+        }, 500);
+    }
 }
+
+// Debug function to test basic network connectivity
+window.testNetwork = async function() {
+    console.log('🌐 Testing basic network connectivity...');
+    console.log('📍 Current URL:', window.location.href);
+    console.log('🔑 Current sessionId:', sessionId);
+    
+    // Test 1: Simple GET request to root
+    try {
+        console.log('📡 Test 1: GET request to root...');
+        const response1 = await fetch('/', { method: 'GET' });
+        console.log('✅ Root GET:', response1.status, response1.statusText);
+        console.log('📊 Root headers:', Object.fromEntries(response1.headers.entries()));
+    } catch (error) {
+        console.error('❌ Root GET failed:', error);
+        console.error('❌ Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+    }
+    
+    // Test 2: Login API (should work since you're logged in)
+    try {
+        console.log('📡 Test 2: POST to login API...');
+        const response2 = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: 'test@test.com', password: 'test' })
+        });
+        console.log('✅ Login API:', response2.status, response2.statusText);
+        console.log('📊 Login headers:', Object.fromEntries(response2.headers.entries()));
+        const loginData = await response2.text();
+        console.log('📄 Login response:', loginData.substring(0, 200));
+    } catch (error) {
+        console.error('❌ Login API failed:', error);
+        console.error('❌ Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+    }
+    
+    // Test 3: Simple habits GET
+    try {
+        console.log('📡 Test 3: GET habits with session...');
+        console.log('🔑 Using sessionId:', sessionId);
+        const response3 = await fetch('/api/habits', {
+            method: 'GET',
+            headers: { 'x-session-id': sessionId || 'no-session' }
+        });
+        console.log('✅ Habits GET:', response3.status, response3.statusText);
+        console.log('📊 Habits headers:', Object.fromEntries(response3.headers.entries()));
+        const habitsData = await response3.text();
+        console.log('📄 Habits response:', habitsData.substring(0, 200));
+    } catch (error) {
+        console.error('❌ Habits GET failed:', error);
+        console.error('❌ Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+    }
+    
+    // Test 4: Habits toggle API (the problematic one)
+    try {
+        console.log('📡 Test 4: POST habits toggle...');
+        const response4 = await fetch('/api/habits/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId || 'no-session'
+            },
+            body: JSON.stringify({ habit_id: 'test-id', date: '2025-09-02' })
+        });
+        console.log('✅ Habits toggle:', response4.status, response4.statusText);
+        console.log('📊 Toggle headers:', Object.fromEntries(response4.headers.entries()));
+        const toggleData = await response4.text();
+        console.log('📄 Toggle response:', toggleData.substring(0, 200));
+    } catch (error) {
+        console.error('❌ Habits toggle failed:', error);
+        console.error('❌ Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+    }
+    
+    console.log('🧪 Network test completed');
+    
+    // Also test fetch capabilities
+    console.log('🔧 Browser fetch support:', typeof fetch !== 'undefined');
+    console.log('🔧 XMLHttpRequest support:', typeof XMLHttpRequest !== 'undefined');
+    console.log('🔧 Network info:', navigator.onLine ? 'Online' : 'Offline');
+    
+    // URL analysis
+    console.log('🔍 Current URL analysis:');
+    console.log('  - Protocol:', window.location.protocol);
+    console.log('  - Host:', window.location.host);
+    console.log('  - Port:', window.location.port || 'default');
+    console.log('  - Origin:', window.location.origin);
+    
+    // Recommended URL for StriveTrack
+    console.log('ℹ️ For StriveTrack development:');
+    console.log('  Recommended URL: https://8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
+    console.log('  Current URL:', window.location.href);
+    
+    if (!window.location.href.includes('8787')) {
+        console.warn('⚠️ WARNING: You might not be accessing the correct development server!');
+        console.warn('⚠️ Try accessing: https://8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
+    }
+};
+
+// Quick URL checker function
+window.checkUrl = function() {
+    const currentUrl = window.location.href;
+    const expectedUrl = 'https://8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev';
+    
+    console.log('🔍 URL Check:');
+    console.log('Current URL:', currentUrl);
+    console.log('Expected URL:', expectedUrl);
+    
+    if (currentUrl === expectedUrl || currentUrl.startsWith(expectedUrl)) {
+        console.log('✅ URL looks correct!');
+        return true;
+    } else {
+        console.warn('⚠️ URL mismatch detected!');
+        console.warn('This might be why API calls are failing.');
+        console.warn('Try accessing:', expectedUrl);
+        
+        if (confirm('Would you like to redirect to the correct URL?')) {
+            window.location.href = expectedUrl;
+        }
+        return false;
+    }
+};
 
 // Debug function to test habit toggle from console
 window.testHabitToggle = async function(habitId = '25f5c19c-d4d8-4fef-83f7-6cc22deb8613', date = '2025-01-04') {
@@ -4001,11 +4164,22 @@ window.testHabitToggle = async function(habitId = '25f5c19c-d4d8-4fef-83f7-6cc22
     console.log('🧪 Using date:', date);
     console.log('🧪 Current sessionId:', sessionId);
     
+    if (!sessionId) {
+        console.error('🧪 No session ID available. Please log in first.');
+        console.log('📝 To get a session ID:');
+        console.log('1. Go to the login page');
+        console.log('2. Log in with your credentials');
+        console.log('3. Check localStorage.getItem("sessionId")');
+        return;
+    }
+    
     try {
         await toggleHabitDay(habitId, date);
-        console.log('🧪 Test completed');
+        console.log('🧪 Test completed successfully');
     } catch (error) {
         console.error('🧪 Test failed:', error);
+    }
+};
     }
 };
 
@@ -4888,12 +5062,18 @@ async function toggleHabitDay(habitId, date) {
     console.log('🔄 Toggle habit called:', habitId, date);
     console.log('🔑 Session ID:', sessionId);
     console.log('🌍 Current URL:', window.location.href);
+    console.log('📍 User agent:', navigator.userAgent);
+    console.log('🔧 Network status:', navigator.onLine ? 'Online' : 'Offline');
     
     if (!sessionId) {
         console.error('❌ No session ID available');
         showNotification('Please log in to update habits', 'error');
         return;
     }
+    
+    // Check if we're on the correct domain/port
+    const currentUrl = window.location.href;
+    console.log('🔍 Analyzing current URL:', currentUrl);
     
     const requestData = {
         habit_id: habitId,
@@ -4904,7 +5084,9 @@ async function toggleHabitDay(habitId, date) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'x-session-id': sessionId
+            'x-session-id': sessionId,
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
         },
         body: JSON.stringify(requestData)
     };
@@ -4914,11 +5096,24 @@ async function toggleHabitDay(habitId, date) {
     
     try {
         console.log('🌐 Making fetch request to /api/habits/toggle');
-        const response = await fetch('/api/habits/toggle', requestOptions);
+        
+        // Add a timeout to the fetch request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const response = await fetch('/api/habits/toggle', {
+            ...requestOptions,
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
         
         console.log('📨 Response received');
         console.log('📊 Response status:', response.status);
         console.log('📊 Response ok:', response.ok);
+        console.log('📊 Response URL:', response.url);
+        console.log('📊 Response type:', response.type);
+        console.log('📊 Response redirected:', response.redirected);
         console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (response.ok) {
@@ -4942,6 +5137,7 @@ async function toggleHabitDay(habitId, date) {
         } else {
             const errorText = await response.text();
             console.error('❌ Error response:', response.status, errorText);
+            console.error('❌ Response headers on error:', Object.fromEntries(response.headers.entries()));
             let errorMessage = 'Failed to update habit';
             try {
                 const errorJson = JSON.parse(errorText);
@@ -4949,14 +5145,34 @@ async function toggleHabitDay(habitId, date) {
             } catch (parseError) {
                 console.error('❌ Error parsing error response:', parseError);
             }
-            showNotification(errorMessage, 'error');
+            showNotification(`${errorMessage} (Status: ${response.status})`, 'error');
         }
     } catch (error) {
         console.error('💥 Network error details:', error);
         console.error('💥 Error name:', error.name);
         console.error('💥 Error message:', error.message);
         console.error('💥 Error stack:', error.stack);
-        showNotification('Network error - failed to update habit', 'error');
+        console.error('💥 Error cause:', error.cause);
+        
+        let errorMsg = 'Network error - failed to update habit';
+        
+        if (error.name === 'AbortError') {
+            errorMsg = 'Request timeout - server took too long to respond';
+        } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            errorMsg = 'Cannot connect to server - check your internet connection';
+            console.error('🚑 Connection issue detected. Current URL:', window.location.href);
+            console.error('🚑 Suggested fix: Make sure you\'re accessing the app from the correct URL');
+        }
+        
+        showNotification(errorMsg, 'error');
+        
+        // Offer to run network diagnostics
+        setTimeout(() => {
+            const runDiagnostics = confirm('Network error detected. Would you like to run diagnostics? (Check browser console after clicking OK)');
+            if (runDiagnostics) {
+                window.testNetwork();
+            }
+        }, 2000);
     }
 }
 

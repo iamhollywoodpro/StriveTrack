@@ -3994,6 +3994,21 @@ function hideNotification() {
     notification.classList.remove('show');
 }
 
+// Debug function to test habit toggle from console
+window.testHabitToggle = async function(habitId = '25f5c19c-d4d8-4fef-83f7-6cc22deb8613', date = '2025-01-04') {
+    console.log('🧪 Testing habit toggle from console...');
+    console.log('🧪 Using habitId:', habitId);
+    console.log('🧪 Using date:', date);
+    console.log('🧪 Current sessionId:', sessionId);
+    
+    try {
+        await toggleHabitDay(habitId, date);
+        console.log('🧪 Test completed');
+    } catch (error) {
+        console.error('🧪 Test failed:', error);
+    }
+};
+
 function updateDashboardStats() {
     // This will be called after loading habits to update the dashboard stats
     // Implementation depends on the loaded data
@@ -4844,32 +4859,45 @@ function createHabitCard(habit) {
 
 // Toggle habit completion for a specific day
 async function toggleHabitDay(habitId, date) {
-    console.log('Toggle habit called:', habitId, date);
-    console.log('Session ID:', sessionId);
+    console.log('🔄 Toggle habit called:', habitId, date);
+    console.log('🔑 Session ID:', sessionId);
+    console.log('🌍 Current URL:', window.location.href);
     
     if (!sessionId) {
+        console.error('❌ No session ID available');
         showNotification('Please log in to update habits', 'error');
         return;
     }
     
+    const requestData = {
+        habit_id: habitId,
+        date: date
+    };
+    
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-session-id': sessionId
+        },
+        body: JSON.stringify(requestData)
+    };
+    
+    console.log('📤 Request data:', requestData);
+    console.log('📤 Request options:', requestOptions);
+    
     try {
-        const response = await fetch('/api/habits/toggle', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId
-            },
-            body: JSON.stringify({
-                habit_id: habitId,
-                date: date
-            })
-        });
-
-        console.log('Toggle response status:', response.status);
+        console.log('🌐 Making fetch request to /api/habits/toggle');
+        const response = await fetch('/api/habits/toggle', requestOptions);
+        
+        console.log('📨 Response received');
+        console.log('📊 Response status:', response.status);
+        console.log('📊 Response ok:', response.ok);
+        console.log('📊 Response headers:', Object.fromEntries(response.headers.entries()));
         
         if (response.ok) {
             const result = await response.json();
-            console.log('Toggle response data:', result);
+            console.log('✅ Success response data:', result);
             
             // Show appropriate notification
             if (result.completed) {
@@ -4887,18 +4915,21 @@ async function toggleHabitDay(habitId, date) {
             checkAchievements();
         } else {
             const errorText = await response.text();
-            console.error('Toggle error response:', response.status, errorText);
+            console.error('❌ Error response:', response.status, errorText);
             let errorMessage = 'Failed to update habit';
             try {
                 const errorJson = JSON.parse(errorText);
                 errorMessage = errorJson.error || errorMessage;
             } catch (parseError) {
-                console.error('Error parsing error response:', parseError);
+                console.error('❌ Error parsing error response:', parseError);
             }
             showNotification(errorMessage, 'error');
         }
     } catch (error) {
-        console.error('Toggle habit network error:', error);
+        console.error('💥 Network error details:', error);
+        console.error('💥 Error name:', error.name);
+        console.error('💥 Error message:', error.message);
+        console.error('💥 Error stack:', error.stack);
         showNotification('Network error - failed to update habit', 'error');
     }
 }

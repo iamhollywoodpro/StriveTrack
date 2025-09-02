@@ -2308,31 +2308,13 @@ async function submitNutrition(event) {
 async function loadAdminData() {
     if (currentUser && currentUser.role === 'admin') {
         await Promise.all([
-            loadAdminStats(),
             loadAdminUsers(),
             loadAdminMedia()
         ]);
     }
 }
 
-async function loadAdminStats() {
-    try {
-        const response = await fetch('/api/admin/users', {
-            headers: { 'x-session-id': sessionId }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const stats = data.stats;
-            document.getElementById('admin-total-users').textContent = stats.total_users;
-            document.getElementById('admin-total-media').textContent = stats.total_media;
-            document.getElementById('admin-total-habits').textContent = stats.total_habits;
-            document.getElementById('admin-flagged-media').textContent = stats.flaggedMedia;
-        }
-    } catch (error) {
-        console.error('Load admin stats error:', error);
-    }
-}
+// Admin stats are now loaded as part of loadAdminUsers()
 
 async function loadAdminUsers() {
     try {
@@ -2341,8 +2323,9 @@ async function loadAdminUsers() {
         });
         
         if (response.ok) {
-            const users = await response.json();
-            displayAdminUsers(users);
+            const data = await response.json();
+            displayAdminUsers(data.users || []);
+            updateAdminStats(data.stats || {});
         }
     } catch (error) {
         console.error('Load admin users error:', error);
@@ -2357,17 +2340,34 @@ function displayAdminUsers(users) {
         const row = document.createElement('tr');
         row.className = 'border-b border-white/5 hover:bg-white/5';
         
+        const joinedDate = new Date(user.created_at).toLocaleDateString();
+        const hasActivity = (user.total_habits > 0 || user.total_media > 0);
+        
         row.innerHTML = `
-            <td class="py-3 px-4 text-white">${user.email.split('@')[0]}</td>
+            <td class="py-3 px-4">
+                <div class="text-white font-medium">${user.email.split('@')[0]}</div>
+                <div class="text-white/50 text-xs">Joined ${joinedDate}</div>
+                ${user.flagged_media > 0 ? `<div class="text-red-400 text-xs">⚠️ ${user.flagged_media} flagged</div>` : ''}
+            </td>
             <td class="py-3 px-4 text-white/70">${user.email}</td>
             <td class="py-3 px-4">
                 <span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-purple-600' : 'bg-blue-600'} text-white">
                     ${user.role}
                 </span>
             </td>
-            <td class="py-3 px-4 text-white/70">${user.points || 0} pts</td>
             <td class="py-3 px-4">
-                ${user.role !== 'admin' ? `<button onclick="deleteAdminUser(${user.id})" class="btn-danger text-xs">Delete</button>` : ''}
+                <div class="text-white font-medium">${user.points || 0} pts</div>
+                <div class="text-white/50 text-xs">
+                    ${user.total_habits}H • ${user.total_media}M • ${user.total_completions}C
+                </div>
+            </td>
+            <td class="py-3 px-4">
+                <div class="flex space-x-2">
+                    ${user.role !== 'admin' ? `
+                        <button onclick="viewAdminUserDetails('${user.id}')" class="btn-secondary text-xs">View</button>
+                        <button onclick="deleteAdminUser('${user.id}')" class="btn-danger text-xs">Delete</button>
+                    ` : '<span class="text-white/40 text-xs">Protected</span>'}
+                </div>
             </td>
         `;
         
@@ -2382,8 +2382,8 @@ async function loadAdminMedia() {
         });
         
         if (response.ok) {
-            const media = await response.json();
-            displayAdminMedia(media);
+            const data = await response.json();
+            displayAdminMedia(data.media || []);
         }
     } catch (error) {
         console.error('Load admin media error:', error);
@@ -2398,36 +2398,58 @@ function displayAdminMedia(media) {
         const row = document.createElement('tr');
         row.className = 'border-b border-white/5 hover:bg-white/5';
         
+        const isVideo = item.media_type === 'video';
+        const uploadDate = new Date(item.uploaded_at).toLocaleDateString();
+        const fileSize = (item.file_size / 1024 / 1024).toFixed(2);
+        
         row.innerHTML = `
             <td class="py-3 px-4">
-                <div class="w-16 h-16 bg-gray-700 rounded flex items-center justify-center" id="admin-media-${item.id}">
-                    <i class="fas fa-image text-gray-400"></i>
+                <div class="w-16 h-16 bg-gray-700 rounded flex items-center justify-center cursor-pointer" 
+                     id="admin-media-${item.id}" 
+                     onclick="viewAdminMediaModal('${item.id}')">
+                    <i class="fas fa-${isVideo ? 'video' : 'image'} text-gray-400"></i>
                 </div>
             </td>
-            <td class="py-3 px-4 text-white">${item.filename}</td>
-            <td class="py-3 px-4 text-white/70">${item.userEmail}</td>
-            <td class="py-3 px-4 text-white/70">${new Date(item.uploaded_at).toLocaleDateString()}</td>
-            <td class="py-3 px-4 text-white/70">${(item.file_size / 1024 / 1024).toFixed(2)} MB</td>
             <td class="py-3 px-4">
-                <button onclick="toggleAdminMediaFlag(${item.id}, this)" 
-                        class="btn-secondary text-xs ${item.flagged ? 'bg-red-600' : ''}">
-                    ${item.flagged ? 'Unflag' : 'Flag'}
+                <div class="text-white font-medium">${item.original_name}</div>
+                <div class="text-white/50 text-xs">${item.file_type}</div>
+                ${item.description ? `<div class="text-white/60 text-xs mt-1">${item.description.substring(0, 50)}${item.description.length > 50 ? '...' : ''}</div>` : ''}
+            </td>
+            <td class="py-3 px-4">
+                <div class="text-white/70">${item.userEmail.split('@')[0]}</div>
+                <div class="text-white/50 text-xs">${item.userEmail}</div>
+            </td>
+            <td class="py-3 px-4 text-white/70">${uploadDate}</td>
+            <td class="py-3 px-4 text-white/70">${fileSize} MB</td>
+            <td class="py-3 px-4">
+                <button onclick="toggleAdminMediaFlag('${item.id}', this)" 
+                        class="btn-secondary text-xs ${item.is_flagged ? 'bg-red-600 text-white' : ''}">
+                    ${item.is_flagged ? 'Unflag' : 'Flag'}
                 </button>
             </td>
             <td class="py-3 px-4">
-                <button onclick="downloadAdminMedia(${item.id}, '${item.filename}')" class="btn-secondary text-xs mr-2">Download</button>
-                <button onclick="deleteAdminMedia(${item.id})" class="btn-danger text-xs">Delete</button>
+                <div class="flex space-x-1">
+                    <button onclick="viewAdminMediaModal('${item.id}')" class="btn-secondary text-xs" title="View">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button onclick="downloadAdminMedia('${item.id}', '${item.original_name}')" class="btn-secondary text-xs" title="Download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button onclick="deleteAdminMedia('${item.id}')" class="btn-danger text-xs" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         `;
         
         tbody.appendChild(row);
         
         // Load media preview
-        loadAdminMediaImage(item.id, `admin-media-${item.id}`);
+        loadAdminMediaPreview(item.id, `admin-media-${item.id}`, isVideo);
     });
 }
 
-async function loadAdminMediaImage(mediaId, containerId) {
+async function loadAdminMediaPreview(mediaId, containerId, isVideo = false) {
     try {
         const response = await fetch(`/api/media/file/${mediaId}`, {
             headers: { 'x-session-id': sessionId }
@@ -2435,15 +2457,89 @@ async function loadAdminMediaImage(mediaId, containerId) {
         
         if (response.ok) {
             const blob = await response.blob();
-            const imageUrl = URL.createObjectURL(blob);
+            const mediaUrl = URL.createObjectURL(blob);
             
             const container = document.getElementById(containerId);
             if (container) {
-                container.innerHTML = `<img src="${imageUrl}" class="w-full h-full object-cover rounded" alt="Media preview">`;
+                if (isVideo) {
+                    container.innerHTML = `
+                        <video class="w-full h-full object-cover rounded" muted>
+                            <source src="${mediaUrl}" type="${blob.type}">
+                        </video>
+                    `;
+                } else {
+                    container.innerHTML = `<img src="${mediaUrl}" class="w-full h-full object-cover rounded" alt="Media preview">`;
+                }
             }
         }
     } catch (error) {
-        console.error('Admin media image load error:', error);
+        console.error('Admin media preview load error:', error);
+    }
+}
+
+// Update admin stats display
+function updateAdminStats(stats) {
+    document.getElementById('admin-total-users').textContent = stats.total_users || 0;
+    document.getElementById('admin-total-media').textContent = stats.total_media || 0;
+    document.getElementById('admin-total-habits').textContent = stats.total_habits || 0;
+    document.getElementById('admin-flagged-media').textContent = stats.flagged_media || 0;
+}
+
+// View user details modal
+async function viewAdminUserDetails(userId) {
+    try {
+        // For now, show basic user info - can be expanded later
+        showNotification('User details view - feature coming soon', 'info');
+    } catch (error) {
+        console.error('View user details error:', error);
+        showNotification('Failed to load user details', 'error');
+    }
+}
+
+// View media in modal
+async function viewAdminMediaModal(mediaId) {
+    try {
+        const response = await fetch(`/api/media/file/${mediaId}`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const mediaUrl = URL.createObjectURL(blob);
+            const isVideo = blob.type.startsWith('video/');
+            
+            const modal = document.getElementById('media-modal');
+            const content = document.getElementById('media-modal-content');
+            
+            content.innerHTML = `
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold text-white mb-2">Admin Media View</h3>
+                    ${isVideo ? `
+                        <video controls class="w-full max-h-96 rounded-lg">
+                            <source src="${mediaUrl}" type="${blob.type}">
+                        </video>
+                    ` : `
+                        <img src="${mediaUrl}" class="w-full max-h-96 object-contain rounded-lg" alt="Media preview">
+                    `}
+                    <div class="flex space-x-4 mt-4">
+                        <button onclick="downloadAdminMedia('${mediaId}', 'media')" class="btn-primary">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </button>
+                        <button onclick="toggleAdminMediaFlag('${mediaId}', this)" class="btn-secondary">
+                            <i class="fas fa-flag mr-2"></i>Toggle Flag
+                        </button>
+                        <button onclick="deleteAdminMedia('${mediaId}')" class="btn-danger">
+                            <i class="fas fa-trash mr-2"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('View admin media modal error:', error);
+        showNotification('Failed to load media', 'error');
     }
 }
 
@@ -2458,7 +2554,7 @@ async function deleteAdminUser(userId) {
             if (response.ok) {
                 showNotification('User deleted successfully', 'success');
                 loadAdminUsers();
-                loadAdminStats();
+                loadAdminMedia(); // Refresh media list as user's media was deleted
             } else {
                 const data = await response.json();
                 showNotification(data.error || 'Failed to delete user', 'error');
@@ -2481,7 +2577,7 @@ async function deleteAdminMedia(mediaId) {
             if (response.ok) {
                 showNotification('Media deleted successfully', 'success');
                 loadAdminMedia();
-                loadAdminStats();
+                loadAdminUsers(); // Refresh to update stats
             } else {
                 const data = await response.json();
                 showNotification(data.error || 'Failed to delete media', 'error');
@@ -2503,9 +2599,9 @@ async function toggleAdminMediaFlag(mediaId, button) {
         if (response.ok) {
             const data = await response.json();
             button.textContent = data.flagged ? 'Unflag' : 'Flag';
-            button.className = `btn-secondary text-xs ${data.flagged ? 'bg-red-600' : ''}`;
+            button.className = `btn-secondary text-xs ${data.flagged ? 'bg-red-600 text-white' : ''}`;
             showNotification(data.flagged ? 'Media flagged' : 'Media unflagged', 'success');
-            loadAdminStats();
+            loadAdminUsers(); // Refresh to update flagged media count
         } else {
             const data = await response.json();
             showNotification(data.error || 'Failed to update flag', 'error');

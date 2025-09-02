@@ -1,127 +1,106 @@
-// Admin media management endpoint for StriveTrack
-import { requireAdmin } from '../../utils/auth.js';
-import { getAllMedia } from '../../utils/database.js';
+// Admin Media Management API
+// GET: Retrieve all media uploads with user information
+// Requires admin authentication
 
 export async function onRequestGet(context) {
     const { request, env } = context;
     
     try {
-        const authResult = await requireAdmin(request, env);
-        if (authResult instanceof Response) return authResult;
-        
-        const media = await getAllMedia(env);
-        
-        // Add URLs for admin access
-        const mediaWithUrls = media.map(item => ({
-            ...item,
-            url: `/api/media/file/${item.id}`,
-            download_url: `/api/admin/media/download/${item.id}`
-        }));
-        
-        return new Response(JSON.stringify({ media: mediaWithUrls }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
-    } catch (error) {
-        console.error('Get admin media error:', error);
-        return new Response(JSON.stringify({ 
-            error: 'Internal server error' 
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
-}
+        // Check session and admin authorization
+        const sessionId = request.headers.get('x-session-id');
+        if (!sessionId) {
+            return new Response(JSON.stringify({ error: 'Session required' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
 
-export async function onRequestPost(context) {
-    const { request, env } = context;
-    
-    try {
-        const authResult = await requireAdmin(request, env);
-        if (authResult instanceof Response) return authResult;
-        
-        const body = await request.json();
-        const { mediaId, action } = body;
-        
-        if (!mediaId || !action) {
-            return new Response(JSON.stringify({ 
-                error: 'Media ID and action are required' 
-            }), {
-                status: 400,
+        // Verify session and get user
+        const session = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND expires_at > datetime("now")').bind(sessionId).first();
+        if (!session) {
+            return new Response(JSON.stringify({ error: 'Invalid or expired session' }), {
+                status: 401,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
-        
-        const media = await env.DB.prepare(
-            'SELECT * FROM media_uploads WHERE id = ?'
-        ).bind(mediaId).first();
-        
-        if (!media) {
-            return new Response(JSON.stringify({ 
-                error: 'Media not found' 
-            }), {
-                status: 404,
+
+        // Get user and verify admin role
+        const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(session.user_id).first();
+        if (!user || user.role !== 'admin') {
+            return new Response(JSON.stringify({ error: 'Admin access required' }), {
+                status: 403,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
+
+        // Get URL parameters for filtering and pagination
+        const url = new URL(request.url);
+        const limit = parseInt(url.searchParams.get('limit')) || 50;
+        const offset = parseInt(url.searchParams.get('offset')) || 0;
+        const filter = url.searchParams.get('filter'); // 'flagged', 'images', 'videos'
+        const userId = url.searchParams.get('user_id');
+
+        // Build query based on filters
+        let whereClause = '';
+        let params = [];
         
-        switch (action) {
-            case 'flag':
-                await env.DB.prepare(
-                    'UPDATE media_uploads SET is_flagged = 1 WHERE id = ?'
-                ).bind(mediaId).run();
-                return new Response(JSON.stringify({
-                    message: 'Media flagged successfully'
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-            case 'unflag':
-                await env.DB.prepare(
-                    'UPDATE media_uploads SET is_flagged = 0 WHERE id = ?'
-                ).bind(mediaId).run();
-                return new Response(JSON.stringify({
-                    message: 'Media unflagged successfully'
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-            case 'delete':
-                // Delete from R2
-                try {
-                    await env.MEDIA_BUCKET.delete(media.r2_key);
-                } catch (error) {
-                    console.error('Error deleting from R2:', error);
-                }
-                
-                // Delete from database
-                await env.DB.prepare('DELETE FROM media_uploads WHERE id = ?')
-                    .bind(mediaId).run();
-                
-                return new Response(JSON.stringify({
-                    message: 'Media deleted successfully'
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-            default:
-                return new Response(JSON.stringify({ 
-                    error: 'Invalid action. Use: flag, unflag, or delete' 
-                }), {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' }
-                });
+        if (filter === 'flagged') {
+            whereClause = 'WHERE m.is_flagged = 1';
+        } else if (filter === 'images') {
+            whereClause = 'WHERE m.file_type LIKE "image/%"';
+        } else if (filter === 'videos') {
+            whereClause = 'WHERE m.file_type LIKE "video/%"';
         }
         
-    } catch (error) {
-        console.error('Admin media action error:', error);
-        return new Response(JSON.stringify({ 
-            error: 'Internal server error' 
+        if (userId) {
+            whereClause = whereClause ? `${whereClause} AND m.user_id = ?` : 'WHERE m.user_id = ?';
+            params.push(userId);
+        }
+
+        // Add limit and offset
+        params.push(limit, offset);
+
+        // Get media uploads with user information
+        const media = await env.DB.prepare(`
+            SELECT 
+                m.id, m.filename, m.original_name, m.file_type, m.file_size, 
+                m.description, m.is_flagged, m.uploaded_at, m.r2_key,
+                u.email as userEmail, u.id as user_id,
+                CASE 
+                    WHEN m.file_type LIKE 'image/%' THEN 'image'
+                    WHEN m.file_type LIKE 'video/%' THEN 'video'
+                    ELSE 'unknown'
+                END as media_type
+            FROM media_uploads m
+            JOIN users u ON m.user_id = u.id
+            ${whereClause}
+            ORDER BY m.uploaded_at DESC
+            LIMIT ? OFFSET ?
+        `).bind(...params).all();
+
+        // Get total count for pagination
+        const totalCount = await env.DB.prepare(`
+            SELECT COUNT(*) as total
+            FROM media_uploads m
+            JOIN users u ON m.user_id = u.id
+            ${whereClause.replace('LIMIT ? OFFSET ?', '')}
+        `).bind(...params.slice(0, -2)).first();
+
+        return new Response(JSON.stringify({
+            media: media.results || [],
+            pagination: {
+                total: totalCount?.total || 0,
+                limit,
+                offset,
+                has_more: (totalCount?.total || 0) > offset + limit
+            }
         }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+    } catch (error) {
+        console.error('Admin media fetch error:', error);
+        return new Response(JSON.stringify({ error: 'Failed to fetch media' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });

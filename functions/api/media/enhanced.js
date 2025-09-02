@@ -243,8 +243,8 @@ export async function onRequestPost(context) {
         
         // Save to database with media type
         await env.DB.prepare(`
-            INSERT INTO media_uploads (id, user_id, filename, original_name, file_type, file_size, r2_key, description)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO media_uploads (id, user_id, filename, original_name, file_type, file_size, r2_key, description, media_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
             mediaId,
             user.id,
@@ -253,7 +253,8 @@ export async function onRequestPost(context) {
             file.type,
             file.size,
             r2Key,
-            `${mediaType}: ${description}`.trim() // Prefix description with media type
+            description,
+            mediaType
         ).run();
         
         // Award points based on media type

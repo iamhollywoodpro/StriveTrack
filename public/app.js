@@ -347,6 +347,7 @@ async function handleSignup(e) {
         
         if (response.ok) {
             // Store session and user data
+            sessionId = data.sessionId;
             localStorage.setItem('sessionId', data.sessionId);
             currentUser = data.user;
             

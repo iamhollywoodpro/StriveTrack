@@ -231,8 +231,8 @@ export async function onRequestPost(context) {
             )
         `).run();
 
-        const { v4: uuidv4 } = await import('uuid');
-        const progressId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const progressId = generateId('generic');
         const isCompleted = progress_percentage >= 100;
         
         // Insert or update progress

@@ -3518,8 +3518,16 @@ async function submitNutrition(event) {
             showNotification('Food name is required', 'error');
             return;
         }
-        const response = await fetch('/api/nutrition', {
-            method: 'POST',
+        // Check if we're editing an existing entry
+        const form = event.target;
+        const editId = form.dataset.editId;
+        const isEditing = editId && editId.trim() !== '';
+        
+        const url = isEditing ? `/api/nutrition/${editId}` : '/api/nutrition';
+        const method = isEditing ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'x-session-id': sessionId
@@ -3529,16 +3537,33 @@ async function submitNutrition(event) {
         
         if (response.ok) {
             const data = await response.json();
-            showNotification(data.message + ` (+${data.points_earned} pts)`, 'success');
+            const action = isEditing ? 'updated' : 'logged';
+            const pointsMsg = data.points_earned ? ` (+${data.points_earned} pts)` : '';
+            showNotification(`Nutrition ${action} successfully${pointsMsg}`, 'success');
             closeModal('nutrition-modal');
-            document.getElementById('nutrition-form').reset();
+            closeModal('add-nutrition-modal');
+            
+            // Reset form and clear edit mode
+            const nutritionForm = document.getElementById('nutrition-form');
+            nutritionForm.reset();
+            delete nutritionForm.dataset.editId;
+            
+            // Reset submit button text
+            const submitBtn = nutritionForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Log Nutrition';
+            }
+            
             loadNutrition(); // Refresh the nutrition display
             
-            // Check for achievements
-            checkAndAwardAchievements('nutrition_log');
+            // Check for achievements (only for new entries, not edits)
+            if (!isEditing) {
+                checkAndAwardAchievements('nutrition_log');
+            }
         } else {
             const errorData = await response.json();
-            showNotification(errorData.error || 'Failed to log nutrition', 'error');
+            const action = isEditing ? 'update' : 'log';
+            showNotification(errorData.error || `Failed to ${action} nutrition`, 'error');
         }
     } catch (error) {
         console.error('Nutrition submission error:', error);
@@ -3547,6 +3572,54 @@ async function submitNutrition(event) {
         // Always restore button state
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
+    }
+}
+
+// Edit nutrition entry function
+async function editNutrition(nutritionId) {
+    try {
+        // Fetch the current nutrition entry data
+        const response = await fetch(`/api/nutrition`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const nutritionEntry = (data.nutrition || data).find(entry => entry.id === nutritionId);
+            
+            if (nutritionEntry) {
+                // Populate the nutrition form with existing data
+                document.getElementById('meal-type').value = nutritionEntry.meal_type || '';
+                document.getElementById('food-name').value = nutritionEntry.food_name || '';
+                document.getElementById('calories').value = nutritionEntry.calories || '';
+                document.getElementById('protein').value = nutritionEntry.protein_g || '';
+                document.getElementById('carbs').value = nutritionEntry.carbs_g || '';
+                document.getElementById('fat').value = nutritionEntry.fat_g || '';
+                document.getElementById('nutrition-notes').value = nutritionEntry.notes || '';
+                
+                // Set the form to edit mode
+                const form = document.getElementById('nutrition-form');
+                form.dataset.editId = nutritionId;
+                
+                // Update submit button text
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'Update Entry';
+                }
+                
+                // Show the modal
+                document.getElementById('add-nutrition-modal').classList.remove('hidden');
+                
+                showNotification('Ready to edit nutrition entry', 'info');
+            } else {
+                showNotification('Nutrition entry not found', 'error');
+            }
+        } else {
+            showNotification('Failed to load nutrition entry', 'error');
+        }
+    } catch (error) {
+        console.error('Edit nutrition error:', error);
+        showNotification('Failed to load nutrition entry', 'error');
     }
 }
 
@@ -6125,6 +6198,16 @@ function setupHabitEventListeners() {
             return;
         }
         
+        // Edit nutrition button
+        const editNutritionBtn = event.target.closest('.edit-nutrition-btn');
+        if (editNutritionBtn) {
+            const nutritionId = editNutritionBtn.getAttribute('data-nutrition-id') || editNutritionBtn.dataset.nutritionId;
+            if (nutritionId) {
+                editNutrition(nutritionId);
+            }
+            return;
+        }
+        
         // Delete nutrition button
         const deleteNutritionBtn = event.target.closest('.delete-nutrition-btn');
         if (deleteNutritionBtn) {
@@ -7415,33 +7498,8 @@ function createDashboardHabitCard(habit) {
     return div;
 }
 
-// Set up habit event listeners with double-click protection
-function setupHabitEventListeners() {
-    // Remove existing listeners to prevent duplicates
-    document.querySelectorAll('.habit-day-cell').forEach(cell => {
-        cell.removeEventListener('click', handleHabitDayClick);
-    });
-    
-    document.querySelectorAll('.delete-habit-btn').forEach(btn => {
-        btn.removeEventListener('click', handleDeleteHabit);
-    });
-    
-    // Add new listeners
-    document.querySelectorAll('.habit-day-cell').forEach(cell => {
-        cell.addEventListener('click', handleHabitDayClick);
-    });
-    
-    document.querySelectorAll('.delete-habit-btn').forEach(btn => {
-        btn.addEventListener('click', handleDeleteHabit);
-    });
-    
-    // Create habit form
-    const createForm = document.getElementById('create-habit-form');
-    if (createForm) {
-        createForm.removeEventListener('submit', handleCreateHabit);
-        createForm.addEventListener('submit', handleCreateHabit);
-    }
-}
+// NOTE: Duplicate setupHabitEventListeners function removed to fix event delegation issues
+// The main event delegation system is at line ~6040 and works correctly with dynamic content
 
 // Handle habit day cell clicks with anti-cheat protection
 async function handleHabitDayClick(event) {
@@ -7524,18 +7582,7 @@ async function simpleToggleHabit(habitId, date) {
     }
 }
 
-// Handle habit deletion
-async function handleDeleteHabit(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const btn = event.currentTarget;
-    const habitId = btn.getAttribute('data-habit-id');
-    
-    if (confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
-        await deleteHabit(habitId);
-    }
-}
+// NOTE: handleDeleteHabit function removed - event delegation system handles this directly
 
 // Delete habit function
 async function deleteHabit(habitId) {

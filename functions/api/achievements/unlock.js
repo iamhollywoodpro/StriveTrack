@@ -69,8 +69,8 @@ export async function onRequest(context) {
         const { checkAndAwardAchievements } = await import('../../utils/achievements.js');
         
         // Unlock the achievement
-        const { v4: uuidv4 } = await import('uuid');
-        const userAchievementId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const userAchievementId = generateId('generic');
         
         // Award the achievement
         await env.DB.prepare(`
@@ -95,7 +95,7 @@ export async function onRequest(context) {
         
         // Log achievement unlock activity
         try {
-            const activityId = uuidv4();
+            const activityId = generateId('generic');
             await env.DB.prepare(`
                 INSERT INTO user_activity_log (id, user_id, activity_type, activity_data, created_at)
                 VALUES (?, ?, 'achievement_unlock', ?, datetime('now'))
@@ -177,8 +177,8 @@ async function awardComboAchievement(userId, achievementName, count, env) {
         if (!comboAchievement) return;
         
         // Award the combo achievement
-        const { v4: uuidv4 } = await import('uuid');
-        const comboId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const comboId = generateId('generic');
         
         await env.DB.prepare(`
             INSERT INTO user_achievements (id, user_id, achievement_id, created_at)

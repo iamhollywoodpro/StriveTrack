@@ -1,7 +1,7 @@
 // Competition Participation API
 // Handles joining/leaving competitions and progress tracking
 
-import { v4 as uuidv4 } from 'uuid';
+import { generateId, generateCompetitionId } from '../../utils/id-generator.js';
 
 export async function onRequestPost({ request, env }) {
     try {
@@ -95,7 +95,7 @@ export async function onRequestPost({ request, env }) {
             }
 
             // Join competition
-            const participantId = uuidv4();
+            const participantId = generateId('participant');
             await env.DB.prepare(`
                 INSERT INTO competition_participants (
                     id, competition_id, user_id, starting_weight_kg
@@ -111,7 +111,7 @@ export async function onRequestPost({ request, env }) {
                 await env.DB.prepare(`
                     INSERT OR IGNORE INTO user_achievements (id, user_id, achievement_id, earned_at)
                     VALUES (?, ?, 'comp_first_join', datetime('now'))
-                `).bind(uuidv4(), user.id).run();
+                `).bind(generateId('achievement_unlock'), user.id).run();
             }
 
             // Check for consistent competitor achievement (5 competitions)
@@ -119,7 +119,7 @@ export async function onRequestPost({ request, env }) {
                 await env.DB.prepare(`
                     INSERT OR IGNORE INTO user_achievements (id, user_id, achievement_id, earned_at)
                     VALUES (?, ?, 'comp_consistent', datetime('now'))
-                `).bind(uuidv4(), user.id).run();
+                `).bind(generateId('achievement_unlock'), user.id).run();
             }
 
             return new Response(JSON.stringify({ 

@@ -1,7 +1,7 @@
 // Competition Progress Tracking API
 // Handles progress updates and score calculations
 
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from '../../utils/id-generator.js';
 
 export async function onRequestPost({ request, env }) {
     try {
@@ -85,7 +85,7 @@ export async function onRequestPost({ request, env }) {
         }
 
         // Log progress
-        const progressId = uuidv4();
+        const progressId = generateId('progress');
         await env.DB.prepare(`
             INSERT INTO competition_progress (
                 id, competition_id, participant_id, user_id, 
@@ -276,7 +276,7 @@ async function updateCompetitionRankings(env, competitionId) {
                     await env.DB.prepare(`
                         INSERT OR IGNORE INTO user_achievements (id, user_id, achievement_id, earned_at)
                         VALUES (?, ?, 'comp_winner', datetime('now'))
-                    `).bind(uuidv4(), participant.user_id).run();
+                    `).bind(generateId('achievement_unlock'), participant.user_id).run();
                     
                     // Update user stats
                     await env.DB.prepare('UPDATE users SET competitions_won = competitions_won + 1 WHERE id = ?').bind(participant.user_id).run();

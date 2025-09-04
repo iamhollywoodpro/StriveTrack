@@ -56,10 +56,10 @@ export async function requireAdmin(request, env) {
     return user;
 }
 
+import { generateSessionId } from './id-generator.js';
+
 export async function createSession(userId, env) {
-    const { v4: uuidv4 } = await import('uuid');
-    
-    const sessionId = uuidv4();
+    const sessionId = generateSessionId();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
 

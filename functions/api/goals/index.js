@@ -145,8 +145,8 @@ export async function onRequestPost({ request, env }) {
         }
 
         // Create new goal
-        const { v4: uuidv4 } = await import('uuid');
-        const goalId = uuidv4();
+        const { generateGoalId } = await import('../../utils/id-generator.js');
+        const goalId = generateGoalId();
 
         await env.DB.prepare(`
             INSERT INTO user_goals (
@@ -174,9 +174,10 @@ export async function onRequestPost({ request, env }) {
 
         // Create default milestones if target value is provided
         if (data.target_value) {
+            const { generateId } = await import('../../utils/id-generator.js');
             const milestones = [25, 50, 75, 100];
             for (const percentage of milestones) {
-                const milestoneId = uuidv4();
+                const milestoneId = generateId('milestone');
                 await env.DB.prepare(`
                     INSERT INTO goal_milestones (
                         id, goal_id, title, target_percentage, reward_points

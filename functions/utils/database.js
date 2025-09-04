@@ -10,11 +10,12 @@ export async function getUserById(id, env) {
         .bind(id).first();
 }
 
+import { generateUserId } from './id-generator.js';
+
 export async function createUser(userData, env) {
-    const { v4: uuidv4 } = await import('uuid');
     const bcrypt = await import('bcryptjs');
     
-    const userId = uuidv4();
+    const userId = generateUserId();
     const hashedPassword = await bcrypt.hash(userData.password, 12);
     
     // Set admin role for specific email, otherwise use provided user_type
@@ -40,9 +41,9 @@ export async function createUser(userData, env) {
         INSERT INTO users (
             id, email, password_hash, role, points, 
             name, phone, user_type, onboarding_completed, 
-            profile_data, created_at, updated_at
+            profile_data, weight_unit, height_cm, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, 0, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))
+        VALUES (?, ?, ?, ?, 0, ?, ?, ?, 0, ?, ?, ?, datetime('now'), datetime('now'))
     `).bind(
         userId, 
         userData.email, 
@@ -51,7 +52,9 @@ export async function createUser(userData, env) {
         userData.name || '', 
         userData.phone || '', 
         userType, 
-        JSON.stringify(profileData)
+        JSON.stringify(profileData),
+        'lbs',  // Default to lbs for US users
+        175     // Default height in cm (5'9")
     ).run();
     
     return await getUserById(userId, env);
@@ -166,9 +169,9 @@ export async function getUserHabits(userId, env) {
 }
 
 export async function createHabit(habitData, env) {
-    const { v4: uuidv4 } = await import('uuid');
+    const { generateHabitId } = await import('./id-generator.js');
     
-    const habitId = uuidv4();
+    const habitId = generateHabitId();
     await env.DB.prepare(`
         INSERT INTO habits (id, user_id, name, description, target_frequency, color, weekly_target)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -186,7 +189,7 @@ export async function createHabit(habitData, env) {
 }
 
 export async function markHabitComplete(habitId, userId, notes, env) {
-    const { v4: uuidv4 } = await import('uuid');
+    const { generateId } = await import('./id-generator.js');
     
     // Check if already completed today
     const existingCompletion = await env.DB.prepare(`
@@ -198,7 +201,7 @@ export async function markHabitComplete(habitId, userId, notes, env) {
         return { error: 'Habit already completed today' };
     }
     
-    const completionId = uuidv4();
+    const completionId = generateId('completion');
     await env.DB.prepare(`
         INSERT INTO habit_completions (id, habit_id, user_id, notes)
         VALUES (?, ?, ?, ?)

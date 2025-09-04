@@ -164,8 +164,8 @@ export async function onRequestPost({ request, env }) {
         }
 
         // Complete the challenge
-        const { v4: uuidv4 } = await import('uuid');
-        const completionId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const completionId = generateId('generic');
 
         // Insert or update completion record
         if (existingCompletion) {

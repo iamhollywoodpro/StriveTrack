@@ -53,8 +53,8 @@ export async function onRequestPost({ request, env }) {
         progressPercentage = progressPercentage || 0;
 
         // Create progress log entry
-        const { v4: uuidv4 } = await import('uuid');
-        const progressId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const progressId = generateId('generic');
         const today = new Date().toISOString().split('T')[0];
 
         await env.DB.prepare(`

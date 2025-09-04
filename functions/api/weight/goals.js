@@ -89,8 +89,8 @@ export async function onRequestPost({ request, env }) {
         `).bind(userId).run();
 
         // Create new weight goal
-        const { v4: uuidv4 } = await import('uuid');
-        const goalId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const goalId = generateId('weight_goal');
 
         // Calculate weekly goal if target date is provided
         let weeklyGoalKg = null;

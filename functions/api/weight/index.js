@@ -161,9 +161,8 @@ export async function onRequestPost({ request, env }) {
             bmi = Math.round(bmi * 10) / 10; // Round to 1 decimal place
         }
 
-        // Create weight log entry
-        const { v4: uuidv4 } = await import('uuid');
-        const logId = uuidv4();
+        // Create weight log entry with simple ID generation
+        const logId = `wl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         await env.DB.prepare(`
             INSERT INTO user_weight_logs (

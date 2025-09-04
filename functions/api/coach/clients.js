@@ -149,8 +149,8 @@ export async function onRequestPost(context) {
         }
 
         // Create coaching relationship
-        const { v4: uuidv4 } = await import('uuid');
-        const relationshipId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const relationshipId = generateId('generic');
         
         await env.DB.prepare(`
             INSERT INTO coaching_relationships (

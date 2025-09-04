@@ -21,8 +21,10 @@ export async function onRequestGet(context) {
                     // In production, you'd want to implement signed URLs
                     return {
                         ...item,
-                        url: `/api/media/file/${item.id}`, // We'll create this endpoint
-                        thumbnail: `/api/media/thumbnail/${item.id}`
+                        media_url: `/api/media/file/${item.id}`,
+                        url: `/api/media/file/${item.id}`, // Backward compatibility
+                        thumbnail: `/api/media/thumbnail/${item.id}`,
+                        created_at: item.uploaded_at // For compatibility with calendar system
                     };
                 }
                 return item;
@@ -72,11 +74,19 @@ export async function onRequestPost(context) {
             });
         }
         
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
+        // Validate file type - Support comprehensive media formats
+        const allowedTypes = [
+            // Image formats
+            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 
+            'image/bmp', 'image/tiff', 'image/svg+xml', 'image/heic', 'image/heif',
+            // Video formats
+            'video/mp4', 'video/webm', 'video/ogg', 'video/avi', 'video/mov',
+            'video/quicktime', 'video/x-msvideo', 'video/3gpp', 'video/x-flv',
+            'video/x-ms-wmv', 'video/mkv', 'video/x-matroska'
+        ];
         if (!allowedTypes.includes(file.type)) {
             return new Response(JSON.stringify({ 
-                error: 'Invalid file type. Only images and videos are allowed.' 
+                error: `Invalid file type: ${file.type}. Supported formats: JPG, PNG, GIF, WebP, BMP, TIFF, SVG, HEIC, MP4, WebM, OGG, AVI, MOV, 3GP, FLV, WMV, MKV` 
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }

@@ -10,7 +10,7 @@ export async function checkAndAwardAchievements(userId, actionType, actionData, 
         const unearned = await env.DB.prepare(`
             SELECT a.* FROM achievements a
             LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
-            WHERE ua.id IS NULL AND a.is_recurring = 0
+            WHERE ua.id IS NULL AND (a.is_recurring = 0 OR a.is_recurring IS NULL)
         `).bind(userId).all();
         
         const unearnedAchievements = unearned.results || [];
@@ -47,7 +47,20 @@ export async function checkAndAwardAchievements(userId, actionType, actionData, 
                     break;
                     
                 case 'total_media':
+                case 'media_uploads':
                     shouldUnlock = userStats.total_media >= achievement.requirement_value;
+                    break;
+                    
+                case 'weight_logs':
+                    shouldUnlock = userStats.weight_logs >= achievement.requirement_value;
+                    break;
+                    
+                case 'nutrition_logs':
+                    shouldUnlock = userStats.nutrition_logs >= achievement.requirement_value;
+                    break;
+                    
+                case 'before_after_pairs':
+                    shouldUnlock = userStats.before_after_pairs >= achievement.requirement_value;
                     break;
                     
                 case 'total_points':
@@ -292,6 +305,112 @@ export async function checkAndAwardAchievements(userId, actionType, actionData, 
                 case 'completionist':
                     shouldUnlock = await checkCompletionist(userId, achievement.requirement_value, env);
                     break;
+                    
+                // Media upload specific achievements
+                case 'before_uploads':
+                    if (actionType === 'media_upload' && actionData?.media_type === 'before') {
+                        shouldUnlock = userStats.before_uploads >= achievement.requirement_value;
+                    }
+                    break;
+                    
+                case 'after_uploads':
+                    if (actionType === 'media_upload' && actionData?.media_type === 'after') {
+                        shouldUnlock = userStats.after_uploads >= achievement.requirement_value;
+                    }
+                    break;
+                    
+                case 'progress_uploads':
+                    if (actionType === 'media_upload' && actionData?.media_type === 'progress') {
+                        shouldUnlock = userStats.progress_uploads >= achievement.requirement_value;
+                    }
+                    break;
+                    
+                case 'before_after_pairs':
+                    if (actionType === 'media_upload') {
+                        shouldUnlock = userStats.before_after_pairs >= achievement.requirement_value;
+                    }
+                    break;
+                    
+                case 'weekly_upload_streak':
+                    if (actionType === 'media_upload') {
+                        shouldUnlock = await checkWeeklyUploadStreak(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                // Nutrition specific achievements
+                case 'first_nutrition_log':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = userStats.nutrition_logs >= achievement.requirement_value;
+                    }
+                    break;
+                    
+                case 'calorie_tracking_week':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkCalorieTrackingWeek(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'water_tracking':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkWaterTracking(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'fiber_tracking':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkFiberTracking(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'carb_tracking_streak':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkCarbTrackingStreak(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'fat_balance_streak':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkFatBalanceStreak(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'sugar_tracking':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkSugarTracking(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'nutrition_tracking_month':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkNutritionTrackingMonth(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'macro_perfection_count':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkMacroPerfectionCount(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                case 'nutrition_super_streak':
+                    if (actionType === 'nutrition_log') {
+                        shouldUnlock = await checkNutritionSuperStreak(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                // Challenge specific achievements
+                case 'nutrition_challenges':
+                    if (actionType === 'challenge_completion') {
+                        shouldUnlock = await checkNutritionChallenges(userId, achievement.requirement_value, env);
+                    }
+                    break;
+                    
+                // Habit creation achievements
+                case 'habits_created':
+                    if (actionType === 'habit_creation') {
+                        shouldUnlock = userStats.habits_created >= achievement.requirement_value;
+                    }
+                    break;
             }
             
             if (shouldUnlock) {
@@ -320,18 +439,44 @@ async function getUserStats(userId, env) {
             (SELECT COUNT(*) FROM habit_completions WHERE user_id = ?) as total_completions,
             (SELECT COUNT(*) FROM media_uploads WHERE user_id = ? AND file_type LIKE 'image/%') as photos_uploaded,
             (SELECT COUNT(*) FROM media_uploads WHERE user_id = ? AND file_type LIKE 'video/%') as videos_uploaded,
-            (SELECT COUNT(*) FROM media_uploads WHERE user_id = ?) as total_media
+            (SELECT COUNT(*) FROM media_uploads WHERE user_id = ?) as total_media,
+            (SELECT COUNT(*) FROM media_uploads WHERE user_id = ? AND media_type = 'before') as before_uploads,
+            (SELECT COUNT(*) FROM media_uploads WHERE user_id = ? AND media_type = 'after') as after_uploads,
+            (SELECT COUNT(*) FROM media_uploads WHERE user_id = ? AND media_type = 'progress') as progress_uploads,
+            (SELECT COUNT(*) FROM user_nutrition_logs WHERE user_id = ?) as nutrition_logs,
+            (SELECT COUNT(*) FROM user_weight_logs WHERE user_id = ?) as weight_logs
         FROM users u
         WHERE u.id = ?
-    `).bind(userId, userId, userId, userId, userId, userId).first();
+    `).bind(userId, userId, userId, userId, userId, userId, userId, userId, userId, userId, userId).first();
     
-    return result || {
-        total_points: 0,
-        habits_created: 0,
-        total_completions: 0,
-        photos_uploaded: 0,
-        videos_uploaded: 0,
-        total_media: 0
+    // Calculate before/after pairs
+    const pairs = await env.DB.prepare(`
+        SELECT COUNT(*) as pair_count
+        FROM media_uploads m1
+        WHERE m1.user_id = ? 
+        AND m1.media_type = 'before'
+        AND EXISTS (
+            SELECT 1 FROM media_uploads m2
+            WHERE m2.user_id = m1.user_id
+            AND m2.media_type = 'after'
+            AND ABS(julianday(m2.uploaded_at) - julianday(m1.uploaded_at)) <= 7
+            AND m2.uploaded_at > m1.uploaded_at
+        )
+    `).bind(userId).first();
+    
+    return {
+        total_points: result?.total_points || 0,
+        habits_created: result?.habits_created || 0,
+        total_completions: result?.total_completions || 0,
+        photos_uploaded: result?.photos_uploaded || 0,
+        videos_uploaded: result?.videos_uploaded || 0,
+        total_media: result?.total_media || 0,
+        before_uploads: result?.before_uploads || 0,
+        after_uploads: result?.after_uploads || 0,
+        progress_uploads: result?.progress_uploads || 0,
+        nutrition_logs: result?.nutrition_logs || 0,
+        weight_logs: result?.weight_logs || 0,
+        before_after_pairs: pairs?.pair_count || 0
     };
 }
 
@@ -1432,4 +1577,151 @@ async function checkCompletionist(userId, requiredCount, env) {
     `).bind(userId).first();
     
     return userAchievements.user_achievements >= totalNonHidden.total_achievements * 0.95; // 95% completion
+}
+
+// Media Upload Achievement Helpers
+async function checkWeeklyUploadStreak(userId, requiredWeeks, env) {
+    let consecutiveWeeks = 0;
+    const currentDate = new Date();
+    
+    for (let i = 0; i < requiredWeeks + 2; i++) {
+        const weekStart = new Date(currentDate.getTime() - (i * 7 * 24 * 60 * 60 * 1000));
+        const weekEnd = new Date(weekStart.getTime() + (6 * 24 * 60 * 60 * 1000));
+        
+        const result = await env.DB.prepare(`
+            SELECT COUNT(*) as upload_count
+            FROM media_uploads
+            WHERE user_id = ? 
+            AND date(uploaded_at) BETWEEN date(?) AND date(?)
+        `).bind(userId, weekStart.toISOString().split('T')[0], weekEnd.toISOString().split('T')[0]).first();
+        
+        if (result.upload_count > 0) {
+            consecutiveWeeks++;
+            if (consecutiveWeeks >= requiredWeeks) return true;
+        } else {
+            consecutiveWeeks = 0;
+        }
+    }
+    return false;
+}
+
+// Nutrition Achievement Helpers
+async function checkCalorieTrackingWeek(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as tracking_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND calories > 0
+        AND date(created_at) >= date('now', '-7 days')
+    `).bind(userId).first();
+    
+    return result.tracking_days >= requiredDays;
+}
+
+async function checkWaterTracking(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as water_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND water_ml > 0
+        AND date(created_at) >= date('now', '-${requiredDays + 2} days')
+    `).bind(userId).first();
+    
+    return result.water_days >= requiredDays;
+}
+
+async function checkFiberTracking(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as fiber_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND fiber_g > 0
+        AND date(created_at) >= date('now', '-${requiredDays + 2} days')
+    `).bind(userId).first();
+    
+    return result.fiber_days >= requiredDays;
+}
+
+async function checkCarbTrackingStreak(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as carb_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND carbs_g > 0
+        AND date(created_at) >= date('now', '-${requiredDays + 2} days')
+    `).bind(userId).first();
+    
+    return result.carb_days >= requiredDays;
+}
+
+async function checkFatBalanceStreak(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as fat_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND fat_g > 0
+        AND date(created_at) >= date('now', '-${requiredDays + 2} days')
+    `).bind(userId).first();
+    
+    return result.fat_days >= requiredDays;
+}
+
+async function checkSugarTracking(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as sugar_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND sugar_g > 0
+        AND date(created_at) >= date('now', '-${requiredDays + 2} days')
+    `).bind(userId).first();
+    
+    return result.sugar_days >= requiredDays;
+}
+
+async function checkNutritionTrackingMonth(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as tracking_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND date(created_at) >= date('now', '-${requiredDays} days')
+    `).bind(userId).first();
+    
+    return result.tracking_days >= requiredDays;
+}
+
+async function checkMacroPerfectionCount(userId, requiredCount, env) {
+    // Calculate perfect macro days (hitting all macro targets)
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as perfect_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND protein_g > 20 
+        AND carbs_g > 30 
+        AND fat_g > 10
+    `).bind(userId).first();
+    
+    return result.perfect_days >= requiredCount;
+}
+
+async function checkNutritionSuperStreak(userId, requiredDays, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(DISTINCT date(created_at)) as super_streak_days
+        FROM user_nutrition_logs
+        WHERE user_id = ? 
+        AND date(created_at) >= date('now', '-${requiredDays + 5} days')
+    `).bind(userId).first();
+    
+    return result.super_streak_days >= requiredDays;
+}
+
+async function checkNutritionChallenges(userId, requiredCount, env) {
+    const result = await env.DB.prepare(`
+        SELECT COUNT(*) as nutrition_challenges
+        FROM daily_challenge_completions dcc
+        JOIN daily_challenges dc ON dcc.challenge_id = dc.id
+        WHERE dcc.user_id = ?
+        AND dc.category = 'nutrition'
+    `).bind(userId).first();
+    
+    return result.nutrition_challenges >= requiredCount;
 }

@@ -1,1 +1,8 @@
 .wrangler/
+
+# Ignore removed directories to prevent caching issues
+flask_original/
+strivetrack_*/
+deployment_*/
+mobile_*/
+cloudflare_upload/

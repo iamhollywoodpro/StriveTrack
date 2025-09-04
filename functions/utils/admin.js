@@ -1,16 +1,21 @@
 // Secure Admin Authentication Utility
 // Only iamhollywoodpro@protonmail.com has admin access
 
-const ADMIN_EMAIL = 'iamhollywoodpro@protonmail.com';
-const ADMIN_PASSWORD = 'password@1981';
+export function getAdminCredentials(env) {
+    return {
+        email: env.ADMIN_EMAIL || 'iamhollywoodpro@protonmail.com',
+        password: env.ADMIN_PASSWORD || 'password@1981'
+    };
+}
 
 /**
  * Check if user has admin privileges
  * @param {Object} user - User object from database
  * @returns {boolean} - True if user is the designated admin
  */
-export function isAdmin(user) {
-    return user && user.email === ADMIN_EMAIL;
+export function isAdmin(user, env) {
+    const { email } = getAdminCredentials(env);
+    return user && user.email === email;
 }
 
 /**
@@ -38,7 +43,7 @@ export async function verifyAdminSession(sessionId, env) {
         }
 
         // Check if user is the designated admin
-        if (!isAdmin(user)) {
+        if (!isAdmin(user, env)) {
             return null;
         }
 
@@ -56,11 +61,12 @@ export async function verifyAdminSession(sessionId, env) {
  */
 export async function ensureAdminAccountExists(env) {
     try {
+        const { email, password } = getAdminCredentials(env);
         const bcrypt = await import('bcryptjs');
-        const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 12);
+        const hashedPassword = await bcrypt.hash(password, 12);
         
         // Check if admin account exists
-        const existingAdmin = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(ADMIN_EMAIL).first();
+        const existingAdmin = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
         
         if (!existingAdmin) {
             // Create admin account
@@ -68,7 +74,7 @@ export async function ensureAdminAccountExists(env) {
             await env.DB.prepare(`
                 INSERT INTO users (id, email, password_hash, role, points, created_at, updated_at)
                 VALUES (?, ?, ?, 'admin', 0, datetime('now'), datetime('now'))
-            `).bind(adminId, ADMIN_EMAIL, hashedPassword, 'admin').run();
+            `).bind(adminId, email, hashedPassword).run();
             
             console.log('Admin account created successfully');
         } else {
@@ -77,7 +83,7 @@ export async function ensureAdminAccountExists(env) {
                 UPDATE users 
                 SET role = 'admin', password_hash = ?, updated_at = datetime('now')
                 WHERE email = ?
-            `).bind(hashedPassword, ADMIN_EMAIL).run();
+            `).bind(hashedPassword, email).run();
             
             console.log('Admin account updated with correct password hash');
         }
@@ -92,12 +98,12 @@ export async function ensureAdminAccountExists(env) {
  * @param {Object} requestingUser - User making the request
  * @returns {Array} - Filtered users array
  */
-export function filterUsersForDisplay(users, requestingUser) {
-    if (isAdmin(requestingUser)) {
+export function filterUsersForDisplay(users, requestingUser, env) {
+    if (isAdmin(requestingUser, env)) {
         // Admin can see all users including themselves
         return users;
     } else {
         // Regular users cannot see admin account at all
-        return users.filter(user => !isAdmin(user));
+        return users.filter(user => !isAdmin(user, env));
     }
 }

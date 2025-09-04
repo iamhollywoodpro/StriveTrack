@@ -152,7 +152,17 @@ export async function onRequestGet(context) {
         
         // Add statistics if requested
         if (includeStats) {
-            response.stats = await calculateMediaStats(mediaWithUrls);
+            const rawStats = await calculateMediaStats(mediaWithUrls);
+            response.stats = {
+                total: rawStats.total_uploads,
+                before_count: rawStats.before_count,
+                after_count: rawStats.after_count,
+                progress_count: rawStats.progress_count,
+                comparison_count: 0, // Will be calculated from pairs if needed
+                weekly_uploads: rawStats.weekly_uploads,
+                most_active_week: rawStats.most_active_week,
+                most_active_week_count: rawStats.most_active_week_count
+            };
         }
         
         // Add before/after pairs if requested

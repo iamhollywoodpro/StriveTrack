@@ -1,1 +1,0 @@
-ALTER TABLE habits ADD COLUMN weekly_target INTEGER DEFAULT 7;

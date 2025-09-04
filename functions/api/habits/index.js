@@ -60,7 +60,17 @@ export async function onRequestPost(context) {
         const habitId = await createHabit(habitData, env);
         
         // Check and award achievements
-        const newAchievements = await checkAndAwardAchievements(user.id, env);
+        let newAchievements = [];
+        try {
+            const { checkAndAwardAchievements } = await import('../../utils/achievements.js');
+            newAchievements = await checkAndAwardAchievements(user.id, 'habit_creation', { 
+                habit_name: name.trim(),
+                weekly_target: habitData.weekly_target 
+            }, env);
+        } catch (achievementError) {
+            console.error('Achievement check error:', achievementError);
+            // Don't fail the habit creation if achievements fail
+        }
         
         return new Response(JSON.stringify({
             message: 'Habit created successfully',

@@ -113,6 +113,14 @@ function setupEventListeners() {
     // Nutrition form
     document.getElementById('nutrition-form').addEventListener('submit', submitNutrition);
     
+    // Weight tracking forms
+    document.getElementById('weight-log-form').addEventListener('submit', submitWeightLog);
+    document.getElementById('weight-goal-form').addEventListener('submit', submitWeightGoal);
+    
+    // Goal setting forms
+    document.getElementById('create-goal-form').addEventListener('submit', submitGoal);
+    document.getElementById('goal-progress-form').addEventListener('submit', submitGoalProgress);
+    
     // Upload progress card
     document.getElementById('upload-progress-card').addEventListener('click', () => {
         showMediaUploadModal();
@@ -1362,6 +1370,8 @@ function createDashboardProgressElement(habit) {
 async function loadDashboardData() {
     await Promise.all([
         loadHabitsAndUpdateDashboard(), // Load habits and update both sections
+        loadDashboardGoals(),          // Load goals for dashboard
+        loadDashboardNutrition(),      // Load today's nutrition for dashboard
         loadMedia(),
         loadAchievements(),
         loadDailyChallenges(),
@@ -1372,6 +1382,166 @@ async function loadDashboardData() {
     setTimeout(() => {
         initializeHabits();
     }, 100);
+}
+
+// ==============================
+// DASHBOARD GOALS AND NUTRITION
+// ==============================
+
+async function loadDashboardGoals() {
+    try {
+        const response = await fetch('/api/goals', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayDashboardGoals(data.goals || []);
+        } else {
+            console.error('Failed to load dashboard goals');
+            document.getElementById('dashboard-goals-container').innerHTML = 
+                '<div class="text-center py-4 text-white/50"><i class="fas fa-exclamation-triangle mb-2"></i><p>No goals found</p></div>';
+        }
+    } catch (error) {
+        console.error('Dashboard goals error:', error);
+        document.getElementById('dashboard-goals-container').innerHTML = 
+            '<div class="text-center py-4 text-white/50"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading goals</p></div>';
+    }
+}
+
+async function loadDashboardNutrition() {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(`/api/nutrition?date=${today}`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayDashboardNutrition(data.logs || []);
+        } else {
+            console.error('Failed to load dashboard nutrition');
+            document.getElementById('dashboard-nutrition-container').innerHTML = 
+                '<div class="text-center py-4 text-white/50"><i class="fas fa-utensils mb-2"></i><p>No meals logged today</p></div>';
+        }
+    } catch (error) {
+        console.error('Dashboard nutrition error:', error);
+        document.getElementById('dashboard-nutrition-container').innerHTML = 
+            '<div class="text-center py-4 text-white/50"><i class="fas fa-exclamation-triangle mb-2"></i><p>Error loading nutrition</p></div>';
+    }
+}
+
+function displayDashboardGoals(goals) {
+    const container = document.getElementById('dashboard-goals-container');
+    
+    if (goals.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-6 text-white/50">
+                <i class="fas fa-target text-3xl mb-3"></i>
+                <p class="mb-3">No active goals yet</p>
+                <button onclick="showSection('goals')" class="btn-secondary text-sm">
+                    <i class="fas fa-plus mr-2"></i>Set Your First Goal
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Show first 3 active goals
+    const activeGoals = goals.filter(g => g.status === 'active').slice(0, 3);
+    
+    container.innerHTML = activeGoals.map(goal => `
+        <div class="goal-card-mini mb-3 p-3 bg-white/5 rounded-lg border border-white/10">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="font-semibold text-white text-sm">${goal.title}</h4>
+                <span class="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300">
+                    ${Math.round(goal.progress_percentage || 0)}%
+                </span>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-2">
+                <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                     style="width: ${Math.min(goal.progress_percentage || 0, 100)}%"></div>
+            </div>
+            <div class="text-xs text-white/60 mt-1">
+                Target: ${new Date(goal.target_date).toLocaleDateString()}
+            </div>
+        </div>
+    `).join('') + (goals.length > 3 ? `
+        <div class="text-center mt-3">
+            <button onclick="showSection('goals')" class="text-blue-400 hover:text-blue-300 text-sm">
+                View all ${goals.length} goals <i class="fas fa-arrow-right ml-1"></i>
+            </button>
+        </div>
+    ` : '');
+}
+
+function displayDashboardNutrition(logs) {
+    const container = document.getElementById('dashboard-nutrition-container');
+    
+    if (logs.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-6 text-white/50">
+                <i class="fas fa-utensils text-3xl mb-3"></i>
+                <p class="mb-3">No meals logged today</p>
+                <button onclick="showSection('nutrition')" class="btn-secondary text-sm">
+                    <i class="fas fa-plus mr-2"></i>Log Your First Meal
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calculate totals
+    const totals = logs.reduce((sum, log) => ({
+        calories: sum.calories + (log.calories || 0),
+        protein: sum.protein + (log.protein || 0),
+        carbs: sum.carbs + (log.carbs || 0),
+        fat: sum.fat + (log.fat || 0)
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+    
+    container.innerHTML = `
+        <div class="grid grid-cols-4 gap-4 mb-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-orange-400">${totals.calories}</div>
+                <div class="text-xs text-white/60">Calories</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-red-400">${totals.protein}g</div>
+                <div class="text-xs text-white/60">Protein</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-400">${totals.carbs}g</div>
+                <div class="text-xs text-white/60">Carbs</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-400">${totals.fat}g</div>
+                <div class="text-xs text-white/60">Fat</div>
+            </div>
+        </div>
+        <div class="space-y-2">
+            ${logs.slice(0, 3).map(log => `
+                <div class="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-utensils text-white/40"></i>
+                        <div>
+                            <div class="text-white font-medium text-sm">${log.food_name}</div>
+                            <div class="text-white/60 text-xs">${log.calories || 0} cal • ${log.meal_type || 'meal'}</div>
+                        </div>
+                    </div>
+                    <div class="text-white/60 text-xs">
+                        ${new Date(log.logged_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        ${logs.length > 3 ? `
+            <div class="text-center mt-3">
+                <button onclick="showSection('nutrition')" class="text-blue-400 hover:text-blue-300 text-sm">
+                    View all ${logs.length} meals <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        ` : ''}
+    `;
 }
 
 // ==============================
@@ -1727,8 +1897,20 @@ function showMediaUploadModal() {
     // Reset form
     document.getElementById('media-upload-form').reset();
     
-    // Set default media type to progress
-    document.querySelector('input[name="media_type"][value="progress"]').checked = true;
+    // Set default media type based on current filter selection, fallback to progress
+    const currentFilter = document.getElementById('gallery-filter').value;
+    let defaultType = 'progress';
+    
+    // If user is viewing before/after photos, suggest that type
+    if (currentFilter === 'before' || currentFilter === 'after') {
+        defaultType = currentFilter;
+    }
+    
+    // Set the default media type
+    const defaultRadio = document.querySelector(`input[name="media_type"][value="${defaultType}"]`);
+    if (defaultRadio) {
+        defaultRadio.checked = true;
+    }
 }
 
 async function submitMediaUpload(event) {
@@ -1852,8 +2034,18 @@ async function loadMedia() {
                 headers: { 'x-session-id': sessionId }
             });
             if (fallbackResponse.ok) {
-                const media = await fallbackResponse.json();
-                displayMedia(media);
+                const mediaResponse = await fallbackResponse.json();
+                // Fix: displayMedia expects an array, but API returns {media: [...]}
+                const mediaArray = mediaResponse.media || [];
+                displayMedia(mediaArray);
+                // Also update stats for the fallback
+                const stats = {
+                    total: mediaArray.length,
+                    before_count: mediaArray.filter(m => m.media_type === 'before').length,
+                    after_count: mediaArray.filter(m => m.media_type === 'after').length,
+                    comparison_count: 0
+                };
+                updateMediaStats({ stats });
             }
         }
     } catch (error) {
@@ -1875,6 +2067,12 @@ function displayEnhancedMedia(data) {
     
     container.classList.remove('hidden');
     emptyState.classList.add('hidden');
+    
+    // Store media items globally for reference
+    window.mediaItems = window.mediaItems || {};
+    data.media.forEach(item => {
+        window.mediaItems[item.id] = item;
+    });
     
     // Apply filters
     const filter = document.getElementById('gallery-filter').value;
@@ -1899,7 +2097,7 @@ function displayEnhancedMedia(data) {
         div.className = 'media-item';
         div.onclick = () => showEnhancedMediaModal(item);
         
-        const mediaType = item.media_type || item.video_type || item.image_type || 'progress';
+        const mediaType = item.media_type || 'progress';
         const isVideo = item.file_type && item.file_type.startsWith('video/');
         const isPaired = item.paired_with_id;
         
@@ -1916,6 +2114,18 @@ function displayEnhancedMedia(data) {
                         aria-label="Delete media">
                     <i class="fas fa-trash"></i>
                 </button>
+                
+                <!-- Comparison Overlay -->
+                <div class="comparison-overlay">
+                    <div class="comparison-controls">
+                        <button onclick="event.stopPropagation(); addToComparison('${item.id}')" class="btn-compare">
+                            <i class="fas fa-plus mr-1"></i>Compare
+                        </button>
+                        <button onclick="event.stopPropagation(); showEnhancedMediaModal(window.mediaItems['${item.id}'])" class="btn-compare">
+                            <i class="fas fa-expand mr-1"></i>View
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="media-info">
                 <div class="media-date">
@@ -1927,7 +2137,7 @@ function displayEnhancedMedia(data) {
                     </div>
                 ` : `
                     <div class="media-description">
-                        ${isVideo ? 'Progress Video' : 'Progress Photo'} • ${(item.file_size / 1024 / 1024).toFixed(1)}MB
+                        ${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} ${isVideo ? 'Video' : 'Photo'} • ${(item.file_size / 1024 / 1024).toFixed(1)}MB
                     </div>
                 `}
             </div>
@@ -1935,8 +2145,10 @@ function displayEnhancedMedia(data) {
         
         container.appendChild(div);
         
-        // Load the actual media
-        loadMediaPreview(item.id, `media-${item.id}`, isVideo);
+        // Load the actual media after a brief delay to ensure DOM is ready
+        setTimeout(() => {
+            loadMediaPreview(item.id, `media-${item.id}`, isVideo);
+        }, 100);
     });
 }
 
@@ -2009,7 +2221,13 @@ function updateMediaStats(data) {
 
 // Legacy display function for compatibility
 function displayMedia(media) {
-    displayEnhancedMedia({ media, stats: { total: media.length, before_count: 0, after_count: 0, comparison_count: 0 } });
+    const stats = {
+        total: media.length,
+        before_count: media.filter(m => m.media_type === 'before').length,
+        after_count: media.filter(m => m.media_type === 'after').length,
+        comparison_count: 0
+    };
+    displayEnhancedMedia({ media, stats });
 }
 
 async function loadMediaPreview(mediaId, containerId, isVideo = false) {
@@ -2024,17 +2242,32 @@ async function loadMediaPreview(mediaId, containerId, isVideo = false) {
             
             const container = document.getElementById(containerId);
             if (container) {
-                if (isVideo) {
-                    container.innerHTML = `
-                        <video style="width: 100%; height: 100%; object-fit: cover;" muted>
-                            <source src="${mediaUrl}" type="${blob.type}">
-                        </video>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <img src="${mediaUrl}" alt="Progress media" style="width: 100%; height: 100%; object-fit: cover;">
-                    `;
+                // Remove the placeholder icon but keep other elements
+                const placeholderIcon = container.querySelector('.fas');
+                if (placeholderIcon) {
+                    placeholderIcon.remove();
                 }
+                
+                // Create the media element
+                let mediaElement;
+                if (isVideo) {
+                    mediaElement = document.createElement('video');
+                    mediaElement.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;';
+                    mediaElement.muted = true;
+                    
+                    const source = document.createElement('source');
+                    source.src = mediaUrl;
+                    source.type = blob.type;
+                    mediaElement.appendChild(source);
+                } else {
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = mediaUrl;
+                    mediaElement.alt = 'Media preview';
+                    mediaElement.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;';
+                }
+                
+                // Insert the media element as the first child (behind overlays)
+                container.insertBefore(mediaElement, container.firstChild);
             }
         }
     } catch (error) {
@@ -2085,7 +2318,7 @@ async function showEnhancedMediaModal(media) {
                             <source src="${mediaUrl}" type="${blob.type}">
                         </video>
                     ` : `
-                        <img src="${mediaUrl}" alt="Progress media" style="width: 100%; max-height: 70vh; object-fit: contain;">
+                        <img src="${mediaUrl}" alt="Media preview" style="width: 100%; max-height: 70vh; object-fit: contain;">
                     `}
                 </div>
                 
@@ -2349,7 +2582,7 @@ function displayAchievements(data) {
     });
     
     if (Object.keys(data.grouped_achievements).length === 0) {
-        container.innerHTML = '<p class="text-white/70 text-center">No achievements available yet. Keep using StriveTrack to unlock achievements!</p>';
+        container.innerHTML = '<p class="text-white/70 text-center">No achievements available yet. Keep using StriveTrack to earn achievements automatically!</p>';
     }
     
     // Add event listener for category filter
@@ -2427,22 +2660,18 @@ function createAchievementElement(achievement) {
                     </span>
                 </div>
                 ${achievement.is_completed ? '<span style="color: #10b981;">✅</span>' : ''}
-                ${achievement.is_unlockable ? '<span style="color: #f59e0b;">⭐</span>' : ''}
-                ${!achievement.is_completed && !achievement.is_unlockable ? '<span style="color: rgba(255,255,255,0.4);">🔒</span>' : ''}
+                ${achievement.is_completed ? '<span style="color: #10b981;">✅</span>' : '<span style="color: rgba(255,255,255,0.4);">⏳</span>'}
             </div>
             
             ${achievement.is_completed && achievement.earned_at ? `
                 <div style="color: #10b981; font-size: 10px; margin-top: 4px;">
-                    Earned ${new Date(achievement.earned_at).toLocaleDateString()}
+                    🎉 Earned ${new Date(achievement.earned_at).toLocaleDateString()}
                 </div>
-            ` : ''}
-            
-            ${achievement.is_unlockable ? `
-                <button onclick="unlockAchievement('${achievement.id}')" 
-                        style="width: 100%; margin-top: 8px; padding: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 11px; cursor: pointer;">
-                    🎉 Claim Achievement!
-                </button>
-            ` : ''}
+            ` : `
+                <div style="color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 4px; font-style: italic;">
+                    ${achievement.progress_percentage || 0}% progress - Earned automatically!
+                </div>
+            `}
         </div>
     `;
     
@@ -2474,38 +2703,7 @@ function getAchievementIcon(achievement) {
     return '⭐';
 }
 
-async function unlockAchievement(achievementId) {
-    try {
-        const response = await fetch('/api/achievements', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId 
-            },
-            body: JSON.stringify({ achievement_id: achievementId })
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            showNotification(`🎉 Achievement Unlocked: ${data.achievement.name}! +${data.points_awarded} pts`, 'success');
-            
-            // Update user points in header
-            if (currentUser && data.points_awarded > 0) {
-                currentUser.points += data.points_awarded;
-                document.getElementById('user-points').textContent = `⭐ ${currentUser.points} pts`;
-            }
-            
-            // Refresh achievements display
-            loadAchievements();
-        } else {
-            const errorData = await response.json();
-            showNotification(errorData.error || 'Failed to unlock achievement', 'error');
-        }
-    } catch (error) {
-        console.error('Unlock achievement error:', error);
-        showNotification('Failed to unlock achievement', 'error');
-    }
-}
+// Achievement unlocking is now 100% automatic - no manual claiming needed!
 
 // Achievement Notification System
 function showAchievementNotification(achievement) {
@@ -2616,7 +2814,7 @@ async function checkAndAwardAchievements(triggerAction = 'general') {
         if (response.ok) {
             const data = await response.json();
             
-            // Show notifications for newly unlocked achievements
+            // Show notifications for newly earned achievements
             if (data.unlocked_achievements && data.unlocked_achievements.length > 0) {
                 data.unlocked_achievements.forEach((achievement, index) => {
                     setTimeout(() => {
@@ -2704,7 +2902,7 @@ function displayDailyChallenges(data) {
             { icon: '🏆', label: 'Unlocked', value: achievementStats.earned_achievements, total: achievementStats.total_achievements, color: '#10b981' },
             { icon: '📈', label: 'Progress', value: `${achievementStats.completion_percentage}%`, color: '#3b82f6' },
             { icon: '⭐', label: 'Points', value: achievementStats.achievement_points, color: '#f59e0b' },
-            { icon: '🎯', label: 'Ready', value: achievementStats.unlockable_count, color: '#8b5cf6' }
+            { icon: '🎯', label: 'Remaining', value: achievementStats.total_achievements - achievementStats.earned_achievements, color: '#8b5cf6' }
         ];
         
         achievementStatCards.forEach(statCard => {
@@ -2751,6 +2949,20 @@ function createDailyChallengeElement(challenge) {
                     <div style="background: white; height: 100%; border-radius: 10px; transition: width 0.3s ease; width: ${challenge.progress_percentage}%;"></div>
                 </div>
             </div>
+            ${challenge.current_progress >= challenge.requirement_value ? `
+                <button onclick="completeChallenge('${challenge.id}')" 
+                        class="complete-challenge-btn"
+                        style="width: 100%; padding: 8px 16px; background: linear-gradient(135deg, #10b981, #059669); 
+                               color: white; border: none; border-radius: 8px; font-weight: 600; 
+                               cursor: pointer; margin-bottom: 8px; transition: all 0.2s ease;">
+                    🎯 Claim Reward
+                </button>
+            ` : `
+                <div style="text-align: center; padding: 8px; background: rgba(255, 255, 255, 0.1); 
+                           border-radius: 8px; font-size: 0.75rem; opacity: 0.7; margin-bottom: 8px;">
+                    Complete requirements to claim
+                </div>
+            `}
         ` : `
             <div style="color: #10b981; font-weight: 600; margin-bottom: 8px;">✅ Completed!</div>
         `}
@@ -2764,13 +2976,65 @@ function createDailyChallengeElement(challenge) {
     return div;
 }
 
+// Complete Daily Challenge Function
+async function completeChallenge(challengeId) {
+    const button = event.target;
+    const originalText = button.textContent;
+    
+    try {
+        // Disable button and show loading
+        button.disabled = true;
+        button.textContent = '⏳ Completing...';
+        button.style.opacity = '0.6';
+        
+        const response = await fetch('/api/challenges/daily', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ challenge_id: challengeId })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.completed) {
+            // Show success message
+            showNotification(`🎉 ${result.message}`, 'success');
+            
+            // Refresh challenges and other data
+            await Promise.all([
+                loadDailyChallenges(),
+                loadAchievements() // Refresh achievements in case new ones were unlocked
+            ]);
+        } else {
+            // Show error message
+            const errorMsg = result.error || 'Failed to complete challenge';
+            showNotification(`❌ ${errorMsg}`, 'error');
+            
+            // Reset button
+            button.disabled = false;
+            button.textContent = originalText;
+            button.style.opacity = '1';
+        }
+    } catch (error) {
+        console.error('Complete challenge error:', error);
+        showNotification('❌ Failed to complete challenge', 'error');
+        
+        // Reset button
+        button.disabled = false;
+        button.textContent = originalText;
+        button.style.opacity = '1';
+    }
+}
+
 function createStatCard(statCard) {
     const div = document.createElement('div');
     let cardClass = 'streak-card achievement-stat-card';
     
-    // Add special styling for unlockable achievements
-    if (statCard.label === 'Ready' && statCard.value > 0) {
-        cardClass += ' has-unlockable';
+    // Add special styling for progress achievements
+    if (statCard.label === 'Progress' && statCard.value > 0) {
+        cardClass += ' has-progress';
     }
     
     div.className = cardClass;
@@ -3200,7 +3464,15 @@ function createFoodLogElement(log) {
                 </span>
                 ${log.is_custom_recipe ? '<span class="ml-2 text-xs bg-purple-600 text-white px-2 py-1 rounded">Custom Recipe</span>' : ''}
             </div>
-            <div class="text-white/70 text-sm">${new Date(log.created_at).toLocaleTimeString()}</div>
+            <div class="flex items-center space-x-2">
+                <div class="text-white/70 text-sm">${new Date(log.created_at).toLocaleTimeString()}</div>
+                <button class="edit-nutrition-btn text-blue-400 hover:text-blue-300 text-xs" data-nutrition-id="${log.id}" title="Edit entry">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-nutrition-btn text-red-400 hover:text-red-300 text-xs" data-nutrition-id="${log.id}" title="Delete entry">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </div>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -3221,20 +3493,31 @@ function showNutritionModal() {
 async function submitNutrition(event) {
     event.preventDefault();
     
-    const formData = {
-        food_name: document.getElementById('food-name').value,
-        meal_type: document.getElementById('meal-type').value,
-        calories: parseFloat(document.getElementById('calories').value) || 0,
-        protein_g: parseFloat(document.getElementById('protein').value) || 0,
-        carbs_g: parseFloat(document.getElementById('carbs').value) || 0,
-        fat_g: parseFloat(document.getElementById('fat').value) || 0,
-        sugar_g: parseFloat(document.getElementById('sugar').value) || 0,
-        fiber_g: parseFloat(document.getElementById('fiber').value) || 0,
-        water_ml: parseFloat(document.getElementById('water-ml').value) || 0,
-        is_custom_recipe: document.getElementById('is-custom-recipe').checked
-    };
+    // Show loading state immediately
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging Nutrition...';
+    submitBtn.disabled = true;
     
     try {
+        const formData = {
+            food_name: document.getElementById('food-name').value,
+            meal_type: document.getElementById('meal-type').value,
+            calories: parseFloat(document.getElementById('calories').value) || 0,
+            protein_g: parseFloat(document.getElementById('protein').value) || 0,
+            carbs_g: parseFloat(document.getElementById('carbs').value) || 0,
+            fat_g: parseFloat(document.getElementById('fat').value) || 0,
+            sugar_g: parseFloat(document.getElementById('sugar').value) || 0,
+            fiber_g: parseFloat(document.getElementById('fiber').value) || 0,
+            water_ml: parseFloat(document.getElementById('water-ml').value) || 0,
+            is_custom_recipe: document.getElementById('is-custom-recipe').checked
+        };
+        
+        // Validate required fields
+        if (!formData.food_name || formData.food_name.trim() === '') {
+            showNotification('Food name is required', 'error');
+            return;
+        }
         const response = await fetch('/api/nutrition', {
             method: 'POST',
             headers: {
@@ -3260,6 +3543,709 @@ async function submitNutrition(event) {
     } catch (error) {
         console.error('Nutrition submission error:', error);
         showNotification('Failed to log nutrition', 'error');
+    } finally {
+        // Always restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Delete nutrition entry function
+async function deleteNutrition(nutritionId) {
+    if (!confirm('Are you sure you want to delete this nutrition entry? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/nutrition/${nutritionId}`, {
+            method: 'DELETE',
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+        
+        if (response.ok) {
+            showNotification('Nutrition entry deleted successfully', 'success');
+            loadNutrition(); // Refresh nutrition data
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to delete nutrition entry', 'error');
+        }
+    } catch (error) {
+        console.error('Nutrition deletion error:', error);
+        showNotification('Failed to delete nutrition entry', 'error');
+    }
+}
+
+// Weight Tracking Functions
+async function loadWeight() {
+    try {
+        const response = await fetch('/api/weight', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayWeightData(data);
+        } else {
+            console.error('Failed to load weight data');
+            displayEmptyWeightState();
+        }
+    } catch (error) {
+        console.error('Load weight error:', error);
+        displayEmptyWeightState();
+    }
+}
+
+function displayWeightData(data) {
+    const { weight_logs, current_goal, user_info, stats } = data;
+    
+    // Update weight stats
+    if (stats && Object.keys(stats).length > 0) {
+        const weightUnit = user_info?.weight_unit || 'kg';
+        // Store globally for other functions to use
+        window.currentWeightUnit = weightUnit;
+        const currentWeight = weightUnit === 'lbs' 
+            ? (stats.current_weight * 2.20462).toFixed(1) 
+            : stats.current_weight?.toFixed(1) || '-';
+            
+        document.getElementById('current-weight').textContent = currentWeight;
+        document.getElementById('weight-unit').textContent = weightUnit;
+        document.getElementById('current-bmi').textContent = stats.latest_bmi?.toFixed(1) || '-';
+        document.getElementById('bmi-category').textContent = stats.bmi_category || '-';
+        
+        const weightChange = stats.weight_change || 0;
+        const changeElement = document.getElementById('weight-change');
+        const displayWeightChange = weightUnit === 'lbs' ? (weightChange * 2.20462) : weightChange;
+        const changeText = displayWeightChange > 0 ? `+${displayWeightChange.toFixed(1)}` : displayWeightChange.toFixed(1);
+        changeElement.textContent = changeText + ' ' + weightUnit;
+        changeElement.className = weightChange > 0 ? 'weight-change-positive' : 'weight-change-negative';
+        
+        document.getElementById('total-logs').textContent = stats.total_logs || 0;
+    }
+    
+    // Display current goal
+    displayWeightGoal(current_goal);
+    
+    // Display weight log history
+    displayWeightLogs(weight_logs || []);
+    
+    // Set default values in modals
+    if (user_info) {
+        document.getElementById('weight-unit-selector').value = user_info.weight_unit || 'kg';
+        document.getElementById('goal-weight-unit').textContent = user_info.weight_unit || 'kg';
+        document.getElementById('goal-target-unit').textContent = user_info.weight_unit || 'kg';
+        
+        if (user_info.current_weight_kg) {
+            const displayWeight = user_info.weight_unit === 'lbs' 
+                ? (user_info.current_weight_kg * 2.20462).toFixed(1)
+                : user_info.current_weight_kg.toFixed(1);
+            document.getElementById('current-weight-goal').value = displayWeight;
+        }
+    }
+}
+
+function displayWeightGoal(goal) {
+    const goalContent = document.getElementById('weight-goal-content');
+    
+    if (goal) {
+        const progress = calculateGoalProgress(goal);
+        const weightUnit = window.currentWeightUnit || 'kg';
+        const currentWeight = weightUnit === 'lbs' ? (goal.current_weight_kg * 2.20462).toFixed(1) : goal.current_weight_kg.toFixed(1);
+        const targetWeight = weightUnit === 'lbs' ? (goal.target_weight_kg * 2.20462).toFixed(1) : goal.target_weight_kg.toFixed(1);
+        
+        goalContent.innerHTML = `
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <div class="text-lg font-bold text-white">${goal.goal_type.charAt(0).toUpperCase() + goal.goal_type.slice(1)} Weight Goal</div>
+                    <div class="text-white/70 text-sm">
+                        ${currentWeight} ${weightUnit} → ${targetWeight} ${weightUnit}
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-white">${progress.percentage}%</div>
+                    <div class="text-white/60 text-xs">Complete</div>
+                </div>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-2 mb-3">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300" 
+                     style="width: ${Math.min(progress.percentage, 100)}%"></div>
+            </div>
+            ${goal.target_date ? `
+                <div class="text-white/60 text-sm">
+                    Target: ${new Date(goal.target_date).toLocaleDateString()}
+                    ${goal.weekly_goal_kg ? `• ${goal.weekly_goal_kg.toFixed(1)} kg/week` : ''}
+                </div>
+            ` : ''}
+        `;
+    } else {
+        goalContent.innerHTML = `
+            <div class="text-center py-6 text-white/50">
+                <i class="fas fa-bullseye text-2xl mb-2"></i>
+                <p>Set a weight goal to track your progress</p>
+            </div>
+        `;
+    }
+}
+
+function calculateGoalProgress(goal) {
+    // This would need current weight from latest log
+    // For now, return a placeholder
+    return { percentage: 0 };
+}
+
+function displayWeightLogs(logs) {
+    const container = document.getElementById('weight-log-container');
+    
+    if (logs.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-white/50">
+                <i class="fas fa-weight-hanging text-3xl mb-2"></i>
+                <p>No weight entries yet</p>
+                <p class="text-sm">Log your first weight to start tracking progress</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Get user's weight unit preference from the first call to displayWeightData
+    const weightUnit = window.currentWeightUnit || 'kg';
+    
+    container.innerHTML = logs.map(log => {
+        const displayWeight = weightUnit === 'lbs' ? (log.weight_kg * 2.20462).toFixed(1) : log.weight_kg.toFixed(1);
+        return `
+        <div class="weight-log-entry">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-weight-hanging text-blue-400"></i>
+                    </div>
+                    <div>
+                        <div class="text-white font-medium">${displayWeight} ${weightUnit}</div>
+                        <div class="text-white/60 text-sm">${new Date(log.logged_date).toLocaleDateString()}</div>
+                        ${log.bmi ? `<div class="text-white/60 text-xs">BMI: ${log.bmi.toFixed(1)}</div>` : ''}
+                    </div>
+                </div>
+                <div class="text-right">
+                    ${log.body_fat_percentage ? `<div class="text-white/80 text-sm">${log.body_fat_percentage}% BF</div>` : ''}
+                    ${log.notes ? `<div class="text-white/60 text-xs max-w-32 truncate">${log.notes}</div>` : ''}
+                    <button class="delete-weight-btn text-red-400 hover:text-red-300 text-xs mt-1" data-weight-id="${log.id}" title="Delete entry">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function displayEmptyWeightState() {
+    document.getElementById('current-weight').textContent = '-';
+    document.getElementById('current-bmi').textContent = '-';
+    document.getElementById('bmi-category').textContent = '-';
+    document.getElementById('weight-change').textContent = '-';
+    document.getElementById('total-logs').textContent = '0';
+    
+    displayWeightLogs([]);
+}
+
+function showWeightLogModal() {
+    // Set today's date as default
+    document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+    showModal('weight-log-modal');
+}
+
+function showWeightGoalModal() {
+    showModal('weight-goal-modal');
+}
+
+async function submitWeightLog(event) {
+    event.preventDefault();
+    
+    // Show loading state immediately
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging Weight...';
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(event.target);
+        const weightData = {
+            weight: parseFloat(formData.get('weight')),
+            logged_date: formData.get('logged_date'),
+            body_fat_percentage: formData.get('body_fat_percentage') ? parseFloat(formData.get('body_fat_percentage')) : null,
+            notes: formData.get('notes') || null
+        };
+        
+        const response = await fetch('/api/weight', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(weightData)
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(data.message, 'success');
+            closeModal('weight-log-modal');
+            document.getElementById('weight-log-form').reset();
+            loadWeight(); // Refresh weight data
+            
+            // Check for achievements
+            checkAndAwardAchievements('weight_log');
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to log weight', 'error');
+        }
+    } catch (error) {
+        console.error('Weight log submission error:', error);
+        showNotification('Failed to log weight', 'error');
+    } finally {
+        // Always restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+async function submitWeightGoal(event) {
+    event.preventDefault();
+    
+    // Show loading state immediately
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Setting Goal...';
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(event.target);
+        const goalData = {
+            goal_type: formData.get('goal_type'),
+            current_weight_kg: parseFloat(formData.get('current_weight')),
+            target_weight_kg: parseFloat(formData.get('target_weight')),
+            target_date: formData.get('target_date') || null
+        };
+        
+        // Convert weights if needed (assuming form shows user's preferred unit)
+        const userUnit = document.getElementById('weight-unit-selector').value;
+        if (userUnit === 'lbs') {
+            goalData.current_weight_kg *= 0.453592;
+            goalData.target_weight_kg *= 0.453592;
+        }
+        
+        const response = await fetch('/api/weight/goals', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(goalData)
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(data.message, 'success');
+            closeModal('weight-goal-modal');
+            document.getElementById('weight-goal-form').reset();
+            loadWeight(); // Refresh weight data
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to set weight goal', 'error');
+        }
+    } catch (error) {
+        console.error('Weight goal submission error:', error);
+        showNotification('Failed to set weight goal', 'error');
+    } finally {
+        // Always restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Delete weight entry function
+async function deleteWeight(weightId) {
+    if (!confirm('Are you sure you want to delete this weight entry? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/weight/${weightId}`, {
+            method: 'DELETE',
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+        
+        if (response.ok) {
+            showNotification('Weight entry deleted successfully', 'success');
+            loadWeight(); // Refresh weight data
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to delete weight entry', 'error');
+        }
+    } catch (error) {
+        console.error('Weight deletion error:', error);
+        showNotification('Failed to delete weight entry', 'error');
+    }
+}
+
+// Goal Setting Functions
+async function loadGoals() {
+    try {
+        const response = await fetch('/api/goals', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayGoals(data);
+            populateGoalCategories(data.categories);
+        } else {
+            console.error('Failed to load goals');
+            displayEmptyGoalsState();
+        }
+    } catch (error) {
+        console.error('Load goals error:', error);
+        displayEmptyGoalsState();
+    }
+}
+
+function displayGoals(data) {
+    const { goals, stats, categories } = data;
+    
+    // Update goal stats
+    if (stats) {
+        document.getElementById('total-goals').textContent = stats.total_goals || 0;
+        document.getElementById('active-goals').textContent = stats.active_goals || 0;
+        document.getElementById('completed-goals').textContent = stats.completed_goals || 0;
+        const completionRate = stats.total_goals > 0 
+            ? Math.round((stats.completed_goals / stats.total_goals) * 100) 
+            : 0;
+        document.getElementById('goal-completion-rate').textContent = completionRate + '%';
+    }
+    
+    // Display goals
+    const container = document.getElementById('goals-container');
+    const emptyState = document.getElementById('goals-empty-state');
+    
+    if (goals.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    emptyState.classList.add('hidden');
+    container.innerHTML = goals.map(goal => createGoalCard(goal)).join('');
+}
+
+function createGoalCard(goal) {
+    const priorityClass = `goal-priority-${goal.priority}`;
+    const statusClass = goal.status === 'completed' ? 'completed' : 
+                       (goal.target_date && new Date(goal.target_date) < new Date() && goal.status === 'active') ? 'overdue' : '';
+    
+    const progressPercentage = goal.progress_percentage || 0;
+    const daysLeft = goal.target_date ? Math.ceil((new Date(goal.target_date) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+    
+    return `
+        <div class="goal-card ${statusClass}" onclick="showGoalDetails('${goal.id}')">
+            <div class="goal-priority-indicator ${priorityClass}"></div>
+            
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">${goal.category_icon || '🎯'}</span>
+                    <div>
+                        <h4 class="font-bold text-white text-lg">${goal.title}</h4>
+                        <p class="text-white/60 text-sm">${goal.category_name || goal.category}</p>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end space-y-2">
+                    <button class="delete-goal-btn text-red-400 hover:text-red-300 text-sm" data-goal-id="${goal.id}" title="Delete goal" onclick="event.stopPropagation(); handleDeleteGoal(event)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <div class="text-right">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(goal.status)}">
+                            ${goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            ${goal.description ? `
+                <p class="text-white/70 text-sm mb-3 line-clamp-2">${goal.description}</p>
+            ` : ''}
+            
+            <div class="mb-3">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-white/80 text-sm">Progress</span>
+                    <span class="text-white font-medium text-sm">${progressPercentage.toFixed(0)}%</span>
+                </div>
+                <div class="goal-progress-bar">
+                    <div class="goal-progress-fill" style="width: ${Math.min(progressPercentage, 100)}%"></div>
+                </div>
+            </div>
+            
+            ${goal.target_value ? `
+                <div class="text-white/60 text-sm mb-2">
+                    ${goal.current_value || 0} / ${goal.target_value} ${goal.target_unit || ''}
+                </div>
+            ` : ''}
+            
+            <div class="flex items-center justify-between text-xs">
+                <div class="text-white/60">
+                    Started: ${new Date(goal.start_date).toLocaleDateString()}
+                </div>
+                ${goal.target_date ? `
+                    <div class="text-white/60">
+                        ${daysLeft !== null ? (daysLeft > 0 ? `${daysLeft} days left` : `${Math.abs(daysLeft)} days overdue`) : ''}
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                <div class="flex space-x-1">
+                    ${[25, 50, 75, 100].map(milestone => `
+                        <div class="milestone-badge ${progressPercentage >= milestone ? 'milestone-completed' : 'milestone-pending'}">
+                            ${milestone}%
+                        </div>
+                    `).join('')}
+                </div>
+                ${goal.status !== 'completed' ? `
+                    <button onclick="event.stopPropagation(); showGoalProgressModal('${goal.id}', '${goal.target_unit || ''}')" 
+                            class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                        Update Progress
+                    </button>
+                ` : `
+                    <span class="text-green-400 text-sm font-medium">
+                        <i class="fas fa-check-circle mr-1"></i>Completed
+                    </span>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+function getStatusBadgeClass(status) {
+    switch (status) {
+        case 'completed': return 'bg-green-100 text-green-800';
+        case 'active': return 'bg-blue-100 text-blue-800';
+        case 'paused': return 'bg-yellow-100 text-yellow-800';
+        default: return 'bg-gray-100 text-gray-800';
+    }
+}
+
+function populateGoalCategories(categories) {
+    const categorySelect = document.getElementById('goal-category');
+    const categoryFilter = document.getElementById('category-filter');
+    
+    // Populate create goal modal
+    if (categorySelect) {
+        categorySelect.innerHTML = '<option value="">Select category</option>' + 
+            categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('');
+    }
+    
+    // Populate filter dropdown
+    if (categoryFilter) {
+        categoryFilter.innerHTML = '<option value="">All Categories</option>' + 
+            categories.map(cat => `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`).join('');
+    }
+}
+
+function displayEmptyGoalsState() {
+    const container = document.getElementById('goals-container');
+    const emptyState = document.getElementById('goals-empty-state');
+    
+    container.innerHTML = '';
+    emptyState.classList.remove('hidden');
+    
+    // Reset stats
+    document.getElementById('total-goals').textContent = '0';
+    document.getElementById('active-goals').textContent = '0';
+    document.getElementById('completed-goals').textContent = '0';
+    document.getElementById('goal-completion-rate').textContent = '0%';
+}
+
+function showCreateGoalModal() {
+    // Set today's date as default start date
+    document.getElementById('goal-start-date').value = new Date().toISOString().split('T')[0];
+    showModal('create-goal-modal');
+}
+
+function showGoalProgressModal(goalId, unit) {
+    document.getElementById('progress-goal-id').value = goalId;
+    document.getElementById('progress-unit').textContent = unit || '';
+    showModal('goal-progress-modal');
+}
+
+function showGoalDetails(goalId) {
+    // TODO: Load and display goal details with progress history
+    console.log('Show goal details for:', goalId);
+    // For now, just show a placeholder
+    showNotification('Goal details view coming soon!', 'info');
+}
+
+function filterGoals(filter) {
+    // Update active filter button
+    document.querySelectorAll('.goal-filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`filter-${filter}`).classList.add('active');
+    
+    // Reload goals with filter
+    loadGoals(); // TODO: Add filter parameter to API call
+}
+
+async function submitGoal(event) {
+    event.preventDefault();
+    
+    // Show loading state immediately
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Goal...';
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(event.target);
+        const goalData = {
+            title: formData.get('title'),
+            description: formData.get('description'),
+            category: formData.get('category'),
+            priority: formData.get('priority'),
+            start_date: formData.get('start_date'),
+            target_date: formData.get('target_date') || null,
+            target_value: formData.get('target_value') ? parseFloat(formData.get('target_value')) : null,
+            target_unit: formData.get('target_unit') || null,
+            motivation_reason: formData.get('motivation_reason') || null,
+            reward_description: formData.get('reward_description') || null,
+            is_public: formData.get('is_public') ? true : false,
+            share_progress: formData.get('share_progress') ? true : false
+        };
+        
+        const response = await fetch('/api/goals', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(goalData)
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(data.message, 'success');
+            closeModal('create-goal-modal');
+            document.getElementById('create-goal-form').reset();
+            loadGoals(); // Refresh goals
+            
+            // Check for achievements
+            checkAndAwardAchievements('goal_created');
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to create goal', 'error');
+        }
+    } catch (error) {
+        console.error('Goal creation error:', error);
+        showNotification('Failed to create goal', 'error');
+    } finally {
+        // Always restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+async function submitGoalProgress(event) {
+    event.preventDefault();
+    
+    // Show loading state immediately
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating Progress...';
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(event.target);
+        const progressData = {
+            goal_id: formData.get('goal_id'),
+            progress_value: parseFloat(formData.get('progress_value')),
+            progress_percentage: formData.get('progress_percentage') ? parseFloat(formData.get('progress_percentage')) : undefined,
+            notes: formData.get('notes') || null
+        };
+        
+        const response = await fetch('/api/goals/progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(progressData)
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(data.message, 'success');
+            
+            // Show milestone notifications if any
+            if (data.new_milestones && data.new_milestones.length > 0) {
+                data.new_milestones.forEach((milestone, index) => {
+                    setTimeout(() => {
+                        showNotification(`🎖️ Milestone reached: ${milestone.title}! +${milestone.points} pts`, 'success');
+                    }, (index + 1) * 1000);
+                });
+            }
+            
+            closeModal('goal-progress-modal');
+            document.getElementById('goal-progress-form').reset();
+            loadGoals(); // Refresh goals
+            
+            // Check for achievements
+            if (data.goal_completed) {
+                checkAndAwardAchievements('goal_completed');
+            }
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to update progress', 'error');
+        }
+    } catch (error) {
+        console.error('Goal progress update error:', error);
+        showNotification('Failed to update progress', 'error');
+    } finally {
+        // Always restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Handle goal deletion
+async function handleDeleteGoal(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const btn = event.currentTarget;
+    const goalId = btn.getAttribute('data-goal-id');
+    
+    if (confirm('Are you sure you want to delete this goal? This action cannot be undone.')) {
+        await deleteGoal(goalId);
+    }
+}
+
+// Delete goal function
+async function deleteGoal(goalId) {
+    try {
+        const response = await fetch(`/api/goals/${goalId}`, {
+            method: 'DELETE',
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+        
+        if (response.ok) {
+            showNotification('Goal deleted successfully', 'success');
+            loadGoals(); // Refresh goals
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to delete goal', 'error');
+        }
+    } catch (error) {
+        console.error('Goal deletion error:', error);
+        showNotification('Failed to delete goal', 'error');
     }
 }
 
@@ -4199,12 +5185,16 @@ function showSection(section) {
         loadMedia();
     } else if (section === 'nutrition') {
         loadNutrition();
+    } else if (section === 'weight') {
+        loadWeight();
+    } else if (section === 'goals') {
+        loadGoals();
+    } else if (section === 'competitions') {
+        loadCompetitions();
     } else if (section === 'achievements') {
         loadAchievements();
         loadDailyChallenges();
         loadLeaderboards();
-    } else if (section === 'coming-soon') {
-        loadComingSoonFeatures();
     } else if (section === 'admin') {
         loadAdminUsers(); // Load users immediately
         showAdminUserList(); // Ensure user list is visible
@@ -4909,7 +5899,7 @@ function showAchievementShowcase(achievement) {
     document.getElementById('achievement-progress').textContent = achievement.is_completed ? '100%' : `${achievement.progress_percentage}%`;
     document.getElementById('achievement-rarity-percent').textContent = getRarityPercentage(achievement.rarity);
     document.getElementById('achievement-unlock-date').textContent = achievement.earned_at ? 
-        new Date(achievement.earned_at).toLocaleDateString() : 'Not unlocked';
+        new Date(achievement.earned_at).toLocaleDateString() : 'Not earned yet';
     
     // Populate timeline
     populateAchievementTimeline(achievement);
@@ -5035,38 +6025,8 @@ function updateAchievementCounters() {
     }, 1000);
 }
 
-// Enhanced unlock achievement function with celebrations
-async function unlockAchievement(achievementId) {
-    try {
-        const response = await fetch('/api/achievements/unlock', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId
-            },
-            body: JSON.stringify({ achievement_id: achievementId })
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            
-            // Celebrate the achievement
-            celebrateAchievement(result.achievement);
-            
-            // Check for combos
-            checkAchievementCombos();
-            
-            // Reload achievements to update UI
-            loadAchievements();
-            
-        } else {
-            showNotification('Failed to unlock achievement', 'error');
-        }
-    } catch (error) {
-        console.error('Unlock achievement error:', error);
-        showNotification('Failed to unlock achievement', 'error');
-    }
-}
+// Achievements are now 100% automatic - no manual unlocking needed!
+// Achievements are awarded immediately when requirements are met during user actions.
 
 // ===============================
 // HABIT MANAGEMENT FUNCTIONALITY
@@ -5145,12 +6105,32 @@ function setupHabitEventListeners() {
             return;
         }
         
-        // Delete button  
+        // Delete habit button  
         const deleteBtn = event.target.closest('.delete-habit-btn');
         if (deleteBtn) {
             const habitId = deleteBtn.getAttribute('data-habit-id') || deleteBtn.dataset.habitId;
-            if (habitId) {
+            if (habitId && confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
                 deleteHabit(habitId);
+            }
+            return;
+        }
+        
+        // Delete weight button
+        const deleteWeightBtn = event.target.closest('.delete-weight-btn');
+        if (deleteWeightBtn) {
+            const weightId = deleteWeightBtn.getAttribute('data-weight-id') || deleteWeightBtn.dataset.weightId;
+            if (weightId) {
+                deleteWeight(weightId);
+            }
+            return;
+        }
+        
+        // Delete nutrition button
+        const deleteNutritionBtn = event.target.closest('.delete-nutrition-btn');
+        if (deleteNutritionBtn) {
+            const nutritionId = deleteNutritionBtn.getAttribute('data-nutrition-id') || deleteNutritionBtn.dataset.nutritionId;
+            if (nutritionId) {
+                deleteNutrition(nutritionId);
             }
             return;
         }
@@ -5169,32 +6149,7 @@ function setupHabitEventListeners() {
 }
 
 // Delete habit function
-async function deleteHabit(habitId) {
-    if (!confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/habits/${habitId}`, {
-            method: 'DELETE',
-            headers: {
-                'x-session-id': sessionId
-            }
-        });
-
-        if (response.ok) {
-            showNotification('Habit deleted successfully!', 'success');
-            // Refresh both dashboard and habits sections with same data
-            await loadHabitsAndUpdateDashboard();
-        } else {
-            const error = await response.json();
-            showNotification(error.error || 'Failed to delete habit', 'error');
-        }
-    } catch (error) {
-        console.error('Delete habit error:', error);
-        showNotification('Failed to delete habit', 'error');
-    }
-}
+// Duplicate deleteHabit function removed - using the correct one at line 7468
 
 // Load habits for dashboard display
 async function loadDashboardHabits() {
@@ -5382,27 +6337,34 @@ function getCategoryColor(category) {
 async function handleCreateHabit(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
-    const habitData = {
-        name: formData.get('habit-name') || document.getElementById('habit-name').value,
-        description: formData.get('habit-description') || document.getElementById('habit-description').value,
-        weekly_target: parseInt(formData.get('weekly-target') || document.getElementById('weekly-target').value),
-        target_frequency: 1, // Default frequency - can be enhanced later
-        color: getCategoryColor(formData.get('habit-category') || document.getElementById('habit-category').value)
-    };
-
-    // Validate required fields
-    if (!habitData.name || habitData.name.trim() === '') {
-        showNotification('Habit name is required', 'error');
-        return;
-    }
+    // Show loading state immediately
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Habit...';
+    submitBtn.disabled = true;
     
-    if (!habitData.weekly_target || habitData.weekly_target < 1 || habitData.weekly_target > 7) {
-        showNotification('Weekly target must be between 1 and 7 days', 'error');
-        return;
-    }
+    try {
+        const formData = new FormData(e.target);
+        const habitData = {
+            name: formData.get('habit-name') || document.getElementById('habit-name').value,
+            description: formData.get('habit-description') || document.getElementById('habit-description').value,
+            weekly_target: parseInt(formData.get('weekly-target') || document.getElementById('weekly-target').value),
+            target_frequency: 1, // Default frequency - can be enhanced later
+            color: getCategoryColor(formData.get('habit-category') || document.getElementById('habit-category').value)
+        };
 
-    console.log('Creating habit with data:', habitData);
+        // Validate required fields
+        if (!habitData.name || habitData.name.trim() === '') {
+            showNotification('Habit name is required', 'error');
+            return;
+        }
+        
+        if (!habitData.weekly_target || habitData.weekly_target < 1 || habitData.weekly_target > 7) {
+            showNotification('Weekly target must be between 1 and 7 days', 'error');
+            return;
+        }
+
+        console.log('Creating habit with data:', habitData);
 
     try {
         const response = await fetch('/api/habits', {
@@ -5425,7 +6387,7 @@ async function handleCreateHabit(e) {
             updateDashboardStats();
             
             // Check for achievements
-            checkAchievements();
+            checkAndAwardAchievements('habit_created');
         } else {
             const errorText = await response.text();
             let errorMessage = 'Failed to create habit';
@@ -5440,6 +6402,10 @@ async function handleCreateHabit(e) {
     } catch (error) {
         console.error('Create habit error:', error);
         showNotification('Failed to create habit', 'error');
+    } finally {
+        // Always restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
 }
 
@@ -6025,7 +6991,7 @@ async function toggleHabitDay(habitId, date) {
             await loadHabitsAndUpdateDashboard();
             
             // Check for achievements
-            checkAchievements();
+            checkAndAwardAchievements('habit_created');
         } else {
             const errorText = await response.text();
             console.error('❌ Error response:', response.status, errorText);
@@ -6574,13 +7540,11 @@ async function handleDeleteHabit(event) {
 // Delete habit function
 async function deleteHabit(habitId) {
     try {
-        const response = await fetch('/api/habits/delete', {
-            method: 'POST',
+        const response = await fetch(`/api/habits/${habitId}`, {
+            method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
                 'x-session-id': sessionId
-            },
-            body: JSON.stringify({ habitId })
+            }
         });
         
         if (response.ok) {
@@ -6596,49 +7560,7 @@ async function deleteHabit(habitId) {
     }
 }
 
-// Handle create habit form submission
-async function handleCreateHabit(event) {
-    event.preventDefault();
-    
-    const form = event.target;
-    const formData = new FormData(form);
-    
-    const habitData = {
-        name: formData.get('habit-name'),
-        category: formData.get('habit-category'),
-        weekly_target: parseInt(formData.get('weekly-target')),
-        difficulty: formData.get('habit-difficulty'),
-        description: formData.get('habit-description')
-    };
-    
-    try {
-        const response = await fetch('/api/habits/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId
-            },
-            body: JSON.stringify(habitData)
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            showNotification('Habit created successfully! 🎉', 'success');
-            closeModal('create-habit-modal');
-            form.reset();
-            updateEmojiPreview(); // Reset preview
-            
-            // Reload both sections
-            await loadHabitsAndUpdateDashboard();
-        } else {
-            const errorData = await response.json();
-            showNotification(errorData.error || 'Failed to create habit', 'error');
-        }
-    } catch (error) {
-        console.error('Create habit error:', error);
-        showNotification('Failed to create habit', 'error');
-    }
-}
+// Duplicate function removed - using the correct one at line 5382
 
 // Utility function to show modal
 function showModal(modalId) {
@@ -6654,5 +7576,1935 @@ function showCreateHabitModal() {
     updateEmojiPreview(); // Initialize emoji preview
 }
 
+// ===== COMPETITION SYSTEM =====
+
+// Global variables for competition filtering
+let currentCompetitionFilter = 'all';
+let currentCompetitionType = 'all';
+
+// Load competitions with filtering
+async function loadCompetitions(filter = null, type = null) {
+    try {
+        if (filter) currentCompetitionFilter = filter;
+        if (type) currentCompetitionType = type;
+
+        // Update filter tab appearances
+        document.querySelectorAll('.competition-filter-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.filter === currentCompetitionFilter);
+        });
+        
+        document.querySelectorAll('.competition-type-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.type === currentCompetitionType);
+        });
+
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (currentCompetitionFilter !== 'all') {
+            if (currentCompetitionFilter === 'joined') {
+                params.set('my', 'joined');
+            } else if (currentCompetitionFilter === 'created') {
+                params.set('my', 'created');
+            } else {
+                params.set('status', currentCompetitionFilter);
+            }
+        }
+        
+        if (currentCompetitionType !== 'all') {
+            params.set('type', currentCompetitionType);
+        }
+
+        const response = await fetch(`/api/competitions?${params.toString()}`, {
+            headers: { 'x-session-id': sessionId }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            displayCompetitions(data.competitions || []);
+            updateCompetitionStats(data.competitions || []);
+        } else {
+            console.error('Failed to load competitions');
+            showNotification('Failed to load competitions', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading competitions:', error);
+        showNotification('Error loading competitions', 'error');
+    }
+}
+
+// Display competitions in the grid
+function displayCompetitions(competitions) {
+    const container = document.getElementById('competitions-container');
+    
+    if (competitions.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">🏆</div>
+                <h3 class="text-xl text-white mb-2">No competitions found</h3>
+                <p class="text-white/70">Be the first to create a competition and challenge others!</p>
+                <button onclick="showCreateCompetitionModal()" class="btn-primary mt-4">
+                    <i class="fas fa-plus mr-2"></i>Create Competition
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = competitions.map(competition => createCompetitionCard(competition)).join('');
+}
+
+// Create individual competition card
+function createCompetitionCard(competition) {
+    const now = new Date();
+    const startDate = new Date(competition.start_date);
+    const endDate = new Date(competition.end_date);
+    const isStarted = now >= startDate;
+    const isEnded = now >= endDate;
+    const timeLeft = isStarted ? (endDate - now) : (startDate - now);
+    
+    const timeLeftText = isEnded ? 'Ended' : 
+                        isStarted ? `Ends ${formatTimeLeft(timeLeft)}` : 
+                        `Starts ${formatTimeLeft(timeLeft)}`;
+    
+    // Calculate progress for active competitions
+    let progressPercent = 0;
+    if (isStarted && !isEnded) {
+        const total = endDate - startDate;
+        const elapsed = now - startDate;
+        progressPercent = Math.min(100, (elapsed / total) * 100);
+    } else if (isEnded) {
+        progressPercent = 100;
+    }
+
+    const cardClasses = ['competition-card'];
+    if (competition.user_joined) cardClasses.push('user-joined');
+    if (competition.creator_id === currentUser?.id) cardClasses.push('user-created');
+
+    return `
+        <div class="${cardClasses.join(' ')}">
+            <div class="competition-status-badge competition-status-${competition.status}">
+                ${competition.status}
+            </div>
+            <div class="competition-type-badge competition-type-${competition.competition_type}">
+                ${formatCompetitionType(competition.competition_type)}
+            </div>
+            
+            <h3 class="text-lg font-bold text-white mb-2 pr-20">${competition.title}</h3>
+            
+            ${competition.description ? `
+                <p class="text-white/70 text-sm mb-3 line-clamp-2">${competition.description}</p>
+            ` : ''}
+            
+            <div class="competition-participants">
+                <i class="fas fa-users"></i>
+                <span>${competition.participant_count}/${competition.max_participants} participants</span>
+            </div>
+            
+            <div class="competition-dates">
+                <i class="fas fa-calendar"></i>
+                ${formatDateRange(competition.start_date, competition.end_date)}
+            </div>
+            
+            <div class="text-sm text-white/60 mb-3">
+                <i class="fas fa-clock"></i>
+                ${timeLeftText}
+            </div>
+            
+            ${competition.status === 'active' ? `
+                <div class="competition-progress-bar">
+                    <div class="competition-progress-fill" style="width: ${progressPercent}%"></div>
+                </div>
+            ` : ''}
+            
+            ${competition.prize_description ? `
+                <div class="text-sm text-green-400 mb-3">
+                    <i class="fas fa-gift mr-1"></i>Prize: ${competition.prize_description}
+                </div>
+            ` : ''}
+            
+            <div class="text-xs text-white/60 mb-3">
+                Created by ${competition.creator_name || 'Unknown'}
+            </div>
+            
+            <div class="competition-actions">
+                ${createCompetitionActionButtons(competition, isStarted, isEnded)}
+            </div>
+        </div>
+    `;
+}
+
+// Create action buttons for competition card
+function createCompetitionActionButtons(competition, isStarted, isEnded) {
+    const buttons = [];
+    
+    // View details button (always available)
+    buttons.push(`
+        <button onclick="viewCompetitionDetails('${competition.id}')" class="btn-view">
+            <i class="fas fa-eye mr-1"></i>Details
+        </button>
+    `);
+    
+    if (competition.user_joined) {
+        // User is participating
+        if (!isStarted) {
+            // Can leave before start
+            buttons.push(`
+                <button onclick="leaveCompetition('${competition.id}')" class="btn-leave">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Leave
+                </button>
+            `);
+        } else if (!isEnded) {
+            // Can update progress during competition
+            buttons.push(`
+                <button onclick="showCompetitionProgressModal('${competition.id}')" class="btn-primary">
+                    <i class="fas fa-chart-line mr-1"></i>Update Progress
+                </button>
+            `);
+        }
+    } else {
+        // User is not participating
+        if (!isStarted && competition.participant_count < competition.max_participants) {
+            // Can join before start if not full
+            buttons.push(`
+                <button onclick="joinCompetition('${competition.id}')" class="btn-join">
+                    <i class="fas fa-plus mr-1"></i>Join
+                </button>
+            `);
+        }
+    }
+    
+    return buttons.join('');
+}
+
+// Format competition type for display
+function formatCompetitionType(type) {
+    const types = {
+        'weight_loss': 'Weight Loss',
+        'muscle_gain': 'Muscle Gain', 
+        'workout_frequency': 'Workout Count',
+        'custom': 'Custom'
+    };
+    return types[type] || type;
+}
+
+// Format date range
+function formatDateRange(startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const options = { month: 'short', day: 'numeric' };
+    
+    if (start.getFullYear() === end.getFullYear()) {
+        return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+    } else {
+        return `${start.toLocaleDateString('en-US', { ...options, year: 'numeric' })} - ${end.toLocaleDateString('en-US', { ...options, year: 'numeric' })}`;
+    }
+}
+
+// Format time left
+function formatTimeLeft(ms) {
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) {
+        return `in ${days} day${days > 1 ? 's' : ''}`;
+    } else if (hours > 0) {
+        return `in ${hours} hour${hours > 1 ? 's' : ''}`;
+    } else {
+        return 'soon';
+    }
+}
+
+// Update competition statistics
+function updateCompetitionStats(competitions) {
+    const stats = competitions.reduce((acc, comp) => {
+        if (comp.user_joined) acc.joined++;
+        if (comp.creator_id === currentUser?.id) acc.created++;
+        if (comp.status === 'active') acc.active++;
+        return acc;
+    }, { joined: 0, created: 0, active: 0, won: 0 });
+    
+    // Get won count from user profile (if available)
+    if (currentUser) {
+        stats.won = currentUser.competitions_won || 0;
+    }
+
+    document.getElementById('competitions-joined').textContent = stats.joined;
+    document.getElementById('competitions-won').textContent = stats.won; 
+    document.getElementById('competitions-created').textContent = stats.created;
+    document.getElementById('active-competitions').textContent = stats.active;
+}
+
+// Show create competition modal
+function showCreateCompetitionModal() {
+    // Set minimum start date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const minDate = tomorrow.toISOString().slice(0, 16);
+    
+    document.getElementById('comp-start-date').min = minDate;
+    document.getElementById('comp-end-date').min = minDate;
+    
+    showModal('create-competition-modal');
+}
+
+// Join competition
+async function joinCompetition(competitionId) {
+    try {
+        const response = await fetch('/api/competitions/participate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({
+                competition_id: competitionId,
+                action: 'join'
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showNotification('Successfully joined competition!', 'success');
+            loadCompetitions(); // Refresh the list
+        } else {
+            showNotification(data.error || 'Failed to join competition', 'error');
+        }
+    } catch (error) {
+        console.error('Error joining competition:', error);
+        showNotification('Error joining competition', 'error');
+    }
+}
+
+// Leave competition  
+async function leaveCompetition(competitionId) {
+    if (!confirm('Are you sure you want to leave this competition?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/competitions/participate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({
+                competition_id: competitionId,
+                action: 'leave'
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showNotification('Left competition successfully', 'success');
+            loadCompetitions(); // Refresh the list
+        } else {
+            showNotification(data.error || 'Failed to leave competition', 'error');
+        }
+    } catch (error) {
+        console.error('Error leaving competition:', error);
+        showNotification('Error leaving competition', 'error');
+    }
+}
+
+// View competition details
+async function viewCompetitionDetails(competitionId) {
+    try {
+        // Load competition details and leaderboard
+        const [compResponse, leaderboardResponse] = await Promise.all([
+            fetch(`/api/competitions?competition_id=${competitionId}`, {
+                headers: { 'x-session-id': sessionId }
+            }),
+            fetch(`/api/competitions/participate?competition_id=${competitionId}`, {
+                headers: { 'x-session-id': sessionId }
+            })
+        ]);
+
+        if (compResponse.ok && leaderboardResponse.ok) {
+            const compData = await compResponse.json();
+            const leaderboardData = await leaderboardResponse.json();
+            
+            displayCompetitionDetails(compData.competitions[0], leaderboardData.leaderboard);
+            showModal('competition-details-modal');
+        } else {
+            showNotification('Failed to load competition details', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading competition details:', error);
+        showNotification('Error loading competition details', 'error');
+    }
+}
+
+// Display competition details in modal
+function displayCompetitionDetails(competition, leaderboard) {
+    document.getElementById('comp-details-title').textContent = competition.title;
+    
+    const content = document.getElementById('competition-details-content');
+    content.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+                <div class="glass-card p-4 mb-4">
+                    <h4 class="text-lg font-semibold text-white mb-3">Competition Info</h4>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Type:</span>
+                            <span class="text-white">${formatCompetitionType(competition.competition_type)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Status:</span>
+                            <span class="text-white capitalize">${competition.status}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Participants:</span>
+                            <span class="text-white">${competition.participant_count}/${competition.max_participants}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Creator:</span>
+                            <span class="text-white">${competition.creator_name}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Start Date:</span>
+                            <span class="text-white">${new Date(competition.start_date).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">End Date:</span>
+                            <span class="text-white">${new Date(competition.end_date).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    
+                    ${competition.description ? `
+                        <div class="mt-4">
+                            <h5 class="text-white font-medium mb-2">Description</h5>
+                            <p class="text-white/70 text-sm">${competition.description}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${competition.prize_description ? `
+                        <div class="mt-4">
+                            <h5 class="text-white font-medium mb-2">Prize</h5>
+                            <p class="text-green-400 text-sm">${competition.prize_description}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${competition.rules ? `
+                        <div class="mt-4">
+                            <h5 class="text-white font-medium mb-2">Rules</h5>
+                            <p class="text-white/70 text-sm">${competition.rules}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div>
+                <div class="glass-card p-4">
+                    <h4 class="text-lg font-semibold text-white mb-3">
+                        <i class="fas fa-trophy mr-2"></i>Leaderboard
+                    </h4>
+                    
+                    <div class="space-y-2">
+                        ${leaderboard.length > 0 ? leaderboard.map((entry, index) => `
+                            <div class="leaderboard-entry ${index < 3 ? 'top-3' : ''}">
+                                <div class="flex items-center gap-3">
+                                    <div class="leaderboard-rank rank-${entry.ranking || index + 1}">
+                                        ${entry.ranking || index + 1}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-white font-medium">${entry.user_name}</div>
+                                        <div class="text-white/60 text-xs">
+                                            ${entry.progress_entries} progress updates
+                                            ${entry.last_update ? `• Last: ${new Date(entry.last_update).toLocaleDateString()}` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="text-white font-bold">
+                                        ${entry.final_score || 0}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('') : `
+                            <div class="text-center py-8 text-white/70">
+                                <i class="fas fa-users text-2xl mb-2"></i>
+                                <p>No participants yet</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Show competition progress modal
+function showCompetitionProgressModal(competitionId) {
+    document.getElementById('comp-progress-competition-id').value = competitionId;
+    showModal('competition-progress-modal');
+}
+
+// Event listeners for competition system
+document.addEventListener('DOMContentLoaded', function() {
+    // Competition filter tabs
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.competition-filter-tab')) {
+            const filter = e.target.dataset.filter;
+            loadCompetitions(filter, null);
+        }
+        
+        if (e.target.matches('.competition-type-tab')) {
+            const type = e.target.dataset.type;
+            loadCompetitions(null, type);
+        }
+    });
+    
+    // Create competition form
+    const createCompForm = document.getElementById('create-competition-form');
+    if (createCompForm) {
+        createCompForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading state immediately
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating Competition...';
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                const response = await fetch('/api/competitions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-session-id': sessionId
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Competition created successfully!', 'success');
+                    closeModal('create-competition-modal');
+                    this.reset();
+                    loadCompetitions();
+                } else {
+                    showNotification(result.error || 'Failed to create competition', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating competition:', error);
+                showNotification('Error creating competition', 'error');
+            } finally {
+                // Always restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+    
+    // Competition progress form
+    const progressForm = document.getElementById('competition-progress-form');
+    if (progressForm) {
+        progressForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading state immediately
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating Progress...';
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                const response = await fetch('/api/competitions/progress', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-session-id': sessionId
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Progress updated successfully!', 'success');
+                    closeModal('competition-progress-modal');
+                    this.reset();
+                    loadCompetitions();
+                } else {
+                    showNotification(result.error || 'Failed to update progress', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating progress:', error);
+                showNotification('Error updating progress', 'error');
+            } finally {
+                // Always restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+    
+    // Date validation for competition form
+    const startDateInput = document.getElementById('comp-start-date');
+    const endDateInput = document.getElementById('comp-end-date');
+    
+    if (startDateInput && endDateInput) {
+        startDateInput.addEventListener('change', function() {
+            endDateInput.min = this.value;
+        });
+    }
+});
+
+console.log('✅ Competition system loaded successfully');
+
+// ===== CALENDAR-BASED MEDIA SELECTION =====
+
+// Global variables for calendar system
+let currentCalendarDate = new Date();
+let selectedDate = null;
+let calendarViewActive = false;
+let mediaDataByDate = new Map();
+let currentDateFilter = 'all';
+
+// Toggle calendar view
+function toggleCalendarView() {
+    calendarViewActive = !calendarViewActive;
+    const calendarView = document.getElementById('calendar-view');
+    const toggleBtn = document.getElementById('calendar-toggle-btn');
+    
+    if (calendarViewActive) {
+        calendarView.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="fas fa-list mr-2"></i>List View';
+        generateCalendar();
+    } else {
+        calendarView.classList.add('hidden');
+        toggleBtn.innerHTML = '<i class="fas fa-calendar mr-2"></i>Calendar View';
+        clearDateFilter();
+    }
+}
+
+// Generate calendar for current month
+function generateCalendar() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    // Update month/year display
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    
+    const calendarGrid = document.getElementById('calendar-grid');
+    calendarGrid.innerHTML = '';
+    
+    // Previous month days
+    for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        const dayElement = createCalendarDay(day, year, month - 1, true);
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // Current month days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = createCalendarDay(day, year, month, false);
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // Next month days to fill grid
+    const totalCells = calendarGrid.children.length;
+    const remainingCells = 42 - totalCells; // 6 rows × 7 days
+    for (let day = 1; day <= remainingCells && day <= 14; day++) {
+        const dayElement = createCalendarDay(day, year, month + 1, true);
+        calendarGrid.appendChild(dayElement);
+    }
+}
+
+// Create individual calendar day element
+function createCalendarDay(day, year, month, otherMonth) {
+    const dayElement = document.createElement('div');
+    dayElement.className = 'calendar-day';
+    dayElement.textContent = day;
+    
+    const date = new Date(year, month, day);
+    const dateKey = formatDateKey(date);
+    const today = new Date();
+    
+    // Add classes
+    if (otherMonth) {
+        dayElement.classList.add('other-month');
+    }
+    
+    if (!otherMonth && date.toDateString() === today.toDateString()) {
+        dayElement.classList.add('today');
+    }
+    
+    if (selectedDate && date.toDateString() === selectedDate.toDateString()) {
+        dayElement.classList.add('selected');
+    }
+    
+    // Check if date has media
+    const mediaCount = getMediaCountForDate(dateKey);
+    if (mediaCount > 0) {
+        dayElement.classList.add('has-media');
+        if (mediaCount > 1) {
+            dayElement.classList.add('has-multiple-media');
+        }
+        dayElement.title = `${mediaCount} photo${mediaCount > 1 ? 's' : ''} on this date`;
+    }
+    
+    // Add click handler for non-other-month days
+    if (!otherMonth) {
+        dayElement.addEventListener('click', () => selectCalendarDate(date));
+    }
+    
+    return dayElement;
+}
+
+// Select a date from calendar
+function selectCalendarDate(date) {
+    selectedDate = date;
+    const dateKey = formatDateKey(date);
+    
+    // Update calendar display
+    generateCalendar();
+    
+    // Update selected date info
+    const selectedInfo = document.getElementById('selected-date-info');
+    const selectedText = document.getElementById('selected-date-text');
+    const selectedCount = document.getElementById('selected-date-count');
+    
+    selectedText.textContent = date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    const mediaCount = getMediaCountForDate(dateKey);
+    selectedCount.textContent = `${mediaCount} photo${mediaCount !== 1 ? 's' : ''} found`;
+    
+    selectedInfo.classList.remove('hidden');
+    
+    // Filter media by selected date
+    filterMediaByDate(dateKey);
+}
+
+// Change calendar month
+function changeCalendarMonth(direction) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+    generateCalendar();
+}
+
+// Go to today's date
+function goToToday() {
+    currentCalendarDate = new Date();
+    generateCalendar();
+}
+
+// Clear date filter
+function clearDateFilter() {
+    selectedDate = null;
+    currentDateFilter = 'all';
+    
+    // Hide selected date info
+    document.getElementById('selected-date-info').classList.add('hidden');
+    
+    // Update active filter tab
+    document.querySelectorAll('.date-filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.range === 'all');
+    });
+    
+    // Regenerate calendar and reload media
+    if (calendarViewActive) {
+        generateCalendar();
+    }
+    loadMedia();
+}
+
+// Filter by date range
+function filterByDateRange(range) {
+    currentDateFilter = range;
+    selectedDate = null;
+    
+    // Update active filter tab
+    document.querySelectorAll('.date-filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.range === range);
+    });
+    
+    // Hide selected date info
+    document.getElementById('selected-date-info').classList.add('hidden');
+    
+    // Filter media based on range
+    const now = new Date();
+    let startDate = null;
+    
+    switch(range) {
+        case 'today':
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            break;
+        case 'this-week':
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - now.getDay());
+            break;
+        case 'this-month':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            break;
+        case 'last-30-days':
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - 30);
+            break;
+        case 'last-3-months':
+            startDate = new Date(now);
+            startDate.setMonth(now.getMonth() - 3);
+            break;
+        case 'all':
+        default:
+            startDate = null;
+            break;
+    }
+    
+    filterMediaByDateRange(startDate);
+    
+    if (calendarViewActive) {
+        generateCalendar();
+    }
+}
+
+// Filter media by specific date
+function filterMediaByDate(dateKey) {
+    const mediaContainer = document.getElementById('media-container');
+    const mediaItems = mediaContainer.querySelectorAll('.media-item');
+    
+    let visibleCount = 0;
+    
+    mediaItems.forEach(item => {
+        const mediaDate = item.dataset.date;
+        if (mediaDate === dateKey) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Show/hide empty state
+    const emptyState = document.getElementById('media-empty-state');
+    if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+        emptyState.innerHTML = `
+            <div class="text-6xl mb-4">📅</div>
+            <h3 class="text-xl font-bold text-white mb-2">No photos on this date</h3>
+            <p class="text-white/70 mb-6">Upload a photo for ${selectedDate.toLocaleDateString()} to start tracking your progress.</p>
+            <button onclick="showMediaUploadModal()" class="btn-primary">
+                <i class="fas fa-camera mr-2"></i>Upload Photo
+            </button>
+        `;
+    } else {
+        emptyState.classList.add('hidden');
+    }
+}
+
+// Filter media by date range
+function filterMediaByDateRange(startDate) {
+    const mediaContainer = document.getElementById('media-container');
+    const mediaItems = mediaContainer.querySelectorAll('.media-item');
+    
+    let visibleCount = 0;
+    
+    mediaItems.forEach(item => {
+        const mediaDateStr = item.dataset.date;
+        if (!mediaDateStr || !startDate) {
+            item.style.display = '';
+            visibleCount++;
+            return;
+        }
+        
+        const mediaDate = new Date(mediaDateStr);
+        if (mediaDate >= startDate) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Show/hide empty state
+    const emptyState = document.getElementById('media-empty-state');
+    if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+    } else {
+        emptyState.classList.add('hidden');
+    }
+}
+
+// Get media count for a specific date
+function getMediaCountForDate(dateKey) {
+    return mediaDataByDate.get(dateKey) || 0;
+}
+
+// Format date as key (YYYY-MM-DD)
+function formatDateKey(date) {
+    return date.toISOString().split('T')[0];
+}
+
+// Update media data cache with date information
+function updateMediaDateCache(mediaItems) {
+    mediaDataByDate.clear();
+    
+    mediaItems.forEach(item => {
+        if (item.created_at) {
+            const date = new Date(item.created_at);
+            const dateKey = formatDateKey(date);
+            const count = mediaDataByDate.get(dateKey) || 0;
+            mediaDataByDate.set(dateKey, count + 1);
+        }
+    });
+}
+
+// Enhanced loadMedia function to support calendar features
+const originalLoadMedia = loadMedia;
+async function loadMediaEnhanced() {
+    try {
+        const response = await fetch('/api/media/enhanced?stats=true&pairs=true', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update media date cache
+            updateMediaDateCache(data.media || []);
+            
+            // Use existing display system
+            displayEnhancedMedia(data);
+            updateMediaStats(data);
+            
+            // Update calendar if active
+            if (calendarViewActive) {
+                generateCalendar();
+            }
+        } else {
+            // Fallback to regular media API
+            const fallbackResponse = await fetch('/api/media', {
+                headers: { 'x-session-id': sessionId }
+            });
+            if (fallbackResponse.ok) {
+                const mediaResponse = await fallbackResponse.json();
+                const mediaArray = mediaResponse.media || [];
+                
+                // Update media date cache
+                updateMediaDateCache(mediaArray);
+                
+                // Use existing display system
+                displayMedia(mediaArray);
+                
+                // Calculate and update stats for the fallback
+                const stats = {
+                    total: mediaArray.length,
+                    before_count: mediaArray.filter(m => m.media_type === 'before').length,
+                    after_count: mediaArray.filter(m => m.media_type === 'after').length,
+                    comparison_count: 0
+                };
+                updateMediaStats({ stats });
+                
+                // Update calendar if active
+                if (calendarViewActive) {
+                    generateCalendar();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading media:', error);
+    }
+}
+
+// Replace the global loadMedia with enhanced version
+window.loadMedia = loadMediaEnhanced;
+
+// Display media items with date badges
+function displayMediaWithDates(mediaItems) {
+    const container = document.getElementById('media-container');
+    const emptyState = document.getElementById('media-empty-state');
+    
+    if (mediaItems.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    emptyState.classList.add('hidden');
+    
+    const mediaHTML = mediaItems.map(item => {
+        const date = new Date(item.created_at);
+        const dateKey = formatDateKey(date);
+        const isVideo = item.media_type === 'video' || item.file_type?.startsWith('video/');
+        
+        return `
+            <div class="media-item" data-date="${dateKey}" data-id="${item.id}">
+                <div class="media-date-badge">
+                    ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </div>
+                
+                ${isVideo ? `
+                    <video controls class="media-content">
+                        <source src="${item.media_url}" type="${item.file_type}">
+                        Your browser does not support video playback.
+                    </video>
+                ` : `
+                    <img src="${item.media_url}" alt="${item.media_type ? item.media_type.charAt(0).toUpperCase() + item.media_type.slice(1) : 'Media'} image" class="media-content" loading="lazy">
+                `}
+                
+                <div class="media-info">
+                    <div class="media-type-badge media-type-${item.media_type}">
+                        ${item.media_type}
+                    </div>
+                    ${item.notes ? `<p class="media-notes">${item.notes}</p>` : ''}
+                </div>
+                
+                <div class="comparison-overlay">
+                    <div class="comparison-controls">
+                        <button onclick="addToComparison('${item.id}')" class="btn-compare">
+                            <i class="fas fa-plus mr-1"></i>Compare
+                        </button>
+                        <button onclick="viewMediaFullscreen('${item.media_url}', '${item.media_type}')" class="btn-compare">
+                            <i class="fas fa-expand mr-1"></i>View
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="media-actions">
+                    <button onclick="deleteMedia('${item.id}')" class="delete-btn" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = mediaHTML;
+}
+
+// Comparison mode functionality
+let comparisonItems = [];
+
+function addToComparison(mediaId) {
+    const mediaItem = document.querySelector(`[data-id="${mediaId}"]`);
+    if (!mediaItem) return;
+    
+    if (comparisonItems.includes(mediaId)) {
+        // Remove from comparison
+        comparisonItems = comparisonItems.filter(id => id !== mediaId);
+        mediaItem.classList.remove('selected-for-comparison');
+    } else {
+        // Add to comparison (limit to 4 items)
+        if (comparisonItems.length < 4) {
+            comparisonItems.push(mediaId);
+            mediaItem.classList.add('selected-for-comparison');
+        } else {
+            showNotification('Maximum 4 photos can be compared at once', 'warning');
+            return;
+        }
+    }
+    
+    updateComparisonStatus();
+}
+
+function updateComparisonStatus() {
+    const comparisonBtn = document.getElementById('comparison-mode-btn');
+    if (comparisonItems.length > 1) {
+        comparisonBtn.textContent = `Compare (${comparisonItems.length})`;
+        comparisonBtn.classList.remove('btn-secondary');
+        comparisonBtn.classList.add('btn-primary');
+    } else {
+        comparisonBtn.textContent = 'Compare Mode';
+        comparisonBtn.classList.remove('btn-primary');
+        comparisonBtn.classList.add('btn-secondary');
+    }
+}
+
+function showComparisonMode() {
+    if (comparisonItems.length < 2) {
+        showNotification('Select at least 2 photos to compare', 'warning');
+        return;
+    }
+    
+    // This will be implemented in Feature 5: Media Comparison Tools
+    showNotification(`Comparison mode with ${comparisonItems.length} photos - Feature coming next!`, 'info');
+}
+
+// Initialize calendar system when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize calendar date to today
+    currentCalendarDate = new Date();
+    
+    // Add CSS class for comparison selection
+    const style = document.createElement('style');
+    style.textContent = `
+        .selected-for-comparison {
+            border: 3px solid #8b5cf6 !important;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5) !important;
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+console.log('✅ Calendar-based media selection system loaded successfully');
+
+// ===== MEDIA COMPARISON TOOLS =====
+
+// Global variables for comparison system
+let comparisonLayout = 'grid'; // 'grid' or 'side'
+let comparisonPhotos = [];
+let fullscreenMediaArray = [];
+let currentFullscreenIndex = 0;
+
+// Show comprehensive comparison mode
+function showComparisonMode() {
+    if (comparisonItems.length < 2) {
+        showNotification('Select at least 2 photos to compare', 'warning');
+        return;
+    }
+    
+    // Load selected photos for comparison
+    loadComparisonPhotos();
+    showModal('photo-comparison-modal');
+}
+
+// Load photos for comparison
+async function loadComparisonPhotos() {
+    try {
+        const response = await fetch('/api/media', {
+            headers: { 'x-session-id': sessionId }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const allMedia = data.media || [];
+            
+            // Filter to selected items
+            comparisonPhotos = allMedia.filter(item => comparisonItems.includes(item.id));
+            
+            // Sort by date (oldest first by default)
+            sortComparisonPhotos('date-asc');
+            
+            displayComparisonPhotos();
+            updateComparisonAnalytics();
+        } else {
+            showNotification('Failed to load comparison photos', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading comparison photos:', error);
+        showNotification('Error loading comparison photos', 'error');
+    }
+}
+
+// Display comparison photos
+function displayComparisonPhotos() {
+    const container = document.getElementById('comparison-container');
+    const countElement = document.getElementById('comparison-count');
+    
+    countElement.textContent = `${comparisonPhotos.length} photo${comparisonPhotos.length !== 1 ? 's' : ''}`;
+    
+    if (comparisonPhotos.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">🖼️</div>
+                <h3 class="text-xl text-white mb-2">No photos selected</h3>
+                <p class="text-white/70">Go back and select photos to compare</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Set container layout class
+    container.className = comparisonLayout === 'grid' ? 'comparison-view-grid' : 'comparison-view-side';
+    
+    const photosHTML = comparisonPhotos.map((photo, index) => {
+        const date = new Date(photo.created_at);
+        return `
+            <div class="comparison-photo" data-id="${photo.id}">
+                <button onclick="removeFromComparison('${photo.id}')" class="comparison-remove-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <div class="comparison-photo-header">
+                    <div class="comparison-photo-title">
+                        Photo ${index + 1}
+                    </div>
+                    <div class="comparison-photo-date">
+                        ${date.toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                        })}
+                    </div>
+                </div>
+                
+                <img src="${photo.media_url}" 
+                     alt="${photo.media_type ? photo.media_type.charAt(0).toUpperCase() + photo.media_type.slice(1) : 'Media'} image" 
+                     class="comparison-photo-image"
+                     onclick="openFullscreenViewer(${index})"
+                     loading="lazy">
+                
+                <div class="comparison-photo-info">
+                    <div class="comparison-photo-type media-type-${photo.media_type}">
+                        ${photo.media_type}
+                    </div>
+                    ${photo.notes ? `
+                        <div class="comparison-photo-notes">${photo.notes}</div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add empty slots if less than 4 photos
+    const emptySlots = Math.max(0, 4 - comparisonPhotos.length);
+    const emptySlotsHTML = Array(emptySlots).fill('').map(() => `
+        <div class="comparison-empty-slot" onclick="addMoreToComparison()">
+            <div class="comparison-empty-icon">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div class="comparison-empty-text">
+                Click to add more photos
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = photosHTML + emptySlotsHTML;
+}
+
+// Toggle comparison layout
+function toggleComparisonLayout() {
+    comparisonLayout = comparisonLayout === 'grid' ? 'side' : 'grid';
+    const toggleBtn = document.getElementById('layout-toggle-btn');
+    
+    if (comparisonLayout === 'grid') {
+        toggleBtn.innerHTML = '<i class="fas fa-th-large mr-2"></i>Grid Layout';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-columns mr-2"></i>Side by Side';
+    }
+    
+    displayComparisonPhotos();
+}
+
+// Sort comparison photos
+function sortComparisonPhotos(sortBy) {
+    const sortSelect = document.getElementById('comparison-sort');
+    if (sortSelect) sortSelect.value = sortBy;
+    
+    switch(sortBy) {
+        case 'date-asc':
+            comparisonPhotos.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            break;
+        case 'date-desc':
+            comparisonPhotos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            break;
+        case 'type':
+            comparisonPhotos.sort((a, b) => a.media_type.localeCompare(b.media_type));
+            break;
+    }
+    
+    displayComparisonPhotos();
+    updateComparisonAnalytics();
+}
+
+// Remove photo from comparison
+function removeFromComparison(mediaId) {
+    comparisonItems = comparisonItems.filter(id => id !== mediaId);
+    comparisonPhotos = comparisonPhotos.filter(photo => photo.id !== mediaId);
+    
+    // Update main UI
+    const mediaItem = document.querySelector(`[data-id="${mediaId}"]`);
+    if (mediaItem) {
+        mediaItem.classList.remove('selected-for-comparison');
+    }
+    
+    updateComparisonStatus();
+    displayComparisonPhotos();
+    updateComparisonAnalytics();
+    
+    if (comparisonPhotos.length < 2) {
+        showNotification('Need at least 2 photos for comparison', 'warning');
+    }
+}
+
+// Clear all comparison selections
+function clearComparison() {
+    comparisonItems = [];
+    comparisonPhotos = [];
+    
+    // Remove selection indicators from UI
+    document.querySelectorAll('.selected-for-comparison').forEach(item => {
+        item.classList.remove('selected-for-comparison');
+    });
+    
+    updateComparisonStatus();
+    displayComparisonPhotos();
+    updateComparisonAnalytics();
+}
+
+// Add more photos to comparison
+function addMoreToComparison() {
+    closeModal('photo-comparison-modal');
+    showNotification('Select more photos from the gallery, then click Compare again', 'info');
+}
+
+// Update comparison analytics
+function updateComparisonAnalytics() {
+    if (comparisonPhotos.length < 2) {
+        document.getElementById('comparison-time-range').textContent = '-';
+        document.getElementById('comparison-type-breakdown').innerHTML = '-';
+        document.getElementById('comparison-progress-summary').textContent = 'Select at least 2 photos to see analysis';
+        return;
+    }
+    
+    // Calculate time range
+    const dates = comparisonPhotos.map(photo => new Date(photo.created_at)).sort((a, b) => a - b);
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+    const daysDiff = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24));
+    
+    const timeRange = daysDiff === 0 ? 'Same day' : 
+                     daysDiff === 1 ? '1 day apart' : 
+                     `${daysDiff} days apart`;
+    
+    document.getElementById('comparison-time-range').textContent = timeRange;
+    
+    // Type breakdown
+    const typeCount = {};
+    comparisonPhotos.forEach(photo => {
+        typeCount[photo.media_type] = (typeCount[photo.media_type] || 0) + 1;
+    });
+    
+    const typeColors = {
+        'before': '#ef4444',
+        'progress': '#3b82f6', 
+        'after': '#22c55e'
+    };
+    
+    const typeBreakdown = Object.entries(typeCount).map(([type, count]) => `
+        <div class="type-breakdown-item">
+            <div class="flex items-center">
+                <div class="type-breakdown-color" style="background: ${typeColors[type] || '#8b5cf6'}"></div>
+                <span class="capitalize">${type}</span>
+            </div>
+            <span>${count}</span>
+        </div>
+    `).join('');
+    
+    document.getElementById('comparison-type-breakdown').innerHTML = typeBreakdown;
+    
+    // Progress summary
+    const hasBeforeAndAfter = typeCount.before && typeCount.after;
+    const progressSummary = hasBeforeAndAfter ? 
+        `Transformation tracked over ${timeRange} with ${comparisonPhotos.length} photos` :
+        `${comparisonPhotos.length} photos selected for comparison`;
+        
+    document.getElementById('comparison-progress-summary').textContent = progressSummary;
+}
+
+// Fullscreen viewer functions
+function openFullscreenViewer(startIndex = 0) {
+    fullscreenMediaArray = comparisonPhotos;
+    currentFullscreenIndex = startIndex;
+    
+    document.getElementById('fullscreen-viewer').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    displayFullscreenMedia();
+}
+
+function displayFullscreenMedia() {
+    if (fullscreenMediaArray.length === 0) return;
+    
+    const photo = fullscreenMediaArray[currentFullscreenIndex];
+    const container = document.getElementById('fullscreen-media-container');
+    const counter = document.getElementById('fullscreen-counter');
+    
+    // Update counter
+    counter.textContent = `${currentFullscreenIndex + 1} / ${fullscreenMediaArray.length}`;
+    
+    // Update navigation buttons
+    document.getElementById('prev-btn').style.opacity = currentFullscreenIndex > 0 ? '1' : '0.5';
+    document.getElementById('next-btn').style.opacity = currentFullscreenIndex < fullscreenMediaArray.length - 1 ? '1' : '0.5';
+    
+    // Display media
+    const isVideo = photo.media_type === 'video' || photo.file_type?.startsWith('video/');
+    
+    container.innerHTML = isVideo ? `
+        <video controls class="fullscreen-media" autoplay>
+            <source src="${photo.media_url}" type="${photo.file_type}">
+            Your browser does not support video playback.
+        </video>
+    ` : `
+        <img src="${photo.media_url}" alt="${photo.media_type ? photo.media_type.charAt(0).toUpperCase() + photo.media_type.slice(1) : 'Media'} image" class="fullscreen-media">
+    `;
+    
+    // Update info panel
+    updateFullscreenInfo(photo);
+}
+
+function updateFullscreenInfo(photo) {
+    const date = new Date(photo.created_at);
+    const infoDetails = document.getElementById('fullscreen-info-details');
+    
+    infoDetails.innerHTML = `
+        <div><strong>Date:</strong> ${date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        })}</div>
+        <div><strong>Time:</strong> ${date.toLocaleTimeString()}</div>
+        <div><strong>Type:</strong> <span class="capitalize">${photo.media_type}</span></div>
+        <div><strong>File Size:</strong> ${formatFileSize(photo.file_size || 0)}</div>
+        ${photo.notes ? `<div><strong>Notes:</strong> ${photo.notes}</div>` : ''}
+    `;
+}
+
+function prevFullscreenMedia() {
+    if (currentFullscreenIndex > 0) {
+        currentFullscreenIndex--;
+        displayFullscreenMedia();
+    }
+}
+
+function nextFullscreenMedia() {
+    if (currentFullscreenIndex < fullscreenMediaArray.length - 1) {
+        currentFullscreenIndex++;
+        displayFullscreenMedia();
+    }
+}
+
+function toggleFullscreenInfo() {
+    const info = document.getElementById('fullscreen-info');
+    const toggleBtn = document.getElementById('info-toggle-btn');
+    
+    if (info.classList.contains('hidden')) {
+        info.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="fas fa-info-circle"></i>';
+    } else {
+        info.classList.add('hidden');
+        toggleBtn.innerHTML = '<i class="far fa-info-circle"></i>';
+    }
+}
+
+function closeFullscreenViewer() {
+    document.getElementById('fullscreen-viewer').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function closePhotoComparison() {
+    closeModal('photo-comparison-modal');
+}
+
+// Utility functions
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function downloadComparison() {
+    // Create a canvas to combine all comparison photos
+    if (comparisonPhotos.length === 0) {
+        showNotification('No photos to download', 'warning');
+        return;
+    }
+    
+    showNotification('Preparing comparison download...', 'info');
+    
+    // This would typically involve canvas manipulation to create a collage
+    // For now, we'll download individual photos
+    comparisonPhotos.forEach((photo, index) => {
+        const link = document.createElement('a');
+        link.href = photo.media_url;
+        link.download = `comparison-${index + 1}-${new Date(photo.created_at).toISOString().split('T')[0]}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+    
+    showNotification(`Downloaded ${comparisonPhotos.length} comparison photos`, 'success');
+}
+
+function downloadFullscreenMedia() {
+    const photo = fullscreenMediaArray[currentFullscreenIndex];
+    if (!photo) return;
+    
+    const link = document.createElement('a');
+    link.href = photo.media_url;
+    link.download = `progress-photo-${new Date(photo.created_at).toISOString().split('T')[0]}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('Photo downloaded successfully', 'success');
+}
+
+// Enhanced viewMediaFullscreen function
+function viewMediaFullscreen(mediaUrl, mediaType) {
+    // Find the media in current media list
+    const mediaContainer = document.getElementById('media-container');
+    const mediaItems = Array.from(mediaContainer.querySelectorAll('.media-item'));
+    
+    // Build array of all visible media for navigation
+    fullscreenMediaArray = [];
+    let startIndex = 0;
+    
+    mediaItems.forEach((item, index) => {
+        if (item.style.display !== 'none') {
+            const mediaId = item.dataset.id;
+            // Find media data (this would need to be available globally)
+            // For now, create minimal object
+            fullscreenMediaArray.push({
+                id: mediaId,
+                media_url: item.querySelector('.media-content').src,
+                media_type: mediaType,
+                created_at: new Date().toISOString(), // Placeholder
+                notes: item.querySelector('.media-notes')?.textContent || ''
+            });
+            
+            if (item.querySelector('.media-content').src === mediaUrl) {
+                startIndex = fullscreenMediaArray.length - 1;
+            }
+        }
+    });
+    
+    currentFullscreenIndex = startIndex;
+    
+    document.getElementById('fullscreen-viewer').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    displayFullscreenMedia();
+}
+
+// Event listeners for comparison system
+document.addEventListener('DOMContentLoaded', function() {
+    // Comparison sort handler
+    const sortSelect = document.getElementById('comparison-sort');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            sortComparisonPhotos(this.value);
+        });
+    }
+    
+    // Keyboard navigation for fullscreen viewer
+    document.addEventListener('keydown', function(e) {
+        const fullscreenViewer = document.getElementById('fullscreen-viewer');
+        if (!fullscreenViewer.classList.contains('hidden')) {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    prevFullscreenMedia();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    nextFullscreenMedia();
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    closeFullscreenViewer();
+                    break;
+                case 'i':
+                case 'I':
+                    e.preventDefault();
+                    toggleFullscreenInfo();
+                    break;
+                case 'd':
+                case 'D':
+                    e.preventDefault();
+                    downloadFullscreenMedia();
+                    break;
+            }
+        }
+    });
+});
+
+console.log('✅ Media comparison tools loaded successfully');
+
+// ===== MOBILE OPTIMIZATION ENHANCEMENTS =====
+
+// Touch and mobile-specific improvements
+let touchStartY = 0;
+let touchEndY = 0;
+
+// Improved mobile navigation
+function initializeMobileOptimizations() {
+    // Detect mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    if (isMobile || hasTouch) {
+        // Add mobile class to body
+        document.body.classList.add('mobile-device');
+        
+        // Optimize scroll behavior for mobile
+        optimizeScrollBehavior();
+        
+        // Improve modal behavior on mobile
+        optimizeMobileModals();
+        
+        // Enhanced touch navigation for fullscreen viewer
+        enhanceTouchNavigation();
+        
+        // Optimize calendar for touch
+        optimizeTouchCalendar();
+        
+        // Improve form interactions
+        optimizeMobileForms();
+    }
+}
+
+// Optimize scroll behavior for mobile
+function optimizeScrollBehavior() {
+    // Prevent body scroll when modals are open
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('touchmove', function(e) {
+            if (e.target === this) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Smooth scrolling for navigation tabs
+    const navContainer = document.querySelector('.flex.space-x-4.overflow-x-auto');
+    if (navContainer) {
+        navContainer.style.scrollBehavior = 'smooth';
+    }
+}
+
+// Optimize modals for mobile
+function optimizeMobileModals() {
+    // Auto-adjust modal heights
+    function adjustModalHeights() {
+        const modals = document.querySelectorAll('.modal-content');
+        modals.forEach(modal => {
+            if (!modal.closest('.modal').classList.contains('hidden')) {
+                const maxHeight = window.innerHeight - 40; // 20px margin on each side
+                modal.style.maxHeight = `${maxHeight}px`;
+            }
+        });
+    }
+    
+    // Adjust on orientation change
+    window.addEventListener('orientationchange', () => {
+        setTimeout(adjustModalHeights, 100);
+    });
+    
+    // Adjust on resize
+    window.addEventListener('resize', adjustModalHeights);
+}
+
+// Enhanced touch navigation for fullscreen viewer
+function enhanceTouchNavigation() {
+    const fullscreenViewer = document.getElementById('fullscreen-viewer');
+    if (!fullscreenViewer) return;
+    
+    fullscreenViewer.addEventListener('touchstart', function(e) {
+        if (e.target.closest('.fullscreen-media-container')) {
+            touchStartY = e.touches[0].clientY;
+        }
+    });
+    
+    fullscreenViewer.addEventListener('touchend', function(e) {
+        if (e.target.closest('.fullscreen-media-container')) {
+            touchEndY = e.changedTouches[0].clientY;
+            handleFullscreenSwipe();
+        }
+    });
+    
+    // Add swipe gestures for media navigation
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    fullscreenViewer.addEventListener('touchstart', function(e) {
+        if (e.target.closest('.fullscreen-media-container')) {
+            touchStartX = e.touches[0].clientX;
+        }
+    });
+    
+    fullscreenViewer.addEventListener('touchend', function(e) {
+        if (e.target.closest('.fullscreen-media-container')) {
+            touchEndX = e.changedTouches[0].clientX;
+            handleHorizontalSwipe();
+        }
+    });
+}
+
+function handleFullscreenSwipe() {
+    const swipeThreshold = 50;
+    const swipeDistance = touchStartY - touchEndY;
+    
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+        if (swipeDistance > 0) {
+            // Swipe up - show info
+            const infoPanel = document.getElementById('fullscreen-info');
+            if (infoPanel.classList.contains('hidden')) {
+                toggleFullscreenInfo();
+            }
+        } else {
+            // Swipe down - hide info or close
+            const infoPanel = document.getElementById('fullscreen-info');
+            if (!infoPanel.classList.contains('hidden')) {
+                toggleFullscreenInfo();
+            } else {
+                closeFullscreenViewer();
+            }
+        }
+    }
+}
+
+function handleHorizontalSwipe() {
+    const swipeThreshold = 100;
+    const swipeDistance = touchStartX - touchEndX;
+    
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+        if (swipeDistance > 0) {
+            // Swipe left - next photo
+            nextFullscreenMedia();
+        } else {
+            // Swipe right - previous photo
+            prevFullscreenMedia();
+        }
+    }
+}
+
+// Optimize calendar for touch devices
+function optimizeTouchCalendar() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    if (!calendarGrid) return;
+    
+    // Add touch feedback
+    calendarGrid.addEventListener('touchstart', function(e) {
+        if (e.target.classList.contains('calendar-day')) {
+            e.target.style.transform = 'scale(0.95)';
+        }
+    });
+    
+    calendarGrid.addEventListener('touchend', function(e) {
+        if (e.target.classList.contains('calendar-day')) {
+            e.target.style.transform = '';
+        }
+    });
+}
+
+// Optimize forms for mobile
+function optimizeMobileForms() {
+    // Prevent zoom on input focus (iOS)
+    const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="number"], textarea, select');
+    inputs.forEach(input => {
+        if (!input.style.fontSize) {
+            input.style.fontSize = '16px';
+        }
+    });
+    
+    // Auto-scroll to active input
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            setTimeout(() => {
+                this.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }, 300);
+        });
+    });
+}
+
+// Enhanced media loading for mobile
+function optimizeMediaLoading() {
+    // Lazy loading for media items
+    if ('IntersectionObserver' in window) {
+        const mediaObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        mediaObserver.unobserve(img);
+                    }
+                }
+            });
+        });
+        
+        // Observe all media images
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        lazyImages.forEach(img => mediaObserver.observe(img));
+    }
+}
+
+// Progressive Web App enhancements
+function initializePWAFeatures() {
+    // Add to home screen prompt
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show install button
+        showInstallPrompt();
+    });
+    
+    // Handle app installation
+    window.addEventListener('appinstalled', (e) => {
+        console.log('PWA was installed');
+        hideInstallPrompt();
+    });
+}
+
+function showInstallPrompt() {
+    // Create install prompt UI
+    const installBanner = document.createElement('div');
+    installBanner.id = 'install-banner';
+    installBanner.className = 'fixed bottom-0 left-0 right-0 bg-indigo-600 text-white p-4 z-50';
+    installBanner.innerHTML = `
+        <div class="flex items-center justify-between max-w-md mx-auto">
+            <div>
+                <div class="font-semibold">Install StriveTrack</div>
+                <div class="text-sm opacity-90">Get quick access from your home screen</div>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="installPWA()" class="bg-white text-indigo-600 px-3 py-1 rounded font-medium">
+                    Install
+                </button>
+                <button onclick="hideInstallPrompt()" class="text-indigo-100">
+                    ×
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(installBanner);
+}
+
+function hideInstallPrompt() {
+    const installBanner = document.getElementById('install-banner');
+    if (installBanner) {
+        installBanner.remove();
+    }
+}
+
+window.installPWA = function() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((result) => {
+            if (result.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            }
+            deferredPrompt = null;
+            hideInstallPrompt();
+        });
+    }
+};
+
+// Optimize performance for mobile
+function optimizeMobilePerformance() {
+    // Debounce resize events
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            // Handle resize logic
+            adjustLayoutForOrientation();
+        }, 250);
+    });
+    
+    // Throttle scroll events
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (!scrollTimeout) {
+            scrollTimeout = setTimeout(() => {
+                // Handle scroll logic
+                updateScrollPosition();
+                scrollTimeout = null;
+            }, 16); // ~60fps
+        }
+    });
+}
+
+function adjustLayoutForOrientation() {
+    const isLandscape = window.innerWidth > window.innerHeight;
+    document.body.classList.toggle('landscape-mode', isLandscape);
+    
+    // Adjust modals for landscape
+    const modals = document.querySelectorAll('.modal-content');
+    modals.forEach(modal => {
+        if (isLandscape && window.innerHeight < 500) {
+            modal.style.maxHeight = '90vh';
+        }
+    });
+}
+
+function updateScrollPosition() {
+    // Add scroll-based optimizations here if needed
+    const scrolled = window.pageYOffset > 50;
+    document.body.classList.toggle('scrolled', scrolled);
+}
+
+// Improve touch feedback
+function addTouchFeedback() {
+    const interactiveElements = document.querySelectorAll('button, .btn-primary, .btn-secondary, .nav-tab, .calendar-day');
+    
+    interactiveElements.forEach(element => {
+        element.addEventListener('touchstart', function() {
+            this.classList.add('touch-active');
+        });
+        
+        element.addEventListener('touchend', function() {
+            this.classList.remove('touch-active');
+        });
+        
+        element.addEventListener('touchcancel', function() {
+            this.classList.remove('touch-active');
+        });
+    });
+}
+
+// Initialize all mobile optimizations
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMobileOptimizations();
+    initializePWAFeatures();
+    optimizeMobilePerformance();
+    addTouchFeedback();
+    
+    // Add CSS for touch feedback
+    const style = document.createElement('style');
+    style.textContent = `
+        .touch-active {
+            opacity: 0.7 !important;
+            transform: scale(0.98) !important;
+        }
+        
+        .mobile-device .media-actions {
+            opacity: 1;
+        }
+        
+        .mobile-device .comparison-remove-btn {
+            opacity: 1;
+        }
+        
+        @media (hover: none) {
+            .media-item .media-actions {
+                opacity: 1 !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+console.log('✅ Mobile optimization enhancements loaded successfully');
 console.log('✅ Comprehensive habit management system loaded with anti-cheat protection');
 

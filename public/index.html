@@ -730,33 +730,43 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            position: relative;
+            z-index: 1;
         }
         
         .media-type-badge {
             position: absolute;
             top: 8px;
             right: 8px;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
             text-transform: uppercase;
             backdrop-filter: blur(10px);
+            z-index: 10;
+            letter-spacing: 0.5px;
         }
         
         .media-type-badge.before {
-            background: rgba(59, 130, 246, 0.9);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .media-type-badge.progress {
-            background: rgba(139, 92, 246, 0.9);
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .media-type-badge.after {
-            background: rgba(16, 185, 129, 0.9);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .media-info {
@@ -909,6 +919,157 @@
                 opacity: .8;
                 transform: scale(1.02);
             }
+        }
+        
+        /* Weight Tracking Styles */
+        .goal-type-option {
+            cursor: pointer;
+        }
+        
+        .goal-option-card {
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .goal-type-option:hover .goal-option-card {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .goal-type-option input:checked + .goal-option-card {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+        
+        .weight-log-entry {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .weight-log-entry:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .weight-change-positive {
+            color: #10b981;
+        }
+        
+        .weight-change-negative {
+            color: #ef4444;
+        }
+        
+        .weight-chart-placeholder {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+        
+        /* Goal Setting Styles */
+        .goal-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .goal-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .goal-card.completed {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .goal-card.overdue {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .goal-priority-indicator {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 0 12px 0 12px;
+        }
+        
+        .goal-priority-high { background: #ef4444; }
+        .goal-priority-medium { background: #f59e0b; }
+        .goal-priority-low { background: #6b7280; }
+        
+        .goal-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .goal-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .goal-filter-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .goal-filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .goal-filter-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+        }
+        
+        .milestone-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .milestone-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .milestone-pending {
+            background: rgba(107, 114, 128, 0.2);
+            color: #9ca3af;
         }
         
         @media (max-width: 768px) {
@@ -1227,6 +1388,959 @@
             justify-content: space-between;
             align-items: center;
         }
+        
+        /* Competition Styles */
+        .competition-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .competition-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .competition-card.user-joined {
+            border-color: rgba(34, 197, 94, 0.3);
+            background: rgba(34, 197, 94, 0.05);
+        }
+        
+        .competition-card.user-created {
+            border-color: rgba(147, 51, 234, 0.3);
+            background: rgba(147, 51, 234, 0.05);
+        }
+        
+        .competition-type-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .competition-type-weight_loss {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        .competition-type-muscle_gain {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+        
+        .competition-type-workout_frequency {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+        
+        .competition-type-custom {
+            background: rgba(147, 51, 234, 0.2);
+            color: #c4b5fd;
+        }
+        
+        .competition-status-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .competition-status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+        
+        .competition-status-completed {
+            background: rgba(156, 163, 175, 0.2);
+            color: #d1d5db;
+        }
+        
+        .competition-participants {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 0;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .competition-dates {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 8px 0;
+        }
+        
+        .competition-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        
+        .competition-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .competition-filter-tab, .competition-type-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        
+        .competition-filter-tab:hover, .competition-type-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .competition-filter-tab.active, .competition-type-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .leaderboard-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .leaderboard-entry.top-3 {
+            border-color: rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.05);
+        }
+        
+        .leaderboard-rank {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .leaderboard-rank.rank-1 {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+        }
+        
+        .leaderboard-rank.rank-2 {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%);
+            color: #000;
+        }
+        
+        .leaderboard-rank.rank-3 {
+            background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
+            color: #fff;
+        }
+        
+        .competition-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .btn-join {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-join:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+        
+        .btn-leave {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-leave:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-view {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-view:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Calendar Styles */
+        .calendar-container {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .calendar-day-header {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 8px 4px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .calendar-day.other-month {
+            color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.01);
+        }
+        
+        .calendar-day.today {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            border-color: transparent;
+        }
+        
+        .calendar-day.selected {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            font-weight: 600;
+            border-color: transparent;
+        }
+        
+        .calendar-day.has-media {
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+        
+        .calendar-day.has-media::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        
+        .calendar-day.has-multiple-media::after {
+            background: #f59e0b;
+        }
+        
+        .date-filter-tab {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        
+        .date-filter-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .date-filter-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .media-date-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .comparison-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: inherit;
+            z-index: 25;
+            pointer-events: none;
+        }
+        
+        .media-item:hover .comparison-overlay {
+            pointer-events: auto;
+        }
+        
+        .media-item:hover .comparison-overlay {
+            opacity: 1;
+        }
+        
+        .comparison-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-compare {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-compare:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Photo Comparison Styles */
+        .comparison-view-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            min-height: 400px;
+        }
+        
+        .comparison-view-side {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            min-height: 400px;
+        }
+        
+        .comparison-photo {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .comparison-photo:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .comparison-photo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .comparison-photo-title {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .comparison-photo-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+        
+        .comparison-photo-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .comparison-photo-info {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .comparison-photo-type {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .comparison-photo-notes {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+        
+        .comparison-remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .comparison-photo:hover .comparison-remove-btn {
+            opacity: 1;
+        }
+        
+        .comparison-empty-slot {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .comparison-empty-slot:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            background: rgba(139, 92, 246, 0.05);
+        }
+        
+        .comparison-empty-icon {
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 8px;
+        }
+        
+        .comparison-empty-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        /* Fullscreen Viewer Styles */
+        .fullscreen-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .fullscreen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .fullscreen-content {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+        
+        .fullscreen-media-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .fullscreen-media {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .fullscreen-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .fullscreen-info {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+        }
+        
+        .fullscreen-info-content {
+            padding: 24px;
+        }
+        
+        /* Enhanced Mobile Optimization */
+        @media (max-width: 768px) {
+            /* Competition Cards */
+            .competition-card {
+                padding: 16px;
+            }
+            
+            .competition-filter-tab, .competition-type-tab {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .competition-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            /* Calendar Styles */
+            .calendar-container {
+                padding: 12px;
+            }
+            
+            .calendar-day {
+                font-size: 0.75rem;
+            }
+            
+            .calendar-header {
+                gap: 4px;
+            }
+            
+            .calendar-grid {
+                gap: 2px;
+            }
+            
+            .date-filter-tab {
+                padding: 4px 8px;
+                font-size: 0.75rem;
+            }
+            
+            /* Comparison View */
+            .comparison-view-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .comparison-view-side {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .comparison-photo {
+                padding: 12px;
+            }
+            
+            .comparison-photo-image {
+                height: 250px;
+            }
+            
+            /* Modal Adjustments */
+            .modal-content {
+                margin: 10px;
+                max-height: calc(100vh - 20px);
+                overflow-y: auto;
+            }
+            
+            /* Fullscreen Viewer */
+            .fullscreen-info {
+                width: 100%;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 40%;
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .fullscreen-header {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            
+            .fullscreen-btn {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+            
+            /* Navigation Tabs */
+            .nav-tab {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+                min-width: auto;
+            }
+            
+            /* Stats Cards */
+            .stats-card {
+                padding: 12px;
+            }
+            
+            .stats-card .text-2xl {
+                font-size: 1.5rem;
+            }
+            
+            .stats-card .text-xl {
+                font-size: 1.25rem;
+            }
+            
+            /* Media Items */
+            .media-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            
+            .media-item {
+                border-radius: 8px;
+            }
+            
+            .media-date-badge {
+                font-size: 0.6rem;
+                padding: 1px 4px;
+            }
+            
+            /* Form Improvements */
+            .input-field {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 12px;
+            }
+            
+            /* Button Improvements */
+            .btn-primary, .btn-secondary {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+            
+            /* Progress Section Enhancements */
+            #media-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Extra small screens */
+            .glass-card {
+                padding: 16px;
+                border-radius: 12px;
+            }
+            
+            /* Competition cards for very small screens */
+            .competition-card {
+                padding: 12px;
+            }
+            
+            .competition-type-badge, .competition-status-badge {
+                font-size: 0.6rem;
+                padding: 2px 6px;
+            }
+            
+            /* Calendar ultra-compact */
+            .calendar-day {
+                font-size: 0.7rem;
+                min-height: 32px;
+            }
+            
+            /* Single column stats */
+            #media-stats, .grid.grid-cols-2.md\:grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Comparison adjustments */
+            .comparison-photo-image {
+                height: 200px;
+            }
+            
+            /* Modal full width on tiny screens */
+            .modal-content {
+                margin: 5px;
+                border-radius: 8px;
+            }
+            
+            /* Navigation scroll optimization */
+            .flex.space-x-4.overflow-x-auto {
+                scroll-snap-type: x mandatory;
+            }
+            
+            .nav-tab {
+                scroll-snap-align: start;
+                flex-shrink: 0;
+            }
+        }
+        
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            /* Touch devices */
+            .competition-card:hover {
+                transform: none;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            }
+            
+            .media-item:hover .media-actions {
+                opacity: 1;
+                transform: none;
+            }
+            
+            .media-item:hover .comparison-overlay {
+                opacity: 1;
+            }
+            
+            .comparison-photo:hover {
+                transform: none;
+            }
+            
+            .btn-primary:hover, .btn-secondary:hover {
+                transform: none;
+            }
+            
+            /* Larger touch targets */
+            .calendar-day {
+                min-height: 44px;
+            }
+            
+            .media-actions button {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            .fullscreen-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+        
+        /* Landscape orientation optimizations */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            .modal-content {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .fullscreen-header {
+                padding: 8px 16px;
+            }
+            
+            .comparison-photo-image {
+                height: 200px;
+            }
+        }
+        
+        /* Media Content Styles */
+        .media-content {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .media-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .media-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .media-type-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .media-type-before {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        .media-type-after {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+        
+        .media-type-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+        
+        .media-info {
+            margin-top: 12px;
+        }
+        
+        .media-notes {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        /* Comparison Analytics */
+        .comparison-analytics-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .type-breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+        }
+        
+        .type-breakdown-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .progress-timeline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        
+        .timeline-line {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+        }
     </style>
 </head>
 <body>
@@ -1438,13 +2552,21 @@
                         <i class="fas fa-utensils"></i>
                         Nutrition
                     </button>
+                    <button class="nav-tab" data-section="weight">
+                        <i class="fas fa-weight-hanging"></i>
+                        Weight
+                    </button>
+                    <button class="nav-tab" data-section="goals">
+                        <i class="fas fa-bullseye"></i>
+                        Goals
+                    </button>
                     <button class="nav-tab" data-section="achievements">
                         <i class="fas fa-trophy"></i>
                         Achievements
                     </button>
-                    <button class="nav-tab" data-section="coming-soon">
-                        <i class="fas fa-rocket"></i>
-                        Coming Soon
+                    <button class="nav-tab" data-section="competitions">
+                        <i class="fas fa-medal"></i>
+                        Competitions
                     </button>
                     <button class="nav-tab hidden" id="admin-tab" data-section="admin">
                         <i class="fas fa-shield-alt"></i>
@@ -1519,6 +2641,38 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Dashboard Goals Section -->
+                <div class="glass-card p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white">Active Goals</h3>
+                        <button onclick="showSection('goals')" class="text-blue-400 hover:text-blue-300 text-sm">
+                            View All <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div id="dashboard-goals-container">
+                        <div class="text-center py-8 text-white/50">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Loading your goals...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dashboard Nutrition Section -->
+                <div class="glass-card p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white">Today's Nutrition</h3>
+                        <button onclick="showSection('nutrition')" class="text-blue-400 hover:text-blue-300 text-sm">
+                            View Details <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div id="dashboard-nutrition-container">
+                        <div class="text-center py-8 text-white/50">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Loading today's nutrition...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Habits Section -->
@@ -1549,7 +2703,11 @@
                             <h2 class="text-2xl font-bold text-white">Progress Gallery</h2>
                             <p class="text-white/70">Document your fitness transformation journey with photos and videos</p>
                         </div>
-                        <div class="flex space-x-3">
+                        <div class="flex space-x-3 flex-wrap gap-2">
+                            <button onclick="toggleCalendarView()" class="btn-secondary" id="calendar-toggle-btn">
+                                <i class="fas fa-calendar mr-2"></i>
+                                Calendar View
+                            </button>
                             <select id="gallery-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
                                 <option value="all">All Media</option>
                                 <option value="before">Before</option>
@@ -1565,13 +2723,86 @@
                         </div>
                     </div>
                     
-                    <!-- Upload Progress Indicator -->
-                    <div id="upload-progress" class="hidden mb-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="flex-1 bg-white/10 rounded-full h-2">
-                                <div id="upload-progress-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <!-- Calendar View -->
+                    <div id="calendar-view" class="hidden mb-6">
+                        <div class="glass-card p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-bold text-white">
+                                    <i class="fas fa-calendar-alt mr-2"></i>
+                                    Select Date to View Photos
+                                </h3>
+                                <div class="flex items-center space-x-3">
+                                    <button onclick="changeCalendarMonth(-1)" class="btn-secondary">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <span id="calendar-month-year" class="text-white font-medium min-w-[120px] text-center"></span>
+                                    <button onclick="changeCalendarMonth(1)" class="btn-secondary">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                    <button onclick="goToToday()" class="btn-secondary">Today</button>
+                                </div>
                             </div>
-                            <span id="upload-progress-text" class="text-white/70 text-sm">0%</span>
+                            
+                            <!-- Calendar Grid -->
+                            <div class="calendar-container">
+                                <div class="calendar-header">
+                                    <div class="calendar-day-header">Sun</div>
+                                    <div class="calendar-day-header">Mon</div>
+                                    <div class="calendar-day-header">Tue</div>
+                                    <div class="calendar-day-header">Wed</div>
+                                    <div class="calendar-day-header">Thu</div>
+                                    <div class="calendar-day-header">Fri</div>
+                                    <div class="calendar-day-header">Sat</div>
+                                </div>
+                                <div id="calendar-grid" class="calendar-grid">
+                                    <!-- Calendar days will be generated here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Selected Date Info -->
+                            <div id="selected-date-info" class="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg hidden">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-white font-medium" id="selected-date-text">Selected Date</h4>
+                                        <p class="text-white/70 text-sm" id="selected-date-count">0 photos found</p>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="clearDateFilter()" class="btn-secondary text-xs">
+                                            Clear Filter
+                                        </button>
+                                        <button onclick="showComparisonMode()" class="btn-secondary text-xs" id="comparison-mode-btn">
+                                            Compare Mode
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Date Filters -->
+                    <div class="flex space-x-2 mb-4 overflow-x-auto">
+                        <button onclick="filterByDateRange('today')" class="date-filter-tab" data-range="today">Today</button>
+                        <button onclick="filterByDateRange('this-week')" class="date-filter-tab" data-range="this-week">This Week</button>
+                        <button onclick="filterByDateRange('this-month')" class="date-filter-tab" data-range="this-month">This Month</button>
+                        <button onclick="filterByDateRange('last-30-days')" class="date-filter-tab" data-range="last-30-days">Last 30 Days</button>
+                        <button onclick="filterByDateRange('last-3-months')" class="date-filter-tab" data-range="last-3-months">Last 3 Months</button>
+                        <button onclick="filterByDateRange('all')" class="date-filter-tab active" data-range="all">All Time</button>
+                    </div>
+                    
+                    <!-- Enhanced Upload Progress Indicator -->
+                    <div id="upload-progress" class="hidden mb-4 p-4 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-400/30 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-white font-medium">📤 Uploading...</span>
+                            <span id="upload-progress-text" class="text-blue-400 font-bold text-lg">0%</span>
+                        </div>
+                        <div class="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                            <div id="upload-progress-bar" 
+                                 class="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all duration-300 shadow-lg" 
+                                 style="width: 0%">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-white/70 text-sm text-center">
+                            Please wait while your media is being uploaded...
                         </div>
                     </div>
                     
@@ -1641,6 +2872,168 @@
                         <div id="food-log-container">
                             <!-- Food entries will be loaded here -->
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weight Tracking Section -->
+            <div id="weight-section" class="section hidden">
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Weight & Body Tracking</h2>
+                            <p class="text-white/70">Track your weight, BMI, and body composition progress</p>
+                        </div>
+                        <button onclick="showWeightLogModal()" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            Log Weight
+                        </button>
+                    </div>
+                    
+                    <!-- Weight Stats Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="current-weight">-</div>
+                            <div class="text-white/70 text-sm">Current Weight</div>
+                            <div class="text-blue-400 text-xs" id="weight-unit">kg</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="current-bmi">-</div>
+                            <div class="text-white/70 text-sm">Current BMI</div>
+                            <div class="text-green-400 text-xs" id="bmi-category">-</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="weight-change">-</div>
+                            <div class="text-white/70 text-sm">Total Change</div>
+                            <div class="text-purple-400 text-xs">Since start</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="total-logs">0</div>
+                            <div class="text-white/70 text-sm">Total Logs</div>
+                            <div class="text-yellow-400 text-xs">Entries</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Weight Goal -->
+                    <div id="weight-goal-section" class="mb-6 p-4 bg-white/5 border border-white/10 rounded-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white">Weight Goal</h3>
+                            <button onclick="showWeightGoalModal()" class="btn-secondary text-sm">
+                                <i class="fas fa-target mr-2"></i>
+                                Set Goal
+                            </button>
+                        </div>
+                        <div id="weight-goal-content">
+                            <div class="text-center py-6 text-white/50">
+                                <i class="fas fa-bullseye text-2xl mb-2"></i>
+                                <p>Set a weight goal to track your progress</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weight Progress Chart -->
+                    <div class="mb-6 p-4 bg-white/5 border border-white/10 rounded-lg">
+                        <h3 class="text-lg font-bold text-white mb-4">Weight Progress</h3>
+                        <div id="weight-chart-container" class="h-64">
+                            <div class="text-center py-12 text-white/50">
+                                <i class="fas fa-chart-line text-3xl mb-2"></i>
+                                <p>Log more weights to see your progress chart</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weight Log History -->
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-4">Weight Log History</h3>
+                        <div id="weight-log-container" class="space-y-3">
+                            <!-- Weight entries will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Goals Section -->
+            <div id="goals-section" class="section hidden">
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Goal Setting & Tracking</h2>
+                            <p class="text-white/70">Set, track, and achieve your fitness goals</p>
+                        </div>
+                        <button onclick="showCreateGoalModal()" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            Create Goal
+                        </button>
+                    </div>
+                    
+                    <!-- Goal Stats Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="total-goals">0</div>
+                            <div class="text-white/70 text-sm">Total Goals</div>
+                            <div class="text-blue-400 text-xs">Created</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="active-goals">0</div>
+                            <div class="text-white/70 text-sm">Active Goals</div>
+                            <div class="text-yellow-400 text-xs">In progress</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="completed-goals">0</div>
+                            <div class="text-white/70 text-sm">Completed</div>
+                            <div class="text-green-400 text-xs">Achieved</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-2xl font-bold text-white mb-2" id="goal-completion-rate">0%</div>
+                            <div class="text-white/70 text-sm">Success Rate</div>
+                            <div class="text-purple-400 text-xs">Average</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Goal Filters -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div class="flex flex-wrap gap-2">
+                            <button id="filter-all" onclick="filterGoals('all')" class="goal-filter-btn active">
+                                All Goals
+                            </button>
+                            <button id="filter-active" onclick="filterGoals('active')" class="goal-filter-btn">
+                                Active
+                            </button>
+                            <button id="filter-completed" onclick="filterGoals('completed')" class="goal-filter-btn">
+                                Completed
+                            </button>
+                            <button id="filter-overdue" onclick="filterGoals('overdue')" class="goal-filter-btn">
+                                Overdue
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="category-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                                <option value="">All Categories</option>
+                                <!-- Categories will be loaded dynamically -->
+                            </select>
+                            <select id="priority-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                                <option value="">All Priorities</option>
+                                <option value="high">High Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="low">Low Priority</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Goals Grid -->
+                    <div id="goals-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Goals will be loaded here -->
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="goals-empty-state" class="text-center py-12 hidden">
+                        <div class="text-6xl mb-4">🎯</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Ready to Set Your First Goal?</h3>
+                        <p class="text-white/70 mb-6">Create specific, measurable goals to track your fitness progress and stay motivated on your journey.</p>
+                        <button onclick="showCreateGoalModal()" class="btn-primary">
+                            <i class="fas fa-bullseye mr-2"></i>
+                            Create Your First Goal
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1737,20 +3130,66 @@
                 </div>
             </div>
             
-            <!-- Coming Soon Section -->
-            <div id="coming-soon-section" class="section hidden">
-                <div class="glass-card p-6">
-                    <div class="flex items-center justify-between mb-6">
+            <!-- Competitions Section -->
+            <div id="competitions-section" class="section hidden">
+                <div class="glass-card p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
                         <div>
-                            <h2 class="text-2xl font-bold text-white">🚀 Coming Soon Features</h2>
-                            <p class="text-white/70">Exciting new features in development - get ready to level up your fitness journey!</p>
+                            <h2 class="text-2xl font-bold text-white">🏆 Competitions</h2>
+                            <p class="text-white/70">Join challenges, compete with others, and push your limits!</p>
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="showCreateCompetitionModal()" class="btn-primary">
+                                <i class="fas fa-plus mr-2"></i>Create Competition
+                            </button>
+                            <button onclick="loadCompetitions()" class="btn-secondary">
+                                <i class="fas fa-refresh mr-2"></i>Refresh
+                            </button>
                         </div>
                     </div>
                     
-                    <!-- Coming Soon Features Grid -->
-                    <div id="coming-soon-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Coming soon features will be loaded here -->
+                    <!-- Competition Filter Tabs -->
+                    <div class="flex space-x-2 mb-6 overflow-x-auto">
+                        <button class="competition-filter-tab active" data-filter="all">All</button>
+                        <button class="competition-filter-tab" data-filter="joined">My Competitions</button>
+                        <button class="competition-filter-tab" data-filter="created">Created by Me</button>
+                        <button class="competition-filter-tab" data-filter="active">Active</button>
+                        <button class="competition-filter-tab" data-filter="completed">Completed</button>
                     </div>
+                    
+                    <!-- Competition Type Filters -->
+                    <div class="flex space-x-2 mb-6 overflow-x-auto">
+                        <button class="competition-type-tab active" data-type="all">All Types</button>
+                        <button class="competition-type-tab" data-type="weight_loss">Weight Loss</button>
+                        <button class="competition-type-tab" data-type="muscle_gain">Muscle Gain</button>
+                        <button class="competition-type-tab" data-type="workout_frequency">Workout Count</button>
+                        <button class="competition-type-tab" data-type="custom">Custom</button>
+                    </div>
+                    
+                    <!-- Competition Stats -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="stats-card">
+                            <div class="text-xl font-bold text-white mb-1" id="competitions-joined">0</div>
+                            <div class="text-white/70 text-xs">Joined</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-xl font-bold text-white mb-1" id="competitions-won">0</div>
+                            <div class="text-white/70 text-xs">Won</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-xl font-bold text-white mb-1" id="competitions-created">0</div>
+                            <div class="text-white/70 text-xs">Created</div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="text-xl font-bold text-white mb-1" id="active-competitions">0</div>
+                            <div class="text-white/70 text-xs">Active</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Competitions Grid -->
+                <div id="competitions-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Competition cards will be loaded here -->
                 </div>
             </div>
             
@@ -1960,7 +3399,7 @@
                 <div class="mb-4">
                     <label for="media-file" class="block text-white/90 text-sm font-medium mb-2">Select Photo or Video</label>
                     <input type="file" id="media-file" name="file" accept="image/*,video/*" class="input-field" required>
-                    <div class="text-white/60 text-xs mt-1">Supported: JPG, PNG, MP4, MOV (Max 50MB)</div>
+                    <div class="text-white/60 text-xs mt-1">Supported: JPG, PNG, GIF, WebP, BMP, TIFF, HEIC, MP4, WebM, MOV, AVI, MKV, 3GP (Max 50MB)</div>
                 </div>
                 
                 <div class="mb-6">
@@ -2115,6 +3554,379 @@
         </div>
     </div>
     
+    <!-- Weight Log Modal -->
+    <div id="weight-log-modal" class="modal hidden">
+        <div class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Log Weight Entry</h3>
+                <button onclick="closeModal('weight-log-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="weight-log-form">
+                <div class="mb-4">
+                    <label for="weight-value" class="block text-white/90 text-sm font-medium mb-2">Weight</label>
+                    <div class="flex space-x-2">
+                        <input type="number" 
+                               id="weight-value" 
+                               name="weight" 
+                               step="0.1" 
+                               min="20" 
+                               max="500" 
+                               placeholder="Enter weight" 
+                               class="input-field flex-1" 
+                               required>
+                        <select id="weight-unit-selector" class="input-field w-20">
+                            <option value="kg">kg</option>
+                            <option value="lbs">lbs</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="log-date" class="block text-white/90 text-sm font-medium mb-2">Date</label>
+                    <input type="date" 
+                           id="log-date" 
+                           name="logged_date" 
+                           class="input-field" 
+                           required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="body-fat" class="block text-white/90 text-sm font-medium mb-2">Body Fat % (Optional)</label>
+                    <input type="number" 
+                           id="body-fat" 
+                           name="body_fat_percentage" 
+                           step="0.1" 
+                           min="3" 
+                           max="50" 
+                           placeholder="e.g., 15.5" 
+                           class="input-field">
+                </div>
+                
+                <div class="mb-6">
+                    <label for="weight-notes" class="block text-white/90 text-sm font-medium mb-2">Notes (Optional)</label>
+                    <textarea id="weight-notes" 
+                              name="notes" 
+                              rows="3" 
+                              placeholder="Add any notes about your weigh-in..." 
+                              class="input-field"></textarea>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-save mr-2"></i>
+                        Log Weight
+                    </button>
+                    <button type="button" onclick="closeModal('weight-log-modal')" class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Weight Goal Modal -->
+    <div id="weight-goal-modal" class="modal hidden">
+        <div class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Set Weight Goal</h3>
+                <button onclick="closeModal('weight-goal-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="weight-goal-form">
+                <div class="mb-4">
+                    <label class="block text-white/90 text-sm font-medium mb-2">Goal Type</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="goal-type-option">
+                            <input type="radio" name="goal_type" value="lose" class="sr-only" required>
+                            <div class="goal-option-card">
+                                <i class="fas fa-arrow-down text-red-400 mb-2"></i>
+                                <div class="text-sm font-medium">Lose</div>
+                            </div>
+                        </label>
+                        <label class="goal-type-option">
+                            <input type="radio" name="goal_type" value="maintain" class="sr-only" required>
+                            <div class="goal-option-card">
+                                <i class="fas fa-equals text-blue-400 mb-2"></i>
+                                <div class="text-sm font-medium">Maintain</div>
+                            </div>
+                        </label>
+                        <label class="goal-type-option">
+                            <input type="radio" name="goal_type" value="gain" class="sr-only" required>
+                            <div class="goal-option-card">
+                                <i class="fas fa-arrow-up text-green-400 mb-2"></i>
+                                <div class="text-sm font-medium">Gain</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="current-weight-goal" class="block text-white/90 text-sm font-medium mb-2">Current Weight</label>
+                    <div class="flex space-x-2">
+                        <input type="number" 
+                               id="current-weight-goal" 
+                               name="current_weight" 
+                               step="0.1" 
+                               placeholder="Current weight" 
+                               class="input-field flex-1" 
+                               required>
+                        <span class="flex items-center px-3 text-white/70 text-sm" id="goal-weight-unit">kg</span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="target-weight" class="block text-white/90 text-sm font-medium mb-2">Target Weight</label>
+                    <div class="flex space-x-2">
+                        <input type="number" 
+                               id="target-weight" 
+                               name="target_weight" 
+                               step="0.1" 
+                               placeholder="Target weight" 
+                               class="input-field flex-1" 
+                               required>
+                        <span class="flex items-center px-3 text-white/70 text-sm" id="goal-target-unit">kg</span>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="target-date" class="block text-white/90 text-sm font-medium mb-2">Target Date (Optional)</label>
+                    <input type="date" 
+                           id="target-date" 
+                           name="target_date" 
+                           class="input-field">
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-bullseye mr-2"></i>
+                        Set Goal
+                    </button>
+                    <button type="button" onclick="closeModal('weight-goal-modal')" class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create Goal Modal -->
+    <div id="create-goal-modal" class="modal hidden">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Create New Goal</h3>
+                <button onclick="closeModal('create-goal-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="create-goal-form">
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="goal-title" class="block text-white/90 text-sm font-medium mb-2">Goal Title</label>
+                        <input type="text" 
+                               id="goal-title" 
+                               name="title" 
+                               placeholder="e.g., Lose 10kg in 6 months" 
+                               class="input-field" 
+                               required>
+                    </div>
+                    <div>
+                        <label for="goal-category" class="block text-white/90 text-sm font-medium mb-2">Category</label>
+                        <select id="goal-category" name="category" class="input-field" required>
+                            <option value="">Select category</option>
+                            <!-- Categories will be populated -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="goal-description" class="block text-white/90 text-sm font-medium mb-2">Description (Optional)</label>
+                    <textarea id="goal-description" 
+                              name="description" 
+                              rows="3" 
+                              placeholder="Describe your goal in detail..." 
+                              class="input-field"></textarea>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label for="goal-priority" class="block text-white/90 text-sm font-medium mb-2">Priority</label>
+                        <select id="goal-priority" name="priority" class="input-field">
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="goal-start-date" class="block text-white/90 text-sm font-medium mb-2">Start Date</label>
+                        <input type="date" 
+                               id="goal-start-date" 
+                               name="start_date" 
+                               class="input-field" 
+                               required>
+                    </div>
+                    <div>
+                        <label for="goal-target-date" class="block text-white/90 text-sm font-medium mb-2">Target Date</label>
+                        <input type="date" 
+                               id="goal-target-date" 
+                               name="target_date" 
+                               class="input-field">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="goal-target-value" class="block text-white/90 text-sm font-medium mb-2">Target Value (Optional)</label>
+                        <input type="number" 
+                               id="goal-target-value" 
+                               name="target_value" 
+                               step="0.1" 
+                               placeholder="e.g., 10" 
+                               class="input-field">
+                    </div>
+                    <div>
+                        <label for="goal-target-unit" class="block text-white/90 text-sm font-medium mb-2">Unit</label>
+                        <select id="goal-target-unit" name="target_unit" class="input-field">
+                            <option value="">Select unit</option>
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="lbs">Pounds (lbs)</option>
+                            <option value="count">Count/Times</option>
+                            <option value="minutes">Minutes</option>
+                            <option value="hours">Hours</option>
+                            <option value="days">Days</option>
+                            <option value="percent">Percentage (%)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="goal-motivation" class="block text-white/90 text-sm font-medium mb-2">Why is this goal important to you?</label>
+                    <textarea id="goal-motivation" 
+                              name="motivation_reason" 
+                              rows="2" 
+                              placeholder="Your motivation will help you stay committed..." 
+                              class="input-field"></textarea>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="goal-reward" class="block text-white/90 text-sm font-medium mb-2">Reward for Achievement</label>
+                    <input type="text" 
+                           id="goal-reward" 
+                           name="reward_description" 
+                           placeholder="e.g., Buy new workout clothes" 
+                           class="input-field">
+                </div>
+                
+                <div class="flex items-center space-x-6 mb-6">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" name="is_public" class="rounded bg-white/10 border-white/20 text-blue-600">
+                        <span class="text-white/90 text-sm">Make goal public</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" name="share_progress" class="rounded bg-white/10 border-white/20 text-blue-600">
+                        <span class="text-white/90 text-sm">Share progress updates</span>
+                    </label>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-bullseye mr-2"></i>
+                        Create Goal
+                    </button>
+                    <button type="button" onclick="closeModal('create-goal-modal')" class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Update Goal Progress Modal -->
+    <div id="goal-progress-modal" class="modal hidden">
+        <div class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Update Progress</h3>
+                <button onclick="closeModal('goal-progress-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="goal-progress-form">
+                <input type="hidden" id="progress-goal-id" name="goal_id">
+                
+                <div class="mb-4">
+                    <label for="progress-value" class="block text-white/90 text-sm font-medium mb-2">Progress Value</label>
+                    <div class="flex space-x-2">
+                        <input type="number" 
+                               id="progress-value" 
+                               name="progress_value" 
+                               step="0.1" 
+                               placeholder="Current progress" 
+                               class="input-field flex-1" 
+                               required>
+                        <span id="progress-unit" class="flex items-center px-3 text-white/70 text-sm">unit</span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="progress-percentage" class="block text-white/90 text-sm font-medium mb-2">Progress Percentage (Optional)</label>
+                    <input type="number" 
+                           id="progress-percentage" 
+                           name="progress_percentage" 
+                           min="0" 
+                           max="100" 
+                           step="1" 
+                           placeholder="e.g., 75" 
+                           class="input-field">
+                </div>
+                
+                <div class="mb-6">
+                    <label for="progress-notes" class="block text-white/90 text-sm font-medium mb-2">Progress Notes (Optional)</label>
+                    <textarea id="progress-notes" 
+                              name="notes" 
+                              rows="3" 
+                              placeholder="How are you feeling about your progress?" 
+                              class="input-field"></textarea>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Update Progress
+                    </button>
+                    <button type="button" onclick="closeModal('goal-progress-modal')" class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Goal Details Modal -->
+    <div id="goal-details-modal" class="modal hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white" id="goal-details-title">Goal Details</h3>
+                <button onclick="closeModal('goal-details-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="goal-details-content">
+                <!-- Goal details will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
     <!-- Achievement Showcase Modal -->
     <div id="achievement-showcase-modal" class="modal hidden">
         <div class="achievement-showcase-modal">
@@ -2170,6 +3982,310 @@
                     </h4>
                     <div id="achievement-timeline-content">
                         <!-- Timeline items will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Competition Modal -->
+    <div id="create-competition-modal" class="modal hidden">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">🏆 Create Competition</h3>
+                <button onclick="closeModal('create-competition-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="create-competition-form">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="comp-title" class="block text-white/90 text-sm font-medium mb-2">Competition Title *</label>
+                        <input type="text" 
+                               id="comp-title" 
+                               name="title" 
+                               placeholder="e.g., Summer Weight Loss Challenge" 
+                               class="input-field" 
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label for="comp-type" class="block text-white/90 text-sm font-medium mb-2">Competition Type *</label>
+                        <select id="comp-type" name="competition_type" class="input-field" required>
+                            <option value="">Select Type</option>
+                            <option value="weight_loss">Weight Loss</option>
+                            <option value="muscle_gain">Muscle Gain</option>
+                            <option value="workout_frequency">Workout Frequency</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="comp-description" class="block text-white/90 text-sm font-medium mb-2">Description</label>
+                    <textarea id="comp-description" 
+                              name="description" 
+                              rows="3" 
+                              placeholder="Describe your competition..."
+                              class="input-field resize-none"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="comp-start-date" class="block text-white/90 text-sm font-medium mb-2">Start Date *</label>
+                        <input type="datetime-local" 
+                               id="comp-start-date" 
+                               name="start_date" 
+                               class="input-field" 
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label for="comp-end-date" class="block text-white/90 text-sm font-medium mb-2">End Date *</label>
+                        <input type="datetime-local" 
+                               id="comp-end-date" 
+                               name="end_date" 
+                               class="input-field" 
+                               required>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="comp-max-participants" class="block text-white/90 text-sm font-medium mb-2">Max Participants</label>
+                        <input type="number" 
+                               id="comp-max-participants" 
+                               name="max_participants" 
+                               min="2" 
+                               max="100" 
+                               value="50"
+                               class="input-field">
+                    </div>
+                    
+                    <div>
+                        <label for="comp-prize" class="block text-white/90 text-sm font-medium mb-2">Prize Description</label>
+                        <input type="text" 
+                               id="comp-prize" 
+                               name="prize_description" 
+                               placeholder="e.g., Winner gets $100 gift card"
+                               class="input-field">
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="comp-rules" class="block text-white/90 text-sm font-medium mb-2">Rules</label>
+                    <textarea id="comp-rules" 
+                              name="rules" 
+                              rows="3" 
+                              placeholder="Competition rules and guidelines..."
+                              class="input-field resize-none"></textarea>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-trophy mr-2"></i>
+                        Create Competition
+                    </button>
+                    <button type="button" onclick="closeModal('create-competition-modal')" class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Competition Details Modal -->
+    <div id="competition-details-modal" class="modal hidden">
+        <div class="modal-content max-w-6xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white" id="comp-details-title">Competition Details</h3>
+                <button onclick="closeModal('competition-details-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="competition-details-content">
+                <!-- Competition details will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Competition Progress Modal -->
+    <div id="competition-progress-modal" class="modal hidden">
+        <div class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Update Progress</h3>
+                <button onclick="closeModal('competition-progress-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="competition-progress-form">
+                <input type="hidden" id="comp-progress-competition-id" name="competition_id">
+                
+                <div class="mb-4">
+                    <label for="comp-progress-value" class="block text-white/90 text-sm font-medium mb-2">Progress Value *</label>
+                    <input type="number" 
+                           id="comp-progress-value" 
+                           name="progress_value" 
+                           step="0.1" 
+                           placeholder="Enter your current value" 
+                           class="input-field" 
+                           required>
+                    <p class="text-white/60 text-sm mt-1" id="comp-progress-hint">
+                        Enter your current measurement or count
+                    </p>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="comp-progress-type" class="block text-white/90 text-sm font-medium mb-2">Progress Type *</label>
+                    <select id="comp-progress-type" name="progress_type" class="input-field" required>
+                        <option value="">Select Type</option>
+                        <option value="weight">Weight</option>
+                        <option value="measurement">Body Measurement</option>
+                        <option value="workout_count">Workout Count</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="comp-progress-notes" class="block text-white/90 text-sm font-medium mb-2">Notes</label>
+                    <textarea id="comp-progress-notes" 
+                              name="notes" 
+                              rows="3" 
+                              placeholder="Additional notes about your progress..."
+                              class="input-field resize-none"></textarea>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Update Progress
+                    </button>
+                    <button type="button" onclick="closeModal('competition-progress-modal')" class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Photo Comparison Modal -->
+    <div id="photo-comparison-modal" class="modal hidden">
+        <div class="modal-content max-w-7xl">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-white">
+                        <i class="fas fa-images mr-2"></i>Photo Comparison
+                    </h3>
+                    <p class="text-white/70">Compare your progress photos side-by-side</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="toggleComparisonLayout()" class="btn-secondary" id="layout-toggle-btn">
+                            <i class="fas fa-th-large mr-2"></i>Grid Layout
+                        </button>
+                        <button onclick="downloadComparison()" class="btn-secondary">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </button>
+                    </div>
+                    <button onclick="closePhotoComparison()" class="text-white/70 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Comparison Controls -->
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+                <div class="flex items-center space-x-4">
+                    <span class="text-white/70">Selected Photos:</span>
+                    <span class="text-white font-medium" id="comparison-count">0 photos</span>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button onclick="clearComparison()" class="btn-secondary">
+                        <i class="fas fa-times mr-2"></i>Clear All
+                    </button>
+                    <button onclick="addMoreToComparison()" class="btn-secondary">
+                        <i class="fas fa-plus mr-2"></i>Add More
+                    </button>
+                    <select id="comparison-sort" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                        <option value="date-asc">Oldest First</option>
+                        <option value="date-desc">Newest First</option>
+                        <option value="type">By Type</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Comparison View -->
+            <div id="comparison-container" class="comparison-view-grid">
+                <!-- Comparison photos will be loaded here -->
+            </div>
+            
+            <!-- Comparison Analytics -->
+            <div id="comparison-analytics" class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-card p-4">
+                    <h4 class="text-white font-semibold mb-2">
+                        <i class="fas fa-calendar mr-2"></i>Time Range
+                    </h4>
+                    <p id="comparison-time-range" class="text-white/70 text-sm">-</p>
+                </div>
+                <div class="glass-card p-4">
+                    <h4 class="text-white font-semibold mb-2">
+                        <i class="fas fa-camera mr-2"></i>Photo Types
+                    </h4>
+                    <div id="comparison-type-breakdown" class="text-white/70 text-sm">-</div>
+                </div>
+                <div class="glass-card p-4">
+                    <h4 class="text-white font-semibold mb-2">
+                        <i class="fas fa-chart-line mr-2"></i>Progress Summary
+                    </h4>
+                    <p id="comparison-progress-summary" class="text-white/70 text-sm">Select photos to see transformation timeline</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fullscreen Media Viewer -->
+    <div id="fullscreen-viewer" class="fullscreen-viewer hidden">
+        <div class="fullscreen-header">
+            <div class="flex items-center space-x-4">
+                <button onclick="prevFullscreenMedia()" class="fullscreen-btn" id="prev-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="fullscreen-counter" class="text-white">1 / 1</span>
+                <button onclick="nextFullscreenMedia()" class="fullscreen-btn" id="next-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="toggleFullscreenInfo()" class="fullscreen-btn" id="info-toggle-btn">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+                <button onclick="downloadFullscreenMedia()" class="fullscreen-btn">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button onclick="closeFullscreenViewer()" class="fullscreen-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="fullscreen-content">
+            <div id="fullscreen-media-container" class="fullscreen-media-container">
+                <!-- Fullscreen media will be loaded here -->
+            </div>
+            
+            <!-- Media Info Panel -->
+            <div id="fullscreen-info" class="fullscreen-info hidden">
+                <div class="fullscreen-info-content">
+                    <h3 id="fullscreen-info-title" class="text-white font-semibold mb-2">Photo Details</h3>
+                    <div id="fullscreen-info-details" class="text-white/70 text-sm space-y-2">
+                        <!-- Media details will be loaded here -->
                     </div>
                 </div>
             </div>

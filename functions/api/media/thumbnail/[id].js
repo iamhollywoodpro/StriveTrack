@@ -1,4 +1,4 @@
-// Media file serving endpoint for StriveTrack
+// Media thumbnail serving endpoint for StriveTrack
 import { requireAuth } from '../../../utils/auth.js';
 
 export async function onRequestGet(context) {
@@ -25,14 +25,15 @@ export async function onRequestGet(context) {
             return new Response('Media not found', { status: 404 });
         }
         
-        // Get file from R2
+        // For now, serve the original file
+        // In production, you'd want to generate actual thumbnails
         const object = await env.MEDIA_BUCKET.get(mediaRecord.r2_key);
         
         if (!object) {
             return new Response('File not found in storage', { status: 404 });
         }
         
-        // Stream the file content
+        // Stream the file content (thumbnail would be smaller in production)
         return new Response(object.body, {
             headers: {
                 'Content-Type': mediaRecord.file_type,
@@ -43,7 +44,7 @@ export async function onRequestGet(context) {
         });
         
     } catch (error) {
-        console.error('Serve media file error:', error);
+        console.error('Serve media thumbnail error:', error);
         return new Response('Internal server error', { status: 500 });
     }
 }

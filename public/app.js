@@ -1578,7 +1578,7 @@ function createHabitElement(habit, showWeekView = false) {
                     Completed Today!
                 </div>
             `}
-            <button class="btn-danger delete-habit-btn" data-habit-id="${habit.id}">
+            <button class="btn-danger" onclick="showDeleteHabitModal('${habit.id}')">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -1680,7 +1680,7 @@ function createWeeklyHabitElement(habit) {
                     <span class="text-green-400 font-semibold">${completedCount}</span> / ${targetCount} days this week
                 </p>
             </div>
-            <button class="btn-danger delete-habit-btn" data-habit-id="${habit.id}" title="Delete habit">
+            <button class="btn-danger" onclick="showDeleteHabitModal('${habit.id}')" title="Delete habit">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -1721,7 +1721,7 @@ function createSimpleHabitElement(habit) {
                     <i class="fas fa-check mr-2"></i>
                     Complete
                 </button>
-                <button class="btn-secondary delete-habit-btn" data-habit-id="${habit.id}" title="Delete habit">
+                <button class="btn-secondary" onclick="showDeleteHabitModal('${habit.id}')" title="Delete habit">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -6178,25 +6178,7 @@ function setupHabitEventListeners() {
             return;
         }
         
-        // Delete habit button  
-        const deleteBtn = event.target.closest('.delete-habit-btn');
-        if (deleteBtn) {
-            console.log('🗑️ DELETE HABIT BUTTON CLICKED - Using custom modal!');
-            event.preventDefault();
-            event.stopPropagation();
-            const habitId = deleteBtn.getAttribute('data-habit-id') || deleteBtn.dataset.habitId;
-            if (habitId) {
-                console.log('🎯 Showing custom confirmation modal for habit:', habitId);
-                showConfirmationModal(
-                    'Are you sure you want to delete this habit? This action cannot be undone and will remove all progress data.',
-                    function() {
-                        console.log('✅ Custom modal confirmed - deleting habit:', habitId);
-                        deleteHabitFixed(habitId);
-                    }
-                );
-            }
-            return;
-        }
+        // Delete habit buttons now use direct onclick handlers - no delegation needed
         
         // Delete weight button
         const deleteWeightBtn = event.target.closest('.delete-weight-btn');
@@ -6232,7 +6214,7 @@ function setupHabitEventListeners() {
     // Simple touch events for mobile
     document.addEventListener('touchend', function(event) {
         // Prevent double-tap and let click handler deal with it
-        if (event.target.closest('.habit-day-cell, .complete-habit-btn, .delete-habit-btn')) {
+        if (event.target.closest('.habit-day-cell, .complete-habit-btn')) {
             // Let the click handler process this
             return;
         }
@@ -6356,7 +6338,7 @@ function createDashboardHabitCard(habit) {
                         <p class="text-white/60 text-xs">${completionsThisWeek}/${habit.weekly_target || 7} this week</p>
                     </div>
                 </div>
-                <button class="delete-habit-btn text-red-400 hover:text-red-300 text-sm" data-habit-id="${habit.id}" title="Delete habit">
+                <button class="text-red-400 hover:text-red-300 text-sm" onclick="showDeleteHabitModal('${habit.id}')" title="Delete habit">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -6729,7 +6711,7 @@ function createHabitCard(habit) {
                     </div>
                 </div>
                 <div class="flex flex-col items-end space-y-2">
-                    <button class="delete-habit-btn text-red-400 hover:text-red-300 text-sm" data-habit-id="${habit.id}" title="Delete habit">
+                    <button class="text-red-400 hover:text-red-300 text-sm" onclick="showDeleteHabitModal('${habit.id}')" title="Delete habit">
                         <i class="fas fa-trash"></i>
                     </button>
                     <div class="text-right">
@@ -7434,7 +7416,7 @@ function createWeeklyHabitCard(habit) {
                     <span class="text-green-400 font-semibold">${completedCount}</span> / ${targetCount} days this week
                 </p>
             </div>
-            <button class="btn-danger delete-habit-btn" data-habit-id="${habit.id}" title="Delete habit">
+            <button class="btn-danger" onclick="showDeleteHabitModal('${habit.id}')" title="Delete habit">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -7594,8 +7576,21 @@ async function simpleToggleHabit(habitId, date) {
 
 // NOTE: handleDeleteHabit function removed - event delegation system handles this directly
 
-// Delete habit function - FIXED VERSION
-async function deleteHabitFixed(habitId) {
+// WORKING delete habit modal function - called directly from onclick
+function showDeleteHabitModal(habitId) {
+    console.log('🗑️ DIRECT ONCLICK - Showing delete modal for habit:', habitId);
+    showConfirmationModal(
+        'Are you sure you want to delete this habit? This action cannot be undone and will remove all progress data.',
+        function() {
+            console.log('✅ CONFIRMED - Deleting habit:', habitId);
+            actuallyDeleteHabit(habitId);
+        }
+    );
+}
+
+// Actual delete function that does the API call
+async function actuallyDeleteHabit(habitId) {
+    console.log('🚀 ACTUALLY DELETING habit:', habitId);
     try {
         const response = await fetch(`/api/habits/${habitId}`, {
             method: 'DELETE',
@@ -7604,15 +7599,19 @@ async function deleteHabitFixed(habitId) {
             }
         });
         
+        console.log('📡 API Response status:', response.status);
+        
         if (response.ok) {
+            console.log('✅ DELETE SUCCESS');
             showNotification('Habit deleted successfully', 'success');
             await loadHabitsAndUpdateDashboard();
         } else {
             const errorData = await response.json();
+            console.log('❌ DELETE ERROR:', errorData);
             showNotification(errorData.error || 'Failed to delete habit', 'error');
         }
     } catch (error) {
-        console.error('Delete habit error:', error);
+        console.error('❌ DELETE EXCEPTION:', error);
         showNotification('Failed to delete habit', 'error');
     }
 }

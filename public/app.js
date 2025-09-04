@@ -23,12 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('💥 Error setting up event listeners:', error);
     }
     
-    // Check URL validation
-    if (!window.location.href.includes('8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev')) {
-        console.warn('⚠️ Warning: You might not be on the correct development server.');
-        console.warn('⚠️ Expected URL should contain: 8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
-        console.warn('⚠️ If API calls fail, try: https://8787-i9yme7bqgef9jzbamql4k-6532622b.e2b.dev');
-    }
+    // Dynamic URL check removed - works on any server
     
     // Add debug info to help troubleshoot
     console.log('🔧 Debug functions available: debugAuth(), testAdminLogin(), testNetwork(), checkUrl()');

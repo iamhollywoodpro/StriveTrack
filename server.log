@@ -1,0 +1,7 @@
+10.12.206.132 - - [04/Sep/2025 23:14:58] "GET / HTTP/1.1" 200 -
+10.12.206.132 - - [04/Sep/2025 23:14:59] code 404, message File not found
+10.12.206.132 - - [04/Sep/2025 23:14:59] "GET /app-fixed-1757022782.js?v=1757022782 HTTP/1.1" 404 -
+10.12.206.132 - - [04/Sep/2025 23:14:59] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.206.132 - - [04/Sep/2025 23:15:12] "GET /?email=iamhollywoodpro%40protonmail.com&password=password%401981 HTTP/1.1" 200 -
+10.12.206.132 - - [04/Sep/2025 23:15:13] code 404, message File not found
+10.12.206.132 - - [04/Sep/2025 23:15:13] "GET /app-fixed-1757022782.js?v=1757022782 HTTP/1.1" 404 -

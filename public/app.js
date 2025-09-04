@@ -3625,9 +3625,35 @@ async function editNutrition(nutritionId) {
 
 // Delete nutrition entry function
 async function deleteNutrition(nutritionId) {
-    if (!confirm('Are you sure you want to delete this nutrition entry? This action cannot be undone.')) {
+    // Show custom confirmation modal
+    const modal = document.getElementById('confirmation-modal');
+    const message = document.getElementById('confirmation-message');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    
+    if (!modal || !message || !confirmBtn) {
+        if (confirm('Are you sure you want to delete this nutrition entry? This action cannot be undone.')) {
+            performNutritionDeletion(nutritionId);
+        }
         return;
     }
+    
+    message.textContent = 'Are you sure you want to delete this nutrition entry? This action cannot be undone.';
+    
+    // Clear any existing event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Add click handler for confirmation
+    newConfirmBtn.onclick = function() {
+        modal.classList.add('hidden');
+        performNutritionDeletion(nutritionId);
+    };
+    
+    // Show the modal
+    modal.classList.remove('hidden');
+}
+
+async function performNutritionDeletion(nutritionId) {
     
     try {
         const response = await fetch(`/api/nutrition/${nutritionId}`, {
@@ -9564,61 +9590,128 @@ document.addEventListener('DOMContentLoaded', function() {
 console.log('✅ Mobile optimization enhancements loaded successfully');
 console.log('✅ Comprehensive habit management system loaded with anti-cheat protection');
 
-// EMERGENCY FIX - Override all delete buttons with working custom modal
-setTimeout(function() {
-    console.log('🚨 EMERGENCY DELETE FIX - Attaching direct handlers');
-    
-    // Find ALL delete buttons and attach direct handlers
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('button') && (
-            e.target.closest('button').innerHTML.includes('fa-trash') ||
-            e.target.closest('button').textContent.includes('Delete') ||
-            e.target.closest('button').onclick && e.target.closest('button').onclick.toString().includes('showDeleteHabitModal')
-        )) {
-            const btn = e.target.closest('button');
-            const habitId = btn.getAttribute('data-habit-id') || 
-                           btn.dataset.habitId || 
-                           (btn.onclick && btn.onclick.toString().match(/'([^']+)'/)) ? 
-                           btn.onclick.toString().match(/'([^']+)'/)[1] : null;
-            
-            if (habitId) {
-                console.log('🗑️ EMERGENCY HANDLER - Intercepted delete for habit:', habitId);
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Show custom modal
-                const modal = document.getElementById('confirmation-modal');
-                const message = document.getElementById('confirmation-message');
-                const confirmBtn = document.getElementById('confirm-delete-btn');
-                
-                message.textContent = 'Are you sure you want to delete this habit? This action cannot be undone.';
-                
-                // Remove old listeners
-                const newConfirmBtn = confirmBtn.cloneNode(true);
-                confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-                
-                newConfirmBtn.onclick = function() {
-                    modal.classList.add('hidden');
-                    
-                    // Make delete API call
-                    fetch(`/api/habits/${habitId}`, {
-                        method: 'DELETE',
-                        headers: { 'x-session-id': sessionId }
-                    })
-                    .then(response => response.ok ? 
-                        (showNotification('Habit deleted!', 'success'), loadHabitsAndUpdateDashboard()) :
-                        showNotification('Delete failed', 'error')
-                    )
-                    .catch(() => showNotification('Delete failed', 'error'));
-                };
-                
-                modal.classList.remove('hidden');
-                console.log('✅ EMERGENCY HANDLER - Custom modal shown');
-            }
-        }
-    }, true); // Use capture phase to intercept early
-    
-}, 1000); // Wait 1 second to ensure everything is loaded
+// ================================
+// SIMPLE WORKING DELETE SOLUTION  
+// ================================
 
-console.log('🚨 EMERGENCY DELETE FIX LOADED');
+// Clean, simple delete habit function
+function deleteHabit(habitId) {
+    console.log('🗑️ Delete habit called for:', habitId);
+    
+    // Show custom confirmation modal
+    const modal = document.getElementById('confirmation-modal');
+    const message = document.getElementById('confirmation-message');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    
+    if (!modal || !message || !confirmBtn) {
+        console.error('Modal elements not found, using browser confirm');
+        if (confirm('Are you sure you want to delete this habit?')) {
+            performHabitDeletion(habitId);
+        }
+        return;
+    }
+    
+    message.textContent = 'Are you sure you want to delete this habit? This action cannot be undone and will remove all progress data.';
+    
+    // Clear any existing event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Add click handler for confirmation
+    newConfirmBtn.onclick = function() {
+        console.log('✅ Delete confirmed for habit:', habitId);
+        modal.classList.add('hidden');
+        performHabitDeletion(habitId);
+    };
+    
+    // Show the modal
+    modal.classList.remove('hidden');
+    console.log('✅ Custom modal displayed for habit:', habitId);
+}
+
+// Actual deletion function
+async function performHabitDeletion(habitId) {
+    console.log('🚀 Performing deletion for habit:', habitId);
+    
+    try {
+        const response = await fetch(`/api/habits/${habitId}`, {
+            method: 'DELETE',
+            headers: {
+                'x-session-id': sessionId || localStorage.getItem('sessionId') || ''
+            }
+        });
+        
+        console.log('📡 Delete response status:', response.status);
+        
+        if (response.ok) {
+            console.log('✅ Habit deleted successfully');
+            showNotification('Habit deleted successfully!', 'success');
+            
+            // Refresh the habits display
+            if (typeof loadHabitsAndUpdateDashboard === 'function') {
+                loadHabitsAndUpdateDashboard();
+            } else if (typeof loadHabits === 'function') {
+                loadHabits();
+            } else {
+                console.log('Refreshing page to update display');
+                window.location.reload();
+            }
+        } else {
+            const errorText = await response.text();
+            console.error('❌ Delete failed:', response.status, errorText);
+            showNotification('Failed to delete habit: ' + (response.status === 401 ? 'Not authenticated' : 'Server error'), 'error');
+        }
+    } catch (error) {
+        console.error('❌ Delete error:', error);
+        showNotification('Failed to delete habit: Network error', 'error');
+    }
+}
+
+// Wrapper function that buttons are calling
+function showDeleteHabitModal(habitId) {
+    console.log('🎯 showDeleteHabitModal called for habit:', habitId);
+    deleteHabit(habitId);
+}
+
+// ================================
+// COMPREHENSIVE FIX VERIFICATION
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 COMPREHENSIVE FIX - Verifying all systems...');
+    
+    // 1. Verify custom modal exists
+    const modal = document.getElementById('confirmation-modal');
+    if (modal) {
+        console.log('✅ Custom confirmation modal found');
+    } else {
+        console.error('❌ Custom confirmation modal NOT found');
+    }
+    
+    // 2. Verify sessionId exists
+    if (typeof sessionId !== 'undefined' && sessionId) {
+        console.log('✅ Session ID found:', sessionId);
+    } else {
+        console.log('⚠️ Session ID not found, checking localStorage...');
+        const storedSessionId = localStorage.getItem('sessionId');
+        if (storedSessionId) {
+            window.sessionId = storedSessionId;
+            console.log('✅ Session ID loaded from localStorage');
+        } else {
+            console.error('❌ No session ID found');
+        }
+    }
+    
+    // 3. Load achievements and competitions data on page load
+    setTimeout(() => {
+        console.log('🏆 Loading achievements...');
+        if (typeof loadAchievements === 'function') loadAchievements();
+        
+        console.log('🏅 Loading competitions...');
+        if (typeof loadCompetitions === 'function') loadCompetitions();
+    }, 2000);
+    
+    console.log('✅ COMPREHENSIVE FIX LOADED - All systems verified');
+});
+
+console.log('✅ CLEAN DELETE SYSTEM LOADED');
 

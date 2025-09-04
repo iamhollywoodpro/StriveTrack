@@ -6182,8 +6182,13 @@ function setupHabitEventListeners() {
         const deleteBtn = event.target.closest('.delete-habit-btn');
         if (deleteBtn) {
             const habitId = deleteBtn.getAttribute('data-habit-id') || deleteBtn.dataset.habitId;
-            if (habitId && confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
-                deleteHabit(habitId);
+            if (habitId) {
+                showConfirmationModal(
+                    'Are you sure you want to delete this habit? This action cannot be undone and will remove all progress data.',
+                    function() {
+                        deleteHabit(habitId);
+                    }
+                );
             }
             return;
         }

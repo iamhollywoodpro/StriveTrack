@@ -6181,11 +6181,16 @@ function setupHabitEventListeners() {
         // Delete habit button  
         const deleteBtn = event.target.closest('.delete-habit-btn');
         if (deleteBtn) {
+            console.log('🗑️ DELETE HABIT BUTTON CLICKED - Using custom modal!');
+            event.preventDefault();
+            event.stopPropagation();
             const habitId = deleteBtn.getAttribute('data-habit-id') || deleteBtn.dataset.habitId;
             if (habitId) {
+                console.log('🎯 Showing custom confirmation modal for habit:', habitId);
                 showConfirmationModal(
                     'Are you sure you want to delete this habit? This action cannot be undone and will remove all progress data.',
                     function() {
+                        console.log('✅ Custom modal confirmed - deleting habit:', habitId);
                         deleteHabit(habitId);
                     }
                 );

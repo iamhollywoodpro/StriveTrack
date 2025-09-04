@@ -6467,7 +6467,6 @@ async function handleCreateHabit(e) {
 
         console.log('Creating habit with data:', habitData);
 
-    try {
         const response = await fetch('/api/habits', {
             method: 'POST',
             headers: {

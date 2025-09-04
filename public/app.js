@@ -6191,7 +6191,7 @@ function setupHabitEventListeners() {
                     'Are you sure you want to delete this habit? This action cannot be undone and will remove all progress data.',
                     function() {
                         console.log('✅ Custom modal confirmed - deleting habit:', habitId);
-                        deleteHabit(habitId);
+                        deleteHabitFixed(habitId);
                     }
                 );
             }
@@ -7594,8 +7594,8 @@ async function simpleToggleHabit(habitId, date) {
 
 // NOTE: handleDeleteHabit function removed - event delegation system handles this directly
 
-// Delete habit function
-async function deleteHabit(habitId) {
+// Delete habit function - FIXED VERSION
+async function deleteHabitFixed(habitId) {
     try {
         const response = await fetch(`/api/habits/${habitId}`, {
             method: 'DELETE',

@@ -1,4 +1,4 @@
-// Enhanced Achievements API endpoint for StriveTrack
+// Simplified Achievements API endpoint for StriveTrack
 import { requireAuth } from '../../utils/auth.js';
 
 export async function onRequestGet(context) {
@@ -10,113 +10,35 @@ export async function onRequestGet(context) {
         
         const user = authResult;
         
-        // Get all achievements with user completion status
+        // Simple query to get all achievements
         const achievementsResult = await env.DB.prepare(`
-            SELECT 
-                a.*,
-                ua.earned_at,
-                CASE WHEN ua.id IS NOT NULL THEN 1 ELSE 0 END as earned
-            FROM achievements a
-            LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = ?
-            ORDER BY 
-                a.category,
-                a.difficulty,
-                earned DESC,
-                a.points ASC
-        `).bind(user.id).all();
+            SELECT * FROM achievements ORDER BY category, points ASC
+        `).all();
         
         const achievements = achievementsResult.results || [];
         
-        // Get user stats for progress calculation
-        const userStatsResult = await env.DB.prepare(`
-            SELECT 
-                u.points as total_points,
-                u.created_at as user_created_at,
-                (SELECT COUNT(*) FROM habits WHERE user_id = ?) as habits_created,
-                (SELECT COUNT(*) FROM habit_completions WHERE user_id = ?) as total_completions,
-                (SELECT COUNT(*) FROM media_uploads WHERE user_id = ? AND file_type LIKE 'image/%') as photos_uploaded,
-                (SELECT COUNT(*) FROM media_uploads WHERE user_id = ? AND file_type LIKE 'video/%') as videos_uploaded,
-                (SELECT COUNT(*) FROM media_uploads WHERE user_id = ?) as total_media
-            FROM users u
-            WHERE u.id = ?
-        `).bind(user.id, user.id, user.id, user.id, user.id, user.id).first();
+        // Get user's earned achievements
+        const userAchievementsResult = await env.DB.prepare(`
+            SELECT achievement_id, earned_at FROM user_achievements 
+            WHERE user_id = ?
+        `).bind(user.id).all();
         
-        // Calculate current progress for each achievement
-        const achievementsWithProgress = achievements.map(achievement => {
-            let currentProgress = 0;
-            let progressPercentage = 0;
-            
-            switch (achievement.requirement_type) {
-                case 'account_created':
-                    currentProgress = 1;
-                    break;
-                case 'habits_created':
-                    currentProgress = userStatsResult.habits_created;
-                    break;
-                case 'total_completions':
-                    currentProgress = userStatsResult.total_completions;
-                    break;
-                case 'photos_uploaded':
-                    currentProgress = userStatsResult.photos_uploaded;
-                    break;
-                case 'videos_uploaded':
-                    currentProgress = userStatsResult.videos_uploaded;
-                    break;
-                case 'total_media':
-                    currentProgress = userStatsResult.total_media;
-                    break;
-                case 'total_points':
-                    currentProgress = userStatsResult.total_points;
-                    break;
-                case 'habit_streak':
-                    // TODO: Calculate actual streak - for now use placeholder
-                    currentProgress = 0;
-                    break;
-                default:
-                    currentProgress = achievement.earned ? achievement.requirement_value : 0;
-            }
-            
-            progressPercentage = Math.min(100, Math.round((currentProgress / achievement.requirement_value) * 100));
-            
-            return {
-                ...achievement,
-                current_progress: currentProgress,
-                progress_percentage: progressPercentage,
-                is_completed: achievement.earned === 1,
-                is_unlockable: currentProgress >= achievement.requirement_value && !achievement.earned
-            };
-        });
+        const earnedIds = (userAchievementsResult.results || []).map(ua => ua.achievement_id);
         
-        // Group achievements by category
-        const groupedAchievements = achievementsWithProgress.reduce((groups, achievement) => {
-            const category = achievement.category;
-            if (!groups[category]) {
-                groups[category] = [];
-            }
-            groups[category].push(achievement);
-            return groups;
-        }, {});
-        
-        // Calculate user achievement stats
-        const totalAchievements = achievements.length;
-        const earnedAchievements = achievements.filter(a => a.earned === 1).length;
-        const totalPointsFromAchievements = achievements
-            .filter(a => a.earned === 1)
-            .reduce((sum, a) => sum + a.points, 0);
-        
-        const stats = {
-            total_achievements: totalAchievements,
-            earned_achievements: earnedAchievements,
-            completion_percentage: Math.round((earnedAchievements / totalAchievements) * 100),
-            total_points: userStatsResult.total_points,
-            achievement_points: totalPointsFromAchievements,
-            unlockable_count: achievementsWithProgress.filter(a => a.is_unlockable).length
-        };
+        // Add earned status to achievements
+        const achievementsWithStatus = achievements.map(achievement => ({
+            ...achievement,
+            earned: earnedIds.includes(achievement.id),
+            progress_percentage: earnedIds.includes(achievement.id) ? 100 : 0
+        }));
         
         return new Response(JSON.stringify({
-            achievements: achievementsWithProgress,
-            grouped_achievements: groupedAchievements,
-            stats
+            achievements: achievementsWithStatus,
+            stats: {
+                total: achievements.length,
+                earned: earnedIds.length,
+                completion_percentage: Math.round((earnedIds.length / achievements.length) * 100)
+            }
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -125,7 +47,8 @@ export async function onRequestGet(context) {
     } catch (error) {
         console.error('Get achievements error:', error);
         return new Response(JSON.stringify({ 
-            error: 'Internal server error' 
+            error: 'Internal server error',
+            details: error.message
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
@@ -133,7 +56,7 @@ export async function onRequestGet(context) {
     }
 }
 
-// Unlock an achievement manually (for testing or admin purposes)
+// Award achievement endpoint
 export async function onRequestPost(context) {
     const { request, env } = context;
     
@@ -154,7 +77,7 @@ export async function onRequestPost(context) {
             });
         }
         
-        // Check if achievement exists and user hasn't earned it
+        // Check if achievement exists
         const achievement = await env.DB.prepare(
             'SELECT * FROM achievements WHERE id = ?'
         ).bind(achievement_id).first();
@@ -168,11 +91,12 @@ export async function onRequestPost(context) {
             });
         }
         
-        const existingUserAchievement = await env.DB.prepare(
+        // Check if already earned
+        const existing = await env.DB.prepare(
             'SELECT id FROM user_achievements WHERE user_id = ? AND achievement_id = ?'
         ).bind(user.id, achievement_id).first();
         
-        if (existingUserAchievement) {
+        if (existing) {
             return new Response(JSON.stringify({ 
                 error: 'Achievement already earned' 
             }), {
@@ -181,13 +105,13 @@ export async function onRequestPost(context) {
             });
         }
         
-        // Award the achievement
-        const { v4: uuidv4 } = await import('uuid');
-        const userAchievementId = uuidv4();
+        // Generate simple ID without UUID
+        const userAchievementId = `ua_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         
+        // Award the achievement
         await env.DB.prepare(`
-            INSERT INTO user_achievements (id, user_id, achievement_id)
-            VALUES (?, ?, ?)
+            INSERT INTO user_achievements (id, user_id, achievement_id, earned_at)
+            VALUES (?, ?, ?, datetime('now'))
         `).bind(userAchievementId, user.id, achievement_id).run();
         
         // Award points if the achievement has points
@@ -206,9 +130,10 @@ export async function onRequestPost(context) {
         });
         
     } catch (error) {
-        console.error('Unlock achievement error:', error);
+        console.error('Award achievement error:', error);
         return new Response(JSON.stringify({ 
-            error: 'Internal server error' 
+            error: 'Internal server error',
+            details: error.message
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }

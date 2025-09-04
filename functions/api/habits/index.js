@@ -59,6 +59,11 @@ export async function onRequestPost(context) {
         
         const habitId = await createHabit(habitData, env);
         
+        // Get the created habit to return full object
+        const createdHabit = await env.DB.prepare(
+            'SELECT * FROM habits WHERE id = ?'
+        ).bind(habitId).first();
+        
         // Check and award achievements
         let newAchievements = [];
         try {
@@ -74,7 +79,8 @@ export async function onRequestPost(context) {
         
         return new Response(JSON.stringify({
             message: 'Habit created successfully',
-            habitId,
+            id: habitId,
+            habit: createdHabit,
             newAchievements
         }), {
             status: 201,

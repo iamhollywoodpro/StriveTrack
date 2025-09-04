@@ -9564,3 +9564,61 @@ document.addEventListener('DOMContentLoaded', function() {
 console.log('✅ Mobile optimization enhancements loaded successfully');
 console.log('✅ Comprehensive habit management system loaded with anti-cheat protection');
 
+// EMERGENCY FIX - Override all delete buttons with working custom modal
+setTimeout(function() {
+    console.log('🚨 EMERGENCY DELETE FIX - Attaching direct handlers');
+    
+    // Find ALL delete buttons and attach direct handlers
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('button') && (
+            e.target.closest('button').innerHTML.includes('fa-trash') ||
+            e.target.closest('button').textContent.includes('Delete') ||
+            e.target.closest('button').onclick && e.target.closest('button').onclick.toString().includes('showDeleteHabitModal')
+        )) {
+            const btn = e.target.closest('button');
+            const habitId = btn.getAttribute('data-habit-id') || 
+                           btn.dataset.habitId || 
+                           (btn.onclick && btn.onclick.toString().match(/'([^']+)'/)) ? 
+                           btn.onclick.toString().match(/'([^']+)'/)[1] : null;
+            
+            if (habitId) {
+                console.log('🗑️ EMERGENCY HANDLER - Intercepted delete for habit:', habitId);
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Show custom modal
+                const modal = document.getElementById('confirmation-modal');
+                const message = document.getElementById('confirmation-message');
+                const confirmBtn = document.getElementById('confirm-delete-btn');
+                
+                message.textContent = 'Are you sure you want to delete this habit? This action cannot be undone.';
+                
+                // Remove old listeners
+                const newConfirmBtn = confirmBtn.cloneNode(true);
+                confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+                
+                newConfirmBtn.onclick = function() {
+                    modal.classList.add('hidden');
+                    
+                    // Make delete API call
+                    fetch(`/api/habits/${habitId}`, {
+                        method: 'DELETE',
+                        headers: { 'x-session-id': sessionId }
+                    })
+                    .then(response => response.ok ? 
+                        (showNotification('Habit deleted!', 'success'), loadHabitsAndUpdateDashboard()) :
+                        showNotification('Delete failed', 'error')
+                    )
+                    .catch(() => showNotification('Delete failed', 'error'));
+                };
+                
+                modal.classList.remove('hidden');
+                console.log('✅ EMERGENCY HANDLER - Custom modal shown');
+            }
+        }
+    }, true); // Use capture phase to intercept early
+    
+}, 1000); // Wait 1 second to ensure everything is loaded
+
+console.log('🚨 EMERGENCY DELETE FIX LOADED');
+

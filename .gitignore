@@ -5,3 +5,24 @@ core
 *.sqlite
 .wrangler/state/
 .wrangler/tmp/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Wrangler files
+.wrangler/
+.dev.vars
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

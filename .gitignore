@@ -1,0 +1,7 @@
+
+# Large files and backups
+core
+*.tar.gz
+*.sqlite
+.wrangler/state/
+.wrangler/tmp/

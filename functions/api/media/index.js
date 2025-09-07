@@ -93,8 +93,8 @@ export async function onRequestPost(context) {
             });
         }
         
-        const { v4: uuidv4 } = await import('uuid');
-        const mediaId = uuidv4();
+        const { generateMediaId } = await import('../../utils/id-generator.js');
+        const mediaId = generateMediaId();
         const fileExtension = file.name.split('.').pop();
         const r2Key = `uploads/${user.id}/${mediaId}.${fileExtension}`;
         

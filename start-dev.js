@@ -9,7 +9,7 @@ const wrangler = spawn('npx', [
     'dev', 
     'public',
     '--compatibility-date=2023-08-07',
-    '--port=3000'
+    '--port=3001'
 ], {
     stdio: 'inherit',
     cwd: '/home/user/webapp'

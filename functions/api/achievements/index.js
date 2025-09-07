@@ -182,8 +182,8 @@ export async function onRequestPost(context) {
         }
         
         // Award the achievement
-        const { v4: uuidv4 } = await import('uuid');
-        const userAchievementId = uuidv4();
+        const { generateId } = await import('../../utils/id-generator.js');
+        const userAchievementId = generateId();
         
         await env.DB.prepare(`
             INSERT INTO user_achievements (id, user_id, achievement_id)

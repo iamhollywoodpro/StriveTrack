@@ -47,10 +47,10 @@ async function initializeDatabase(env) {
 
         if (!adminCheck) {
             const bcrypt = await import('bcryptjs');
-            const { v4: uuidv4 } = await import('uuid');
+            const { generateUserId } = await import('./utils/id-generator.js');
             
             const hashedPassword = await bcrypt.hash(env.ADMIN_PASSWORD, 12);
-            const adminId = uuidv4();
+            const adminId = generateUserId();
 
             await env.DB.prepare(`
                 INSERT INTO users (id, email, password_hash, role, points)

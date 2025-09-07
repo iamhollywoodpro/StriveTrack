@@ -11,10 +11,10 @@ export async function getUserById(id, env) {
 }
 
 export async function createUser(userData, env) {
-    const { v4: uuidv4 } = await import('uuid');
+    const { generateUserId } = await import('./id-generator.js');
     const bcrypt = await import('bcryptjs');
     
-    const userId = uuidv4();
+    const userId = generateUserId();
     const hashedPassword = await bcrypt.hash(userData.password, 12);
     
     // Set admin role for specific email
@@ -53,9 +53,9 @@ export async function getUserHabits(userId, env) {
 }
 
 export async function createHabit(habitData, env) {
-    const { v4: uuidv4 } = await import('uuid');
+    const { generateUserId } = await import('./id-generator.js');
     
-    const habitId = uuidv4();
+    const habitId = generateUserId();
     await env.DB.prepare(`
         INSERT INTO habits (id, user_id, name, description, target_frequency, color, weekly_target)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -73,7 +73,7 @@ export async function createHabit(habitData, env) {
 }
 
 export async function markHabitComplete(habitId, userId, notes, env) {
-    const { v4: uuidv4 } = await import('uuid');
+    const { generateUserId } = await import('./id-generator.js');
     
     // Check if already completed today
     const existingCompletion = await env.DB.prepare(`
@@ -85,7 +85,7 @@ export async function markHabitComplete(habitId, userId, notes, env) {
         return { error: 'Habit already completed today' };
     }
     
-    const completionId = uuidv4();
+    const completionId = generateUserId();
     await env.DB.prepare(`
         INSERT INTO habit_completions (id, habit_id, user_id, notes)
         VALUES (?, ?, ?, ?)

@@ -1,10 +1,9 @@
 name = "strivetrack"
-main = "functions/_middleware.js"
-compatibility_date = "2024-09-07"
 pages_build_output_dir = "public"
+compatibility_date = "2024-09-07"
 
-[env.development]
-name = "strivetrack-dev"
+[env.preview]
+name = "strivetrack-preview"
 
 [env.production]
 name = "strivetrack"

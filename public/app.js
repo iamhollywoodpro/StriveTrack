@@ -5,11 +5,17 @@ let currentUser = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('StriveTrack app initializing...');
+    console.log('Initial sessionId from localStorage:', sessionId);
+    
     // CRITICAL FIX: Always show login screen first, then validate session
     showLoginScreen();
     
     if (sessionId) {
+        console.log('Found session, validating...');
         validateSession();
+    } else {
+        console.log('No session found, showing login screen');
     }
     
     setupEventListeners();
@@ -219,6 +225,9 @@ function showLoginScreen() {
 
 // Dashboard functions
 function showDashboard() {
+    console.log('Showing dashboard for user:', currentUser);
+    console.log('Current sessionId:', sessionId);
+    
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     
@@ -232,6 +241,7 @@ function showDashboard() {
     }
     
     // Load initial data
+    console.log('Loading dashboard data...');
     loadDashboardData();
 }
 
@@ -318,15 +328,21 @@ async function loadDashboardData() {
 
 // Habits functions
 async function loadHabits() {
+    console.log('Loading habits with sessionId:', sessionId);
     try {
         const response = await fetch('/api/habits', {
             headers: { 'x-session-id': sessionId }
         });
         
+        console.log('Habits response status:', response.status);
+        
         if (response.ok) {
             const data = await response.json();
             const habits = data.habits || [];
+            console.log('Loaded habits:', habits.length);
             displayHabits(habits);
+        } else {
+            console.error('Habits API failed:', response.status, await response.text());
         }
     } catch (error) {
         console.error('Load habits error:', error);
@@ -334,7 +350,14 @@ async function loadHabits() {
 }
 
 function displayHabits(habits) {
+    console.log('Displaying habits:', habits);
     const container = document.getElementById('habits-container');
+    
+    if (!container) {
+        console.error('habits-container element not found!');
+        return;
+    }
+    
     container.innerHTML = '';
     
     if (habits.length === 0) {
@@ -342,8 +365,25 @@ function displayHabits(habits) {
         return;
     }
     
-    // Load weekly data and display habits with weekly view
-    loadWeeklyHabits();
+    // Actually display the habits instead of calling another API
+    try {
+        habits.forEach(habit => {
+            console.log('Creating element for habit:', habit.name);
+            const habitDiv = document.createElement('div');
+            habitDiv.className = 'habit-card';
+            habitDiv.innerHTML = `
+                <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
+                <p class="text-white/60 text-sm">${habit.description || 'No description'}</p>
+                <p class="text-white/70 text-sm">Completions: ${habit.total_completions || 0}</p>
+            `;
+            container.appendChild(habitDiv);
+        });
+        console.log('Successfully created habit elements');
+    } catch (error) {
+        console.error('Error creating habit elements:', error);
+    }
+    
+    console.log('Successfully displayed', habits.length, 'habits');
 }
 
 async function loadWeeklyHabits() {
@@ -1274,14 +1314,20 @@ async function showComparisonModal(comparison) {
 
 // Enhanced Achievements functions
 async function loadAchievements() {
+    console.log('Loading achievements with sessionId:', sessionId);
     try {
         const response = await fetch('/api/achievements', {
             headers: { 'x-session-id': sessionId }
         });
         
+        console.log('Achievements response status:', response.status);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('Loaded achievements:', data?.achievements?.length || 0);
             displayAchievements(data);
+        } else {
+            console.error('Achievements API failed:', response.status, await response.text());
         }
     } catch (error) {
         console.error('Load achievements error:', error);

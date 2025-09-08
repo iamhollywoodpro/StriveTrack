@@ -337,8 +337,8 @@ async function getUserStats(userId, env) {
 
 async function unlockAchievement(userId, achievementId, env) {
     try {
-        const { v4: uuidv4 } = await import('uuid');
-        const userAchievementId = uuidv4();
+        const { generateId } = await import('./id-generator.js');
+        const userAchievementId = generateId();
         
         // Award the achievement
         await env.DB.prepare(`
@@ -620,8 +620,8 @@ async function unlockAchievementIfNotEarned(db, userId, achievementId) {
     if (!achievement) return null;
 
     // Award the achievement
-    const { v4: uuidv4 } = await import('uuid');
-    const userAchievementId = uuidv4();
+    const { generateId } = await import('./id-generator.js');
+    const userAchievementId = generateId();
     
     await db.prepare(`
         INSERT INTO user_achievements (id, user_id, achievement_id, points_earned)
@@ -638,11 +638,11 @@ async function unlockAchievementIfNotEarned(db, userId, achievementId) {
 
 export async function createUserReminders(userId, env) {
     try {
-        const { v4: uuidv4 } = await import('uuid');
+        const { generateId } = await import('./id-generator.js');
         
         const reminders = [
             {
-                id: uuidv4(),
+                id: generateId(),
                 user_id: userId,
                 reminder_type: 'weekly_photo',
                 title: '📸 Weekly Before Photo',
@@ -651,7 +651,7 @@ export async function createUserReminders(userId, env) {
                 trigger_time: '09:00'
             },
             {
-                id: uuidv4(),
+                id: generateId(),
                 user_id: userId,
                 reminder_type: 'weekly_photo',
                 title: '📸 Weekly After Photo',
@@ -660,7 +660,7 @@ export async function createUserReminders(userId, env) {
                 trigger_time: '18:00'
             },
             {
-                id: uuidv4(),
+                id: generateId(),
                 user_id: userId,
                 reminder_type: 'habit',
                 title: '💪 Daily Habit Check',
@@ -669,7 +669,7 @@ export async function createUserReminders(userId, env) {
                 trigger_time: '10:00'
             },
             {
-                id: uuidv4(),
+                id: generateId(),
                 user_id: userId,
                 reminder_type: 'achievement',
                 title: '🏆 Weekly Achievement Review',

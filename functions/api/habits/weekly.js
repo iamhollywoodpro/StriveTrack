@@ -124,8 +124,8 @@ export async function onRequestPost(context) {
             });
         } else {
             // Add completion (toggle on)
-            const { v4: uuidv4 } = await import('uuid');
-            const completionId = uuidv4();
+            const { generateId } = await import('../../utils/id-generator.js');
+            const completionId = generateId();
             
             await env.DB.prepare(`
                 INSERT INTO weekly_habit_completions 

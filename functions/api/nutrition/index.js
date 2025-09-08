@@ -41,11 +41,11 @@ export async function onRequestPost({ request, env }) {
             });
         }
 
-        const { v4: uuidv4 } = await import('uuid');
+        const { generateNutritionId } = await import('../../utils/id-generator.js');
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         
         // Log the food entry
-        const logId = uuidv4();
+        const logId = generateNutritionId();
         await env.DB.prepare(`
             INSERT INTO user_nutrition_logs (
                 id, user_id, log_date, meal_type, food_name,

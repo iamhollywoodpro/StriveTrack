@@ -43,9 +43,9 @@ export async function onRequestPost({ request, env }) {
         }
 
         // Generate unique filename
-        const { v4: uuidv4 } = await import('uuid');
+        const { generateMediaId } = await import('../../utils/id-generator.js');
         const fileExtension = file.name.split('.').pop();
-        const fileName = `videos/${userId}/${Date.now()}-${uuidv4()}.${fileExtension}`;
+        const fileName = `videos/${userId}/${Date.now()}-${generateMediaId()}.${fileExtension}`;
 
         try {
             // Upload to R2
@@ -69,7 +69,7 @@ export async function onRequestPost({ request, env }) {
             const weekNumber = getWeekNumber(today);
             const monthYear = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
             
-            const videoId = uuidv4();
+            const videoId = generateMediaId();
             await env.DB.prepare(`
                 INSERT INTO user_video_uploads (
                     id, user_id, video_url, video_type, upload_date, 

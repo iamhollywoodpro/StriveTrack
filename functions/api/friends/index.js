@@ -108,7 +108,7 @@ export async function onRequestPost({ request, env }) {
         }
 
         const userId = sessionQuery.user_id;
-        const { v4: uuidv4 } = await import('uuid');
+        const { generateId } = await import('../../utils/id-generator.js');
 
         if (action === 'send_request') {
             // Find user by email
@@ -161,7 +161,7 @@ export async function onRequestPost({ request, env }) {
             await env.DB.prepare(`
                 INSERT INTO friend_requests (id, from_user_id, to_user_id)
                 VALUES (?, ?, ?)
-            `).bind(uuidv4(), userId, targetUser.id).run();
+            `).bind(generateId(), userId, targetUser.id).run();
 
             return new Response(JSON.stringify({ message: 'Friend request sent!' }), {
                 status: 200,
@@ -189,8 +189,8 @@ export async function onRequestPost({ request, env }) {
             `).bind(request_id).run();
 
             // Create friendship entries
-            const friendshipId1 = uuidv4();
-            const friendshipId2 = uuidv4();
+            const friendshipId1 = generateId();
+            const friendshipId2 = generateId();
             
             await env.DB.prepare(`
                 INSERT INTO user_friends (id, user_id, friend_id, status, accepted_at)

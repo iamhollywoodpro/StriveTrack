@@ -41,50 +41,80 @@ export async function onRequestGet(context) {
             WHERE u.id = ?
         `).bind(user.id, user.id, user.id, user.id, user.id, user.id).first();
         
+        // Ensure userStatsResult has default values if null
+        if (!userStatsResult) {
+            return new Response(JSON.stringify({ 
+                error: 'User not found' 
+            }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        
         // Calculate current progress for each achievement
         const achievementsWithProgress = achievements.map(achievement => {
             let currentProgress = 0;
             let progressPercentage = 0;
             
-            switch (achievement.requirement_type) {
-                case 'account_created':
-                    currentProgress = 1;
-                    break;
-                case 'habits_created':
-                    currentProgress = userStatsResult.habits_created;
-                    break;
-                case 'total_completions':
-                    currentProgress = userStatsResult.total_completions;
-                    break;
-                case 'photos_uploaded':
-                    currentProgress = userStatsResult.photos_uploaded;
-                    break;
-                case 'videos_uploaded':
-                    currentProgress = userStatsResult.videos_uploaded;
-                    break;
-                case 'total_media':
-                    currentProgress = userStatsResult.total_media;
-                    break;
-                case 'total_points':
-                    currentProgress = userStatsResult.total_points;
-                    break;
-                case 'habit_streak':
-                    // TODO: Calculate actual streak - for now use placeholder
-                    currentProgress = 0;
-                    break;
-                default:
-                    currentProgress = achievement.earned ? achievement.requirement_value : 0;
+            try {
+                switch (achievement.requirement_type) {
+                    case 'account_created':
+                        currentProgress = 1;
+                        break;
+                    case 'habits_created':
+                        currentProgress = userStatsResult.habits_created || 0;
+                        break;
+                    case 'total_completions':
+                        currentProgress = userStatsResult.total_completions || 0;
+                        break;
+                    case 'photos_uploaded':
+                        currentProgress = userStatsResult.photos_uploaded || 0;
+                        break;
+                    case 'videos_uploaded':
+                        currentProgress = userStatsResult.videos_uploaded || 0;
+                        break;
+                    case 'total_media':
+                        currentProgress = userStatsResult.total_media || 0;
+                        break;
+                    case 'total_points':
+                        currentProgress = userStatsResult.total_points || 0;
+                        break;
+                    case 'habit_streak':
+                        currentProgress = 0;
+                        break;
+                    case 'nutrition_logs':
+                        currentProgress = 0; // TODO: implement nutrition tracking
+                        break;
+                    case 'media_uploads':
+                        currentProgress = userStatsResult.total_media || 0;
+                        break;
+                    default:
+                        currentProgress = achievement.earned ? achievement.requirement_value : 0;
+                }
+                
+                if (achievement.requirement_value && achievement.requirement_value > 0) {
+                    progressPercentage = Math.min(100, Math.round((currentProgress / achievement.requirement_value) * 100));
+                } else {
+                    progressPercentage = 0;
+                }
+                
+                return {
+                    ...achievement,
+                    current_progress: currentProgress,
+                    progress_percentage: progressPercentage,
+                    is_completed: achievement.earned === 1,
+                    is_unlockable: currentProgress >= achievement.requirement_value && !achievement.earned
+                };
+            } catch (err) {
+                // Return a safe version if processing fails
+                return {
+                    ...achievement,
+                    current_progress: 0,
+                    progress_percentage: 0,
+                    is_completed: achievement.earned === 1,
+                    is_unlockable: false
+                };
             }
-            
-            progressPercentage = Math.min(100, Math.round((currentProgress / achievement.requirement_value) * 100));
-            
-            return {
-                ...achievement,
-                current_progress: currentProgress,
-                progress_percentage: progressPercentage,
-                is_completed: achievement.earned === 1,
-                is_unlockable: currentProgress >= achievement.requirement_value && !achievement.earned
-            };
         });
         
         // Group achievements by category

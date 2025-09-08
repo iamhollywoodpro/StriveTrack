@@ -1,0 +1,59 @@
+
+ ⛅️ wrangler 4.34.0
+───────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (strivetrack)                                       D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+env.ENVIRONMENT ("development")                            Environment Variable      local
+
+⎔ Starting local server...
+[wrangler:info] Ready on http://0.0.0.0:5000
+[wrangler:info] - http://127.0.0.1:5000
+[wrangler:info] - http://169.254.0.21:5000
+⎔ Reloading local server...
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (strivetrack)                                       D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+env.ENVIRONMENT ("development")                            Environment Variable      local
+
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (strivetrack)                                       D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+env.ENVIRONMENT ("development")                            Environment Variable      local
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mBuild failed with 1 error:[0m
+
+  [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "/home/user/webapp/.wrangler/tmp/bundle-dAvyJX/middleware-loader.entry.ts"[0m
+  
+  
+
+
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...
+✨ Compiled Worker successfully
+⎔ Reloading local server...

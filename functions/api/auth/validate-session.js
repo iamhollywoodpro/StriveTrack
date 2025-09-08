@@ -9,7 +9,8 @@ export async function onRequestGet(context) {
         
         if (!user) {
             return new Response(JSON.stringify({ 
-                error: 'Invalid session' 
+                valid: false,
+                error: 'Invalid or expired session' 
             }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' }
@@ -17,6 +18,7 @@ export async function onRequestGet(context) {
         }
         
         return new Response(JSON.stringify({
+            valid: true,
             user: {
                 id: user.id,
                 email: user.email,
@@ -31,6 +33,7 @@ export async function onRequestGet(context) {
     } catch (error) {
         console.error('Session validation error:', error);
         return new Response(JSON.stringify({ 
+            valid: false,
             error: 'Internal server error' 
         }), {
             status: 500,

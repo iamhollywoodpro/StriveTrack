@@ -1,7 +1,22 @@
 // Authentication utilities for StriveTrack
 
 export async function getCurrentUser(request, env) {
-    const sessionId = request.headers.get('x-session-id');
+    // Try to get session ID from header first, then from cookie
+    let sessionId = request.headers.get('x-session-id');
+    
+    if (!sessionId) {
+        // Try to get from cookie as fallback
+        const cookieHeader = request.headers.get('cookie');
+        if (cookieHeader) {
+            const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+                const [key, value] = cookie.trim().split('=');
+                acc[key] = value;
+                return acc;
+            }, {});
+            sessionId = cookies.sessionId;
+        }
+    }
+    
     if (!sessionId) {
         return null;
     }

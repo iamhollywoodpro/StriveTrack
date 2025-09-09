@@ -1432,8 +1432,8 @@ function createAchievementElement(achievement) {
             <div class="flex justify-between items-center text-xs">
                 <div class="flex items-center space-x-2">
                     ${achievement.points > 0 ? `<span>🏆 ${achievement.points} pts</span>` : ''}
-                    <span class="px-2 py-1 rounded" style="background-color: ${difficultyColors[achievement.difficulty]}; color: white; font-size: 10px;">
-                        ${achievement.difficulty.toUpperCase()}
+                    <span class="px-2 py-1 rounded" style="background-color: ${difficultyColors[achievement.difficulty] || '#666666'}; color: white; font-size: 10px;">
+                        ${(achievement.difficulty || 'STANDARD').toUpperCase()}
                     </span>
                 </div>
                 ${achievement.is_completed ? '<span style="color: #10b981;">✅</span>' : ''}

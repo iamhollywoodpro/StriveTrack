@@ -490,3 +490,229 @@ OSError: [Errno 98] Address already in use
 2025-09-09T01:59:41: [wrangler:info] GET /api/habits 200 OK (41ms)
 2025-09-09T01:59:42: [wrangler:info] GET /api/achievements 200 OK (40ms)
 2025-09-09T01:59:42: [wrangler:info] GET /api/achievements 200 OK (40ms)
+2025-09-09T02:05:21: [wrangler:info] GET / 200 OK (41ms)
+2025-09-09T02:05:21: [wrangler:info] GET / 200 OK (41ms)
+2025-09-09T07:00:22: [wrangler:info] GET /robots.txt 200 OK (194ms)
+2025-09-09T07:00:22: [wrangler:info] GET /robots.txt 200 OK (194ms)
+2025-09-09T07:00:22: [wrangler:info] GET / 200 OK (28ms)
+2025-09-09T07:00:22: [wrangler:info] GET / 200 OK (28ms)
+2025-09-09T07:00:28: [wrangler:info] GET /app.js 200 OK (48ms)
+2025-09-09T07:00:28: [wrangler:info] GET /app.js 200 OK (48ms)
+2025-09-09T07:00:34: [wrangler:info] GET /$%7BafterUrl%7D 200 OK (26ms)
+2025-09-09T07:00:34: [wrangler:info] GET /$%7BafterUrl%7D 200 OK (26ms)
+2025-09-09T07:00:36: [wrangler:info] GET /$%7BimageUrl%7D 200 OK (19ms)
+2025-09-09T07:00:36: [wrangler:info] GET /$%7BimageUrl%7D 200 OK (19ms)
+2025-09-09T07:00:38: [wrangler:info] GET /$%7BbeforeUrl%7D 200 OK (17ms)
+2025-09-09T07:00:38: [wrangler:info] GET /$%7BbeforeUrl%7D 200 OK (17ms)
+2025-09-09T07:00:41: [wrangler:info] GET /$%7BmediaUrl%7D 200 OK (24ms)
+2025-09-09T07:00:41: [wrangler:info] GET /$%7BmediaUrl%7D 200 OK (24ms)
+2025-09-09T21:08:25: [wrangler:info] GET / 200 OK (380ms)
+2025-09-09T21:08:25: [wrangler:info] GET / 200 OK (380ms)
+2025-09-09T21:08:25: [wrangler:info] GET /app.js 200 OK (26ms)
+2025-09-09T21:08:25: [wrangler:info] GET /app.js 200 OK (26ms)
+2025-09-09T21:08:25: [wrangler:info] GET /api/auth/validate-session 200 OK (47ms)
+2025-09-09T21:08:25: [wrangler:info] GET /api/auth/validate-session 200 OK (47ms)
+2025-09-09T21:08:25: [wrangler:info] GET /api/habits/weekly 200 OK (76ms)
+2025-09-09T21:08:25: [wrangler:info] GET /api/habits/weekly 200 OK (76ms)
+2025-09-09T21:08:26: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:08:26: 
+2025-09-09T21:08:26:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:08:26:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:26:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:08:26:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:08:26:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:08:26:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:08:26:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:26:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:08:26:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:26:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:08:26:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:26:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:08:26:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:26:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:08:26:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:26:   }
+2025-09-09T21:08:26: 
+2025-09-09T21:08:26: 
+2025-09-09T21:08:26: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:08:26: 
+2025-09-09T21:08:26:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:08:26:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:26:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:08:26:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:08:26:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:08:26:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:08:26:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:26:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:08:26:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:26:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:08:26:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:26:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:08:26:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:26:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:08:26:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:26:   }
+2025-09-09T21:08:26: 
+2025-09-09T21:08:26: 
+2025-09-09T21:08:26: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (257ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/habits 200 OK (259ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (257ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/habits 200 OK (259ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/admin/media 200 OK (257ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/achievements 200 OK (268ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/admin/media 200 OK (257ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/achievements 200 OK (268ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/media/enhanced 200 OK (163ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/media/enhanced 200 OK (163ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/admin/users 200 OK (163ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/admin/users 200 OK (163ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/admin/users 200 OK (32ms)
+2025-09-09T21:08:26: [wrangler:info] GET /api/admin/users 200 OK (32ms)
+2025-09-09T21:08:27: [wrangler:info] GET /api/habits 200 OK (19ms)
+2025-09-09T21:08:27: [wrangler:info] GET /api/habits 200 OK (19ms)
+2025-09-09T21:08:30: [wrangler:info] GET /api/media/enhanced 200 OK (22ms)
+2025-09-09T21:08:30: [wrangler:info] GET /api/media/enhanced 200 OK (22ms)
+2025-09-09T21:08:33: [wrangler:info] GET /api/nutrition 200 OK (37ms)
+2025-09-09T21:08:33: [wrangler:info] GET /api/nutrition 200 OK (37ms)
+2025-09-09T21:08:35: [wrangler:info] GET /api/leaderboards 200 OK (33ms)
+2025-09-09T21:08:35: [wrangler:info] GET /api/leaderboards 200 OK (33ms)
+2025-09-09T21:08:35: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:08:35: 
+2025-09-09T21:08:35:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:08:35:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:35:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:08:35:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:08:35:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:08:35:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:08:35:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:35:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:08:35:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:35:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:08:35:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:35:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:08:35:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:35:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:08:35:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:35:   }
+2025-09-09T21:08:35: 
+2025-09-09T21:08:35: 
+2025-09-09T21:08:35: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:08:35: 
+2025-09-09T21:08:35:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:08:35:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:35:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:08:35:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:08:35:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:08:35:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:08:35:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:35:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:08:35:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:35:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:08:35:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:35:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:08:35:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:35:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:08:35:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:35:   }
+2025-09-09T21:08:35: 
+2025-09-09T21:08:35: 
+2025-09-09T21:08:35: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (79ms)
+2025-09-09T21:08:35: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (79ms)
+2025-09-09T21:08:35: [wrangler:info] GET /api/achievements 200 OK (82ms)
+2025-09-09T21:08:35: [wrangler:info] GET /api/achievements 200 OK (82ms)
+2025-09-09T21:08:38: [wrangler:info] GET /api/admin/users 200 OK (23ms)
+2025-09-09T21:08:38: [wrangler:info] GET /api/admin/users 200 OK (23ms)
+2025-09-09T21:08:38: [wrangler:info] GET /api/admin/media 200 OK (37ms)
+2025-09-09T21:08:38: [wrangler:info] GET /api/admin/media 200 OK (37ms)
+2025-09-09T21:08:38: [wrangler:info] GET /api/admin/users 200 OK (39ms)
+2025-09-09T21:08:38: [wrangler:info] GET /api/admin/users 200 OK (39ms)
+2025-09-09T21:08:39: [wrangler:info] GET /api/achievements 200 OK (25ms)
+2025-09-09T21:08:39: [wrangler:info] GET /api/achievements 200 OK (25ms)
+2025-09-09T21:08:39: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:08:39: 
+2025-09-09T21:08:39:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:08:39:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:39:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:08:39:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:08:39:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:08:39:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:08:39:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:39:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:08:39:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:39:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:08:39:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:39:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:08:39:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:39:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:08:39:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:39:   }
+2025-09-09T21:08:39: 
+2025-09-09T21:08:39: 
+2025-09-09T21:08:39: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:08:39: 
+2025-09-09T21:08:39:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:08:39:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:39:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:08:39:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:08:39:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:08:39:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:08:39:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:08:39:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:08:39:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:39:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:08:39:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:08:39:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:08:39:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:39:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:08:39:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:08:39:   }
+2025-09-09T21:08:39: 
+2025-09-09T21:08:39: 
+2025-09-09T21:08:39: [wrangler:info] GET /api/leaderboards 200 OK (64ms)
+2025-09-09T21:08:39: [wrangler:info] GET /api/leaderboards 200 OK (64ms)
+2025-09-09T21:08:39: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (52ms)
+2025-09-09T21:08:39: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (52ms)
+2025-09-09T21:10:53: [wrangler:info] GET / 200 OK (119ms)
+2025-09-09T21:10:53: [wrangler:info] GET / 200 OK (119ms)
+2025-09-09T21:10:53: [wrangler:info] GET /app.js 200 OK (25ms)
+2025-09-09T21:10:53: [wrangler:info] GET /app.js 200 OK (25ms)
+2025-09-09T21:10:53: [wrangler:info] GET /favicon.ico 200 OK (25ms)
+2025-09-09T21:10:53: [wrangler:info] GET /favicon.ico 200 OK (25ms)
+2025-09-09T21:12:16: [wrangler:info] POST /api/auth/login 200 OK (687ms)
+2025-09-09T21:12:16: [wrangler:info] POST /api/auth/login 200 OK (687ms)
+2025-09-09T21:12:16: [wrangler:info] GET /api/achievements 200 OK (37ms)
+2025-09-09T21:12:16: [wrangler:info] GET /api/achievements 200 OK (37ms)
+2025-09-09T21:12:29: 🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-09_01-59-24_516.log"
+2025-09-09T21:12:29: 🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-09_01-59-24_516.log"
+2025-09-09T21:12:32: 
+2025-09-09T21:12:32:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:12:32: ─────────────────────────────────────────────
+2025-09-09T21:12:32: 
+2025-09-09T21:12:32:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:12:32: ─────────────────────────────────────────────
+2025-09-09T21:12:33: ✨ Compiled Worker successfully
+2025-09-09T21:12:33: ✨ Compiled Worker successfully
+2025-09-09T21:12:33: Your Worker has access to the following bindings:
+2025-09-09T21:12:33: Your Worker has access to the following bindings:
+2025-09-09T21:12:33: Binding                                                    Resource                  Mode
+2025-09-09T21:12:33: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:12:33: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:12:33: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:12:33: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:12:33: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:12:33: 
+2025-09-09T21:12:33: Binding                                                    Resource                  Mode
+2025-09-09T21:12:33: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:12:33: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:12:33: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:12:33: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:12:33: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:12:33: 
+2025-09-09T21:12:33: ⎔ Starting local server...
+2025-09-09T21:12:33: ⎔ Starting local server...
+2025-09-09T21:12:33: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:12:33: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:12:54: [wrangler:info] POST /api/auth/login 200 OK (671ms)
+2025-09-09T21:12:54: [wrangler:info] POST /api/auth/login 200 OK (671ms)
+2025-09-09T21:12:54: [wrangler:info] GET /api/achievements 200 OK (57ms)
+2025-09-09T21:12:54: [wrangler:info] GET /api/achievements 200 OK (57ms)

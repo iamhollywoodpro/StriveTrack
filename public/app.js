@@ -350,7 +350,6 @@ async function loadHabits() {
 }
 
 function displayHabits(habits) {
-    console.log('Displaying habits:', habits);
     const container = document.getElementById('habits-container');
     
     if (!container) {
@@ -365,25 +364,11 @@ function displayHabits(habits) {
         return;
     }
     
-    // Actually display the habits instead of calling another API
-    try {
-        habits.forEach(habit => {
-            console.log('Creating element for habit:', habit.name);
-            const habitDiv = document.createElement('div');
-            habitDiv.className = 'habit-card';
-            habitDiv.innerHTML = `
-                <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
-                <p class="text-white/60 text-sm">${habit.description || 'No description'}</p>
-                <p class="text-white/70 text-sm">Completions: ${habit.total_completions || 0}</p>
-            `;
-            container.appendChild(habitDiv);
-        });
-        console.log('Successfully created habit elements');
-    } catch (error) {
-        console.error('Error creating habit elements:', error);
-    }
-    
-    console.log('Successfully displayed', habits.length, 'habits');
+    // Display habits using the proper createHabitElement function
+    habits.forEach(habit => {
+        const habitElement = createHabitElement(habit, false);
+        container.appendChild(habitElement);
+    });
 }
 
 async function loadWeeklyHabits() {
@@ -421,7 +406,23 @@ function displayWeeklyHabits(habits) {
     });
 }
 
-
+function updateCurrentWeekDisplay() {
+    const weekDisplay = document.getElementById('current-week-display');
+    if (!weekDisplay) return;
+    
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay()); // Start from Sunday
+    
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6); // End on Saturday
+    
+    const options = { month: 'short', day: 'numeric' };
+    const startStr = weekStart.toLocaleDateString('en-US', options);
+    const endStr = weekEnd.toLocaleDateString('en-US', options);
+    
+    weekDisplay.textContent = `${startStr} - ${endStr}`;
+}
 
 function createHabitElement(habit, showWeekView = false) {
     const div = document.createElement('div');
@@ -1341,76 +1342,34 @@ function displayAchievements(data) {
     // Store achievement stats globally for use in displayDailyChallenges
     window.achievementStats = data.stats;
     
-    // Enhanced achievement categories with 8 distinct categories
-    const categories = [
-        { key: 'onboarding', title: '🚀 Getting Started', description: 'First steps on your fitness journey' },
-        { key: 'habits', title: '🔥 Habit Building', description: 'Building and maintaining consistent routines' },
-        { key: 'progress', title: '📸 Progress Tracking', description: 'Document your transformation journey' },
-        { key: 'nutrition', title: '🍎 Nutrition & Health', description: 'Fueling your body for success' },
-        { key: 'social', title: '👥 Social & Community', description: 'Connect and compete with others' },
-        { key: 'consistency', title: '⚡ Consistency & Streaks', description: 'Dedication through time' },
-        { key: 'challenges', title: '🏆 Challenges & Goals', description: 'Push your limits and achieve more' },
-        { key: 'analytics', title: '📊 Data & Analytics', description: 'Understanding your patterns and progress' }
-    ];
+    // Handle both grouped and flat achievement data
+    const achievements = data.achievements || [];
+    
+    if (achievements.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">🏆</div>
+                <h3 class="text-xl font-bold text-white mb-2">No Achievements Yet</h3>
+                <p class="text-white/70">Start completing habits to unlock your first achievements!</p>
+            </div>
+        `;
+        return;
+    }
     
     // Get filter value
     const filterSelect = document.getElementById('achievement-category-filter');
     const selectedFilter = filterSelect ? filterSelect.value : 'all';
     
-    categories.forEach(category => {
-        const categoryAchievements = data.grouped_achievements[category.key] || [];
-        if (categoryAchievements.length === 0) return;
-        
-        // Apply filter
-        if (selectedFilter !== 'all' && selectedFilter !== category.key) return;
-        
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'mb-8 achievement-category';
-        categoryDiv.setAttribute('data-category', category.key);
-        
-        const earnedCount = categoryAchievements.filter(a => a.is_completed).length;
-        const totalPoints = categoryAchievements.reduce((sum, a) => sum + (a.is_completed ? a.points : 0), 0);
-        
-        categoryDiv.innerHTML = `
-            <div class="mb-4 p-4 bg-gradient-to-r from-slate-800/30 to-slate-700/30 rounded-lg border border-white/10">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-xl font-bold text-white">${category.title}</h3>
-                    <div class="text-right">
-                        <div class="text-yellow-400 font-semibold">⭐ ${totalPoints} pts</div>
-                        <div class="text-white/60 text-sm">${earnedCount}/${categoryAchievements.length}</div>
-                    </div>
-                </div>
-                <p class="text-white/70 text-sm mb-2">${category.description}</p>
-                <div class="w-full bg-white/10 rounded-full h-2">
-                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300" 
-                         style="width: ${categoryAchievements.length > 0 ? (earnedCount / categoryAchievements.length) * 100 : 0}%"></div>
-                </div>
-            </div>
-            <div class="achievement-grid" id="category-${category.key}">
-            </div>
-        `;
-        
-        container.appendChild(categoryDiv);
-        
-        const categoryContainer = document.getElementById(`category-${category.key}`);
-        categoryAchievements.forEach(achievement => {
-            const achievementElement = createAchievementElement(achievement);
-            categoryContainer.appendChild(achievementElement);
-        });
+    // Create a simple grid display for all achievements
+    const achievementsGrid = document.createElement('div');
+    achievementsGrid.className = 'achievement-grid';
+    
+    achievements.forEach(achievement => {
+        const achievementElement = createAchievementElement(achievement);
+        achievementsGrid.appendChild(achievementElement);
     });
     
-    if (Object.keys(data.grouped_achievements).length === 0) {
-        container.innerHTML = '<p class="text-white/70 text-center">No achievements available yet. Keep using StriveTrack to unlock achievements!</p>';
-    }
-    
-    // Add event listener for category filter
-    const categoryFilter = document.getElementById('achievement-category-filter');
-    if (categoryFilter && !categoryFilter.hasAttribute('data-listener')) {
-        categoryFilter.setAttribute('data-listener', 'true');
-        categoryFilter.addEventListener('change', () => {
-            displayAchievements(data);
-        });
-    }
+    container.appendChild(achievementsGrid);
 }
 
 function createAchievementElement(achievement) {
@@ -2570,7 +2529,8 @@ function showSection(section) {
     
     // Load section-specific data
     if (section === 'habits') {
-        loadWeeklyHabits();
+        updateCurrentWeekDisplay();
+        loadHabits();
     } else if (section === 'progress') {
         loadMedia();
     } else if (section === 'nutrition') {

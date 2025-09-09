@@ -220,6 +220,20 @@ INSERT OR IGNORE INTO achievements (id, name, description, icon, points, require
 ('achievement_100_points', 'Century Club', 'Earn 100 total points', 'fas fa-medal', 0, 'total_points', 100),
 ('achievement_500_points', 'Point Master', 'Earn 500 total points', 'fas fa-crown', 0, 'total_points', 500);
 
+-- Weekly habit completions table for calendar view
+CREATE TABLE IF NOT EXISTS weekly_habit_completions (
+    id TEXT PRIMARY KEY,
+    habit_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    completion_date DATE NOT NULL,
+    day_of_week INTEGER NOT NULL, -- 0 = Sunday, 6 = Saturday
+    week_start_date DATE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(habit_id, completion_date)
+);
+
 -- Insert default daily challenges
 INSERT OR IGNORE INTO daily_challenges (id, name, description, icon, category, target_value, points, rarity, is_active) VALUES
 ('daily_habit_streak', 'Streak Master', 'Complete 3 habits today', '🔥', 'habits', 3, 30, 'common', 1),

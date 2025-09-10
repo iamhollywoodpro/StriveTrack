@@ -4531,14 +4531,7 @@ function completeEnhancedChallenge(challengeId) {
         return;
     }
     
-    // Find the challenge to get points
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const challengeTemplates = {
-        0: [ // Sunday challenges... (would need full template here)
-    };
-    
-    // For now, let's get points from the challenge card
+    // Get points from the challenge card
     const challengeCard = document.querySelector(`button[onclick="completeEnhancedChallenge('${challengeId}')"]`).closest('.enhanced-challenge-card');
     const pointsText = challengeCard.querySelector('.text-yellow-400').textContent;
     const points = parseInt(pointsText.replace('+', ''));

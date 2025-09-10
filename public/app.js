@@ -2583,13 +2583,51 @@ function closeModal(modalId) {
 
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.className = `notification ${type}`;
-    notification.classList.add('show');
     
-    setTimeout(() => {
-        notification.classList.remove('show');
+    // Clear any existing timeouts to prevent conflicts
+    if (notification.hideTimeout) {
+        clearTimeout(notification.hideTimeout);
+    }
+    
+    // Force remove show class first to reset animation
+    notification.classList.remove('show');
+    
+    // Set content with close button
+    notification.innerHTML = `
+        <span class="notification-message">${message}</span>
+        <button class="notification-close" onclick="closeNotification()">×</button>
+    `;
+    notification.className = `notification ${type}`;
+    
+    // Use requestAnimationFrame to ensure CSS reset before showing
+    requestAnimationFrame(() => {
+        notification.classList.add('show');
+    });
+    
+    // Set timeout to hide notification after 3 seconds
+    notification.hideTimeout = setTimeout(() => {
+        closeNotification();
     }, 3000);
+}
+
+function closeNotification() {
+    const notification = document.getElementById('notification');
+    
+    // Clear timeout if exists
+    if (notification.hideTimeout) {
+        clearTimeout(notification.hideTimeout);
+        notification.hideTimeout = null;
+    }
+    
+    // Remove show class to trigger hide animation
+    notification.classList.remove('show');
+    
+    // Clear content after animation completes
+    setTimeout(() => {
+        if (!notification.classList.contains('show')) {
+            notification.innerHTML = '';
+        }
+    }, 300);
 }
 
 function updateDashboardStats() {

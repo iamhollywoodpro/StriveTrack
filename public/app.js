@@ -231,9 +231,15 @@ function showDashboard() {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     
-    // Update welcome text and points
-    document.getElementById('welcome-text').textContent = `Welcome, ${currentUser.email.split('@')[0]} ⭐ ${currentUser.points || 0} pts`;
-    document.getElementById('user-points').textContent = `⭐ ${currentUser.points || 0} pts`;
+    // Initialize and load user progress from localStorage
+    loadUserProgress();
+    
+    // Update welcome text with username
+    const username = currentUser.username || currentUser.email.split('@')[0];
+    document.getElementById('welcome-text').textContent = `Welcome, ${username}`;
+    
+    // Update points display with local progress (achievements points)
+    updatePointsDisplay();
     
     // Show admin tab if user is admin
     if (currentUser.role === 'admin') {
@@ -2543,6 +2549,8 @@ function showSection(section) {
     } else if (section === 'goals') {
         loadGoals();
     } else if (section === 'achievements') {
+        // Always update points when entering achievements section
+        updatePointsDisplay();
         loadAchievements();
         loadDailyChallenges();
         loadWeeklyChallenges();
@@ -3520,13 +3528,17 @@ function createLeaderboardEntry(entry, type) {
     `;
 }
 
-// Initialize app - Load user progress and set up event listeners
+// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize user progress system
+    // Initialize user progress system early
     loadUserProgress();
     
-    // Initialize points display
-    updatePointsDisplay();
+    // Set up a timer to regularly update points display
+    setInterval(() => {
+        if (document.getElementById('dashboard') && !document.getElementById('dashboard').classList.contains('hidden')) {
+            updatePointsDisplay();
+        }
+    }, 5000); // Update every 5 seconds when dashboard is visible
     
     // Add event listeners for social hub buttons
     const addFriendBtn = document.getElementById('add-friend-btn');
@@ -4531,15 +4543,26 @@ function completeEnhancedChallenge(challengeId) {
         return;
     }
     
+    // Anti-cheat verification
+    if (!verifyChallengeCompletion(challengeId)) {
+        return; // Verification failed, don't award points
+    }
+    
     // Get points from the challenge card
     const challengeCard = document.querySelector(`button[onclick="completeEnhancedChallenge('${challengeId}')"]`).closest('.enhanced-challenge-card');
     const pointsText = challengeCard.querySelector('.text-yellow-400').textContent;
     const points = parseInt(pointsText.replace('+', ''));
     
-    // Add to completed challenges
+    // Add to completed challenges with timestamp
     userProgress.completedChallenges.add(challengeId);
     userProgress.points += points;
     userProgress.lastActivity = new Date().toISOString();
+    
+    // Store completion time for verification
+    if (!userProgress.challengeCompletionTimes) {
+        userProgress.challengeCompletionTimes = {};
+    }
+    userProgress.challengeCompletionTimes[challengeId] = new Date().toISOString();
     
     // Save progress
     saveUserProgress();
@@ -4553,10 +4576,154 @@ function completeEnhancedChallenge(challengeId) {
     // Check for achievements
     checkAchievements();
     
-    // Update displays
+    // Update displays immediately
+    updatePointsDisplay();
+    
+    // Reload challenges to show completion state
     setTimeout(() => {
         loadDailyChallenges();
-        updatePointsDisplay();
+        updateDashboardStats();
+    }, 1000);
+}
+
+// Anti-cheat verification system
+function verifyChallengeCompletion(challengeId) {
+    // Get challenge details
+    const challengeCard = document.querySelector(`button[onclick="completeEnhancedChallenge('${challengeId}')"]`).closest('.enhanced-challenge-card');
+    const challengeTitle = challengeCard.querySelector('h4').textContent;
+    const challengeType = challengeCard.querySelector('.px-2.py-1').textContent.toLowerCase();
+    
+    // Time-based verification (prevent rapid clicking)
+    const lastCompletion = userProgress.lastChallengeCompletion || 0;
+    const now = Date.now();
+    if (now - lastCompletion < 3000) { // 3 second cooldown
+        showNotification('⚠️ Please wait before completing another challenge!', 'warning');
+        return false;
+    }
+    userProgress.lastChallengeCompletion = now;
+    
+    // Challenge-specific verification
+    if (requiresVerification(challengeId, challengeType)) {
+        return showChallengeVerification(challengeId, challengeTitle);
+    }
+    
+    return true;
+}
+
+function requiresVerification(challengeId, challengeType) {
+    // High-point challenges require verification
+    const challengeCard = document.querySelector(`button[onclick="completeEnhancedChallenge('${challengeId}')"]`).closest('.enhanced-challenge-card');
+    const points = parseInt(challengeCard.querySelector('.text-yellow-400').textContent.replace('+', ''));
+    
+    // Require verification for high-value challenges (30+ points) or certain types
+    return points >= 30 || 
+           challengeType.includes('strength') || 
+           challengeType.includes('endurance') || 
+           challengeType.includes('challenge');
+}
+
+function showChallengeVerification(challengeId, challengeTitle) {
+    const verificationQuestions = [
+        "How many reps did you complete?",
+        "How do you feel after completing this challenge?",
+        "What was the most difficult part?",
+        "Rate your effort level (1-10):",
+        "How long did this challenge take you?"
+    ];
+    
+    const randomQuestion = verificationQuestions[Math.floor(Math.random() * verificationQuestions.length)];
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-xl max-w-md mx-4 text-center border border-white/10">
+            <div class="text-4xl mb-4">💪</div>
+            <h2 class="text-xl font-bold text-white mb-4">Challenge Verification</h2>
+            <p class="text-white/80 mb-4">${challengeTitle}</p>
+            <p class="text-white/70 mb-4">${randomQuestion}</p>
+            <textarea class="w-full p-3 bg-slate-700 text-white rounded-lg border border-white/20 mb-4" 
+                     placeholder="Your answer..." id="verification-answer" rows="3"></textarea>
+            <div class="flex gap-3">
+                <button onclick="cancelVerification()" class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    Cancel
+                </button>
+                <button onclick="confirmVerification('${challengeId}')" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    Confirm Completion
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.getElementById('verification-answer').focus();
+    return false; // Don't complete immediately, wait for verification
+}
+
+function confirmVerification(challengeId) {
+    const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-75');
+    const answer = document.getElementById('verification-answer').value.trim();
+    
+    if (answer.length < 3) {
+        showNotification('⚠️ Please provide a meaningful answer to verify completion!', 'warning');
+        return;
+    }
+    
+    // Store verification answer
+    if (!userProgress.verificationAnswers) {
+        userProgress.verificationAnswers = {};
+    }
+    userProgress.verificationAnswers[challengeId] = {
+        answer: answer,
+        timestamp: new Date().toISOString()
+    };
+    
+    modal.remove();
+    
+    // Now actually complete the challenge
+    completeVerifiedChallenge(challengeId);
+}
+
+function cancelVerification() {
+    const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-75');
+    if (modal) modal.remove();
+    showNotification('Challenge completion cancelled', 'info');
+}
+
+function completeVerifiedChallenge(challengeId) {
+    // Get points from the challenge card
+    const challengeCard = document.querySelector(`button[onclick="completeEnhancedChallenge('${challengeId}')"]`).closest('.enhanced-challenge-card');
+    const pointsText = challengeCard.querySelector('.text-yellow-400').textContent;
+    const points = parseInt(pointsText.replace('+', ''));
+    
+    // Add to completed challenges with timestamp
+    userProgress.completedChallenges.add(challengeId);
+    userProgress.points += points;
+    userProgress.lastActivity = new Date().toISOString();
+    
+    // Store completion time for verification
+    if (!userProgress.challengeCompletionTimes) {
+        userProgress.challengeCompletionTimes = {};
+    }
+    userProgress.challengeCompletionTimes[challengeId] = new Date().toISOString();
+    
+    // Save progress
+    saveUserProgress();
+    
+    // Show notification with points
+    showNotification(`✅ Challenge verified and completed! +${points} points earned!`, 'success');
+    
+    // Add celebration effect
+    celebrateChallenge(points);
+    
+    // Check for achievements
+    checkAchievements();
+    
+    // Update displays immediately
+    updatePointsDisplay();
+    
+    // Reload challenges to show completion state
+    setTimeout(() => {
+        loadDailyChallenges();
         updateDashboardStats();
     }, 1000);
 }
@@ -4748,16 +4915,22 @@ function updatePointsDisplay() {
         totalPointsDisplay.classList.add('points-display');
     }
     
+    // CRITICAL FIX: Update header points display
+    const headerPointsDisplay = document.getElementById('user-points');
+    if (headerPointsDisplay) {
+        headerPointsDisplay.textContent = `⭐ ${userProgress.points.toLocaleString()} pts`;
+    }
+    
     // Update other points displays
     const pointsElements = document.querySelectorAll('.points-display, [data-points]');
     pointsElements.forEach(el => {
         el.textContent = `${userProgress.points.toLocaleString()} pts`;
     });
     
-    // Update header if exists
-    const header = document.querySelector('.user-points, .total-points');
-    if (header) {
-        header.textContent = `${userProgress.points.toLocaleString()} Points`;
+    // Update welcome text with username
+    const welcomeText = document.getElementById('welcome-text');
+    if (welcomeText && currentUser) {
+        welcomeText.textContent = `Welcome, ${currentUser.username}`;
     }
 }
 

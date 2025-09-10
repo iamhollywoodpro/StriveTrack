@@ -449,67 +449,9 @@ function updateCurrentWeekDisplay() {
     weekDisplay.textContent = `${startStr} - ${endStr}`;
 }
 
-function createHabitElement(habit, showWeekView = false) {
-    const div = document.createElement('div');
-    div.className = 'habit-card';
-    
-    if (showWeekView) {
-        return createWeeklyHabitElement(habit);
-    }
-    
-    // Calculate completion percentage based on actual data
-    const completionPercentage = habit.total_completions > 0 ? 
-        Math.min(100, (habit.total_completions / habit.target_frequency) * 100) : 0;
-    
-    // Action buttons - always show delete, show complete if not completed today
-    const actionButtons = `
-        <div class="flex space-x-2 mt-4">
-            ${habit.today_completed === 0 ? `
-                <button class="btn-primary flex-1" onclick="toggleHabitCompletion('${habit.id}')">
-                    <i class="fas fa-check mr-2"></i>
-                    Mark Complete
-                </button>
-            ` : `
-                <div class="flex-1 bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-2 text-center text-green-400">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    Completed Today!
-                </div>
-            `}
-            <button class="btn-danger" onclick="deleteHabit('${habit.id}')">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-    `;
-    
-    div.innerHTML = `
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-4">
-                <div>
-                    <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
-                    ${habit.description ? `<p class="text-white/60 text-sm mt-1">${habit.description}</p>` : ''}
-                </div>
-            </div>
-            <div class="text-right">
-                <div class="text-white font-semibold">${habit.total_completions}</div>
-                <div class="text-white/70 text-sm">Completions</div>
-                <div class="text-white/60 text-xs">Streak: ${habit.current_streak || 0}</div>
-            </div>
-        </div>
-        
-        <div class="mb-4">
-            <div class="flex justify-between text-sm text-white/70 mb-2">
-                <span>Progress</span>
-                <span>${Math.round(completionPercentage)}%</span>
-            </div>
-            <div class="w-full bg-white/10 rounded-full h-2">
-                <div class="progress-bar h-2 rounded-full" style="width: ${completionPercentage}%"></div>
-            </div>
-        </div>
-        
-        ${actionButtons}
-    `;
-    
-    return div;
+function createHabitElement(habit, showWeekView = true) {
+    // Always use weekly view for habits in the main habits section
+    return createWeeklyHabitElement(habit);
 }
 
 // Delete habit function
@@ -544,40 +486,72 @@ function createWeeklyHabitElement(habit) {
     div.className = 'habit-card';
     
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const completedDays = habit.completedDays || [];
-    const targetCount = habit.targetCount || 7;
-    const completedCount = habit.completedCount || 0;
     
-    // Calculate this week's dates
+    // Handle different data formats for completed days
+    const completedDays = habit.completed_days || habit.completedDays || [];
+    const targetFrequency = habit.target_frequency || habit.targetCount || 7;
+    
+    // Calculate this week's dates and completion status
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
+    
+    let weeklyCompletedCount = 0;
     
     const weekCalendar = days.map((dayName, dayIndex) => {
         const dayDate = new Date(weekStart);
         dayDate.setDate(weekStart.getDate() + dayIndex);
         const dateStr = dayDate.toISOString().split('T')[0];
-        const isCompleted = completedDays.includes(dayIndex);
+        
+        // Check if this day is completed (handle different formats)
+        let isCompleted = false;
+        if (Array.isArray(completedDays)) {
+            // If completedDays is array of day indices
+            isCompleted = completedDays.includes(dayIndex);
+        } else if (typeof completedDays === 'object') {
+            // If completedDays is object with dates
+            isCompleted = completedDays[dateStr] || false;
+        }
+        
+        if (isCompleted) {
+            weeklyCompletedCount++;
+        }
+        
         const isToday = dayDate.toDateString() === today.toDateString();
+        const isPastDay = dayDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
         
         return `
-            <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''}" 
-                 onclick="toggleWeeklyHabit('${habit.id}', '${dateStr}', ${dayIndex})">
+            <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''} ${isPastDay && !isCompleted ? 'missed' : ''}" 
+                 onclick="toggleWeeklyHabit('${habit.id}', '${dateStr}', ${dayIndex})"
+                 title="${dayName}, ${dayDate.toLocaleDateString()} - Click to ${isCompleted ? 'unmark' : 'mark'} as completed">
                 <div class="text-xs text-white/70 font-medium">${dayName}</div>
-                <div class="text-lg mt-1">${isCompleted ? '✓' : '○'}</div>
+                <div class="text-2xl mt-1">${isCompleted ? '✅' : (isPastDay ? '❌' : '⭕')}</div>
                 <div class="text-xs text-white/60">${dayDate.getDate()}</div>
             </div>
         `;
     }).join('');
+    
+    // Calculate streak and stats
+    const currentStreak = habit.current_streak || 0;
+    const totalCompletions = habit.total_completions || 0;
+    const weeklyPercentage = Math.round((weeklyCompletedCount / targetFrequency) * 100);
     
     div.innerHTML = `
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
                 ${habit.description ? `<p class="text-white/60 text-sm mt-1">${habit.description}</p>` : ''}
-                <p class="text-white/70 text-sm mt-2">
-                    <span class="text-green-400 font-semibold">${completedCount}</span> / ${targetCount} days this week
-                </p>
+                <div class="flex items-center space-x-4 mt-2 text-sm">
+                    <span class="text-white/70">
+                        <span class="text-green-400 font-semibold">${weeklyCompletedCount}</span> / ${targetFrequency} days this week
+                    </span>
+                    <span class="text-white/70">
+                        🔥 <span class="text-orange-400 font-semibold">${currentStreak}</span> day streak
+                    </span>
+                    <span class="text-white/70">
+                        📊 <span class="text-blue-400 font-semibold">${totalCompletions}</span> total
+                    </span>
+                </div>
             </div>
             <button class="btn-danger" onclick="deleteHabit('${habit.id}')" title="Delete habit">
                 <i class="fas fa-trash"></i>
@@ -586,16 +560,24 @@ function createWeeklyHabitElement(habit) {
         
         <div class="mb-4">
             <div class="flex justify-between text-sm text-white/70 mb-2">
-                <span>Weekly Progress</span>
-                <span>${Math.round((completedCount / targetCount) * 100)}%</span>
+                <span>This Week's Progress</span>
+                <span class="${weeklyPercentage >= 80 ? 'text-green-400' : weeklyPercentage >= 60 ? 'text-yellow-400' : 'text-red-400'} font-semibold">${weeklyPercentage}%</span>
             </div>
-            <div class="w-full bg-white/10 rounded-full h-2">
-                <div class="progress-bar h-2 rounded-full" style="width: ${(completedCount / targetCount) * 100}%"></div>
+            <div class="w-full bg-white/10 rounded-full h-3">
+                <div class="progress-bar h-3 rounded-full transition-all duration-500" 
+                     style="width: ${weeklyPercentage}%; background: ${weeklyPercentage >= 80 ? 'linear-gradient(90deg, #10b981, #059669)' : weeklyPercentage >= 60 ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 'linear-gradient(90deg, #ef4444, #dc2626)'}"></div>
             </div>
         </div>
         
-        <div class="week-calendar">
-            ${weekCalendar}
+        <div class="mb-3">
+            <div class="text-sm text-white/70 mb-2">📅 Weekly Calendar - Click days to track completion</div>
+            <div class="week-calendar">
+                ${weekCalendar}
+            </div>
+        </div>
+        
+        <div class="text-xs text-white/60 text-center">
+            ✅ Completed | ⭕ Available | ❌ Missed
         </div>
     `;
     
@@ -646,7 +628,7 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
             showNotification(data.completed ? 
                 `Day completed! +${data.points} pts` : 
                 'Day unmarked', 'success');
-            loadWeeklyHabits(); // Refresh the weekly view
+            loadHabits(); // Refresh the habits view (now uses weekly calendar)
             loadDashboardWeeklyProgress(); // Refresh dashboard progress
             updateDashboardStats();
             

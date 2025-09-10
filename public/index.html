@@ -1591,6 +1591,21 @@
         
         .day-cell:hover {
             background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .day-cell.missed {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-color: #ef4444;
+            color: white;
+        }
+        
+        .day-cell.completed:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        
+        .day-cell.missed:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
         }
         
         /* Achievement pulse animation for unlockable achievements */

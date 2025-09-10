@@ -429,6 +429,49 @@ function displayWeeklyHabits(habits) {
         const habitElement = createWeeklyHabitElement(habit);
         container.appendChild(habitElement);
     });
+    
+    // Add event delegation for day cell clicks
+    setupHabitDayClickHandlers(container);
+}
+
+function setupHabitDayClickHandlers(container) {
+    // Remove any existing listeners to prevent duplicates
+    container.removeEventListener('click', handleHabitDayClick);
+    
+    // Add event delegation for day cell clicks
+    container.addEventListener('click', handleHabitDayClick);
+}
+
+function handleHabitDayClick(event) {
+    // Find the clicked day cell
+    const dayCell = event.target.closest('.day-cell');
+    if (!dayCell) return;
+    
+    // Get the data attributes
+    const habitId = dayCell.getAttribute('data-habit-id');
+    const date = dayCell.getAttribute('data-date');
+    const dayIndex = parseInt(dayCell.getAttribute('data-day-index'));
+    
+    // Validate data
+    if (!habitId || !date || isNaN(dayIndex)) {
+        console.error('Invalid day cell data:', { habitId, date, dayIndex });
+        return;
+    }
+    
+    // Add visual feedback immediately
+    dayCell.style.opacity = '0.7';
+    dayCell.style.transform = 'scale(0.95)';
+    
+    // Call the toggle function
+    toggleWeeklyHabit(habitId, date, dayIndex).then(() => {
+        // Reset visual feedback
+        dayCell.style.opacity = '';
+        dayCell.style.transform = '';
+    }).catch(() => {
+        // Reset visual feedback on error
+        dayCell.style.opacity = '';
+        dayCell.style.transform = '';
+    });
 }
 
 function updateCurrentWeekDisplay() {
@@ -522,7 +565,10 @@ function createWeeklyHabitElement(habit) {
         
         return `
             <div class="day-cell ${isCompleted ? 'completed' : ''} ${isToday ? 'today' : ''} ${isPastDay && !isCompleted ? 'missed' : ''}" 
-                 onclick="toggleWeeklyHabit('${habit.id}', '${dateStr}', ${dayIndex})"
+                 data-habit-id="${habit.id}" 
+                 data-date="${dateStr}" 
+                 data-day-index="${dayIndex}"
+                 style="cursor: pointer;"
                  title="${dayName}, ${dayDate.toLocaleDateString()} - Click to ${isCompleted ? 'unmark' : 'mark'} as completed">
                 <div class="text-xs text-white/70 font-medium">${dayName}</div>
                 <div class="text-2xl mt-1">${isCompleted ? '✅' : (isPastDay ? '❌' : '⭕')}</div>
@@ -625,9 +671,23 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
         
         if (response.ok) {
             const data = await response.json();
-            showNotification(data.completed ? 
-                `Day completed! +${data.points} pts` : 
-                'Day unmarked', 'success');
+            
+            // Update localStorage points based on server response
+            if (data.points) {
+                userProgress.points += data.points;
+                saveUserProgress();
+            }
+            
+            // Show appropriate notification with points feedback
+            if (data.completed) {
+                showNotification(`Day completed! +${data.points} pts`, 'success');
+            } else {
+                showNotification(`Day unmarked! ${data.points} pts`, 'error');
+            }
+            
+            // Update points display immediately
+            updatePointsDisplay();
+            
             loadHabits(); // Refresh the habits view (now uses weekly calendar)
             loadDashboardWeeklyProgress(); // Refresh dashboard progress
             updateDashboardStats();

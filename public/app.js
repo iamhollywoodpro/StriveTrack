@@ -4042,9 +4042,10 @@ let userProgress = {
     lastActivity: null
 };
 
-// Load user progress from localStorage
+// Load user progress from localStorage (per user)
 function loadUserProgress() {
-    const saved = localStorage.getItem('strivetrack_user_progress');
+    const userId = currentUser ? currentUser.id || currentUser.email : 'guest';
+    const saved = localStorage.getItem(`strivetrack_user_progress_${userId}`);
     if (saved) {
         const parsed = JSON.parse(saved);
         userProgress = {
@@ -4056,14 +4057,15 @@ function loadUserProgress() {
     }
 }
 
-// Save user progress to localStorage
+// Save user progress to localStorage (per user)
 function saveUserProgress() {
+    const userId = currentUser ? currentUser.id || currentUser.email : 'guest';
     const toSave = {
         ...userProgress,
         completedChallenges: Array.from(userProgress.completedChallenges),
         completedAchievements: Array.from(userProgress.completedAchievements)
     };
-    localStorage.setItem('strivetrack_user_progress', JSON.stringify(toSave));
+    localStorage.setItem(`strivetrack_user_progress_${userId}`, JSON.stringify(toSave));
 }
 
 function generateEnhancedDailyChallenges() {
@@ -4930,8 +4932,12 @@ function updatePointsDisplay() {
     // Update welcome text with username
     const welcomeText = document.getElementById('welcome-text');
     if (welcomeText && currentUser) {
-        welcomeText.textContent = `Welcome, ${currentUser.username}`;
+        const username = currentUser.username || currentUser.email?.split('@')[0] || 'User';
+        welcomeText.textContent = `Welcome, ${username}`;
     }
+    
+    // Debug logging
+    console.log('Points updated:', userProgress.points, 'for user:', currentUser?.email);
 }
 
 // Weekly Challenges

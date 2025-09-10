@@ -716,3 +716,415 @@ OSError: [Errno 98] Address already in use
 2025-09-09T21:12:54: [wrangler:info] POST /api/auth/login 200 OK (671ms)
 2025-09-09T21:12:54: [wrangler:info] GET /api/achievements 200 OK (57ms)
 2025-09-09T21:12:54: [wrangler:info] GET /api/achievements 200 OK (57ms)
+2025-09-09T21:13:20: [wrangler:info] GET / 200 OK (55ms)
+2025-09-09T21:13:20: [wrangler:info] GET / 200 OK (55ms)
+2025-09-09T21:13:21: [wrangler:info] GET /app.js 200 OK (22ms)
+2025-09-09T21:13:21: [wrangler:info] GET /app.js 200 OK (22ms)
+2025-09-09T21:13:22: [wrangler:info] GET /favicon.ico 200 OK (26ms)
+2025-09-09T21:13:22: [wrangler:info] GET /favicon.ico 200 OK (26ms)
+2025-09-09T21:13:27: [wrangler:info] GET / 200 OK (24ms)
+2025-09-09T21:13:27: [wrangler:info] GET / 200 OK (24ms)
+2025-09-09T21:13:27: [wrangler:info] GET /app.js 200 OK (20ms)
+2025-09-09T21:13:27: [wrangler:info] GET /app.js 200 OK (20ms)
+2025-09-09T21:13:27: [wrangler:info] GET /favicon.ico 200 OK (17ms)
+2025-09-09T21:13:27: [wrangler:info] GET /favicon.ico 200 OK (17ms)
+2025-09-09T21:20:07: [wrangler:info] POST /api/auth/login 401 Unauthorized (37ms)
+2025-09-09T21:20:07: [wrangler:info] POST /api/auth/login 401 Unauthorized (37ms)
+2025-09-09T21:21:52: [wrangler:info] POST /api/auth/login 200 OK (504ms)
+2025-09-09T21:21:52: [wrangler:info] POST /api/auth/login 200 OK (504ms)
+2025-09-09T21:21:52: [wrangler:info] GET /api/habits 200 OK (38ms)
+2025-09-09T21:21:52: [wrangler:info] GET /api/habits 200 OK (38ms)
+2025-09-09T21:21:52: [wrangler:info] GET /api/achievements 200 OK (62ms)
+2025-09-09T21:21:52: [wrangler:info] GET /api/achievements 200 OK (62ms)
+2025-09-09T21:25:36: 
+2025-09-09T21:25:36:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:25:36: ─────────────────────────────────────────────
+2025-09-09T21:25:36: 
+2025-09-09T21:25:36:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:25:36: ─────────────────────────────────────────────
+2025-09-09T21:25:37: ✨ Compiled Worker successfully
+2025-09-09T21:25:37: ✨ Compiled Worker successfully
+2025-09-09T21:25:37: Your Worker has access to the following bindings:
+2025-09-09T21:25:37: Your Worker has access to the following bindings:
+2025-09-09T21:25:37: Binding                                                    Resource                  Mode
+2025-09-09T21:25:37: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:25:37: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:25:37: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:25:37: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:25:37: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:25:37: 
+2025-09-09T21:25:37: Binding                                                    Resource                  Mode
+2025-09-09T21:25:37: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:25:37: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:25:37: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:25:37: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:25:37: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:25:37: 
+2025-09-09T21:25:37: ⎔ Starting local server...
+2025-09-09T21:25:37: ⎔ Starting local server...
+2025-09-09T21:25:37: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:25:37: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:25:46: [wrangler:info] GET / 200 OK (49ms)
+2025-09-09T21:25:46: [wrangler:info] GET / 200 OK (49ms)
+2025-09-09T21:25:46: [wrangler:info] GET /app.js 200 OK (22ms)
+2025-09-09T21:25:46: [wrangler:info] GET /app.js 200 OK (22ms)
+2025-09-09T21:25:46: [wrangler:info] GET /favicon.ico 200 OK (17ms)
+2025-09-09T21:25:46: [wrangler:info] GET /favicon.ico 200 OK (17ms)
+2025-09-09T21:42:21: [wrangler:info] GET / 200 OK (79ms)
+2025-09-09T21:42:21: [wrangler:info] GET / 200 OK (79ms)
+2025-09-09T21:42:21: [wrangler:info] GET /app.js 200 OK (26ms)
+2025-09-09T21:42:21: [wrangler:info] GET /app.js 200 OK (26ms)
+2025-09-09T21:42:21: [wrangler:info] GET /api/auth/validate-session 200 OK (23ms)
+2025-09-09T21:42:21: [wrangler:info] GET /api/auth/validate-session 200 OK (23ms)
+2025-09-09T21:42:21: [wrangler:info] GET /api/habits/weekly 200 OK (60ms)
+2025-09-09T21:42:21: [wrangler:info] GET /api/habits/weekly 200 OK (60ms)
+2025-09-09T21:42:22: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:42:22: 
+2025-09-09T21:42:22:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:42:22:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:22:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:42:22:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:42:22:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:42:22:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:42:22:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:22:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:42:22:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:22:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:42:22:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:22:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:42:22:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:22:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:42:22:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:22:   }
+2025-09-09T21:42:22: 
+2025-09-09T21:42:22: 
+2025-09-09T21:42:22: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:42:22: 
+2025-09-09T21:42:22:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:42:22:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:22:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:42:22:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:42:22:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:42:22:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:42:22:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:22:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:42:22:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:22:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:42:22:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:22:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:42:22:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:22:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:42:22:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:22:   }
+2025-09-09T21:42:22: 
+2025-09-09T21:42:22: 
+2025-09-09T21:42:22: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (178ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (178ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/admin/media 200 OK (181ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/admin/media 200 OK (181ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/media/enhanced 200 OK (181ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/media/enhanced 200 OK (181ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/achievements 200 OK (193ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/achievements 200 OK (193ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/admin/users 200 OK (187ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/admin/users 200 OK (187ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/habits 200 OK (48ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/habits 200 OK (48ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/admin/users 200 OK (29ms)
+2025-09-09T21:42:22: [wrangler:info] GET /api/admin/users 200 OK (29ms)
+2025-09-09T21:42:23: [wrangler:info] GET /api/habits 200 OK (19ms)
+2025-09-09T21:42:23: [wrangler:info] GET /api/habits 200 OK (19ms)
+2025-09-09T21:42:25: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:42:25: 
+2025-09-09T21:42:25:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:42:25:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:25:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:42:25:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:42:25:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:42:25:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:42:25:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:25:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:42:25:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:25:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:42:25:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:25:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:42:25:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:25:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:42:25:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:25:   }
+2025-09-09T21:42:25: 
+2025-09-09T21:42:25: 
+2025-09-09T21:42:25: [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mDaily challenges error: Error: D1_ERROR: no such table: user_daily_challenges: SQLITE_ERROR[0m
+2025-09-09T21:42:25: 
+2025-09-09T21:42:25:       at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:125:19)
+2025-09-09T21:42:25:       at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:25:       ... 7 lines matching cause stack trace ...
+2025-09-09T21:42:25:       at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10) {
+2025-09-09T21:42:25:     [cause]: Error: no such table: user_daily_challenges: SQLITE_ERROR
+2025-09-09T21:42:25:         at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:126:24)
+2025-09-09T21:42:25:         at async D1PreparedStatement.all (cloudflare-internal:d1-api:310:46)
+2025-09-09T21:42:25:         at async onRequestGet (file:///home/user/webapp/functions/api/challenges/daily.js:27:28)
+2025-09-09T21:42:25:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:25:         at async onRequest (file:///home/user/webapp/functions/_middleware.js:31:22)
+2025-09-09T21:42:25:         at async next (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:161:22)
+2025-09-09T21:42:25:         at async Object.fetch (file:///usr/lib/node_modules/wrangler/templates/pages-template-worker.ts:180:11)
+2025-09-09T21:42:25:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:25:         at async drainBody (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts:5:10)
+2025-09-09T21:42:25:         at async jsonError (file:///usr/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts:22:10)
+2025-09-09T21:42:25:   }
+2025-09-09T21:42:25: 
+2025-09-09T21:42:25: 
+2025-09-09T21:42:25: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (17ms)
+2025-09-09T21:42:25: [wrangler:info] GET /api/challenges/daily 500 Internal Server Error (17ms)
+2025-09-09T21:42:25: [wrangler:info] GET /api/leaderboards 200 OK (87ms)
+2025-09-09T21:42:25: [wrangler:info] GET /api/leaderboards 200 OK (87ms)
+2025-09-09T21:42:25: [wrangler:info] GET /api/achievements 200 OK (82ms)
+2025-09-09T21:42:25: [wrangler:info] GET /api/achievements 200 OK (82ms)
+2025-09-09T21:47:33: 🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-09_21-25-36_595.log"
+2025-09-09T21:47:33: 🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-09_21-25-36_595.log"
+2025-09-09T21:47:35: 
+2025-09-09T21:47:35:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:47:35: ─────────────────────────────────────────────
+2025-09-09T21:47:35: 
+2025-09-09T21:47:35:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:47:35: ─────────────────────────────────────────────
+2025-09-09T21:47:35: ✨ Compiled Worker successfully
+2025-09-09T21:47:35: ✨ Compiled Worker successfully
+2025-09-09T21:47:36: Your Worker has access to the following bindings:
+2025-09-09T21:47:36: Your Worker has access to the following bindings:
+2025-09-09T21:47:36: Binding                                                    Resource                  Mode
+2025-09-09T21:47:36: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:47:36: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:47:36: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:47:36: Binding                                                    Resource                  Mode
+2025-09-09T21:47:36: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:47:36: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:47:36: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:47:36: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:47:36: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:47:36: 
+2025-09-09T21:47:36: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:47:36: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:47:36: 
+2025-09-09T21:47:36: ⎔ Starting local server...
+2025-09-09T21:47:36: ⎔ Starting local server...
+2025-09-09T21:47:36: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:47:36: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:47:55: [wrangler:info] GET / 200 OK (71ms)
+2025-09-09T21:47:55: [wrangler:info] GET / 200 OK (71ms)
+2025-09-09T21:47:55: [wrangler:info] GET /app.js 200 OK (39ms)
+2025-09-09T21:47:55: [wrangler:info] GET /app.js 200 OK (39ms)
+2025-09-09T21:47:56: [wrangler:info] GET /favicon.ico 200 OK (24ms)
+2025-09-09T21:47:56: [wrangler:info] GET /favicon.ico 200 OK (24ms)
+2025-09-09T21:48:32: 
+2025-09-09T21:48:32:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:48:32: ─────────────────────────────────────────────
+2025-09-09T21:48:32: 
+2025-09-09T21:48:32:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T21:48:32: ─────────────────────────────────────────────
+2025-09-09T21:48:33: ✨ Compiled Worker successfully
+2025-09-09T21:48:33: ✨ Compiled Worker successfully
+2025-09-09T21:48:33: Your Worker has access to the following bindings:
+2025-09-09T21:48:33: Your Worker has access to the following bindings:
+2025-09-09T21:48:33: Binding                                                    Resource                  Mode
+2025-09-09T21:48:33: Binding                                                    Resource                  Mode
+2025-09-09T21:48:33: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:48:33: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T21:48:33: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:48:33: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T21:48:33: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:48:33: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T21:48:33: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:48:33: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T21:48:33: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:48:33: 
+2025-09-09T21:48:33: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T21:48:33: 
+2025-09-09T21:48:33: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:48:33: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T21:48:33: ⎔ Starting local server...
+2025-09-09T21:48:33: ⎔ Starting local server...
+2025-09-09T21:55:13: [wrangler:info] GET / 200 OK (72ms)
+2025-09-09T21:55:13: [wrangler:info] GET / 200 OK (72ms)
+2025-09-09T21:55:13: [wrangler:info] GET /app.js 200 OK (20ms)
+2025-09-09T21:55:13: [wrangler:info] GET /app.js 200 OK (20ms)
+2025-09-09T21:55:13: [wrangler:info] GET /api/auth/validate-session 200 OK (13ms)
+2025-09-09T21:55:13: [wrangler:info] GET /api/auth/validate-session 200 OK (13ms)
+2025-09-09T21:55:13: [wrangler:info] GET /api/media/enhanced 200 OK (30ms)
+2025-09-09T21:55:13: [wrangler:info] GET /api/media/enhanced 200 OK (30ms)
+2025-09-09T21:55:13: [wrangler:info] GET /api/habits 200 OK (52ms)
+2025-09-09T21:55:13: [wrangler:info] GET /api/habits 200 OK (52ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/admin/users 200 OK (75ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/admin/users 200 OK (75ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/achievements 200 OK (77ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/achievements 200 OK (77ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/habits/weekly 200 OK (33ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/habits/weekly 200 OK (33ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/admin/media 200 OK (55ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/admin/media 200 OK (55ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/admin/users 200 OK (61ms)
+2025-09-09T21:55:14: [wrangler:info] GET /api/admin/users 200 OK (61ms)
+2025-09-09T21:55:15: [wrangler:info] GET /api/achievements 200 OK (22ms)
+2025-09-09T21:55:15: [wrangler:info] GET /api/achievements 200 OK (22ms)
+2025-09-09T21:56:01: [wrangler:info] GET /api/nutrition 200 OK (34ms)
+2025-09-09T21:56:01: [wrangler:info] GET /api/nutrition 200 OK (34ms)
+2025-09-09T21:56:05: [wrangler:info] GET /api/habits 200 OK (25ms)
+2025-09-09T21:56:05: [wrangler:info] GET /api/habits 200 OK (25ms)
+2025-09-09T21:57:40: [wrangler:info] GET /api/achievements 200 OK (26ms)
+2025-09-09T21:57:40: [wrangler:info] GET /api/achievements 200 OK (26ms)
+2025-09-09T22:03:13: 
+2025-09-09T22:03:13:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T22:03:13: ─────────────────────────────────────────────
+2025-09-09T22:03:13: 
+2025-09-09T22:03:13:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T22:03:13: ─────────────────────────────────────────────
+2025-09-09T22:03:13: ✨ Compiled Worker successfully
+2025-09-09T22:03:13: ✨ Compiled Worker successfully
+2025-09-09T22:03:13: Your Worker has access to the following bindings:
+2025-09-09T22:03:13: Your Worker has access to the following bindings:
+2025-09-09T22:03:13: Binding                                                    Resource                  Mode
+2025-09-09T22:03:13: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T22:03:13: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T22:03:13: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T22:03:13: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T22:03:13: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T22:03:13: 
+2025-09-09T22:03:13: Binding                                                    Resource                  Mode
+2025-09-09T22:03:13: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T22:03:13: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T22:03:13: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T22:03:13: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T22:03:13: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T22:03:13: 
+2025-09-09T22:03:13: ⎔ Starting local server...
+2025-09-09T22:03:13: ⎔ Starting local server...
+2025-09-09T22:03:14: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T22:03:14: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T22:03:20: [wrangler:info] GET / 200 OK (120ms)
+2025-09-09T22:03:20: [wrangler:info] GET / 200 OK (120ms)
+2025-09-09T22:03:20: [wrangler:info] GET /app.js 200 OK (31ms)
+2025-09-09T22:03:20: [wrangler:info] GET /app.js 200 OK (31ms)
+2025-09-09T22:03:21: [wrangler:info] GET /favicon.ico 200 OK (24ms)
+2025-09-09T22:03:21: [wrangler:info] GET /favicon.ico 200 OK (24ms)
+2025-09-09T23:47:01: [wrangler:info] GET / 200 OK (45ms)
+2025-09-09T23:47:01: [wrangler:info] GET / 200 OK (45ms)
+2025-09-09T23:47:01: [wrangler:info] GET /app.js 200 OK (59ms)
+2025-09-09T23:47:01: [wrangler:info] GET /app.js 200 OK (59ms)
+2025-09-09T23:47:01: [wrangler:info] GET /api/auth/validate-session 200 OK (16ms)
+2025-09-09T23:47:01: [wrangler:info] GET /api/auth/validate-session 200 OK (16ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/achievements 200 OK (37ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/achievements 200 OK (37ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/habits 200 OK (46ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/habits 200 OK (46ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/admin/media 200 OK (40ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/admin/media 200 OK (40ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/habits/weekly 200 OK (52ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/habits/weekly 200 OK (52ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/media/enhanced 200 OK (98ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/media/enhanced 200 OK (98ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/admin/users 200 OK (98ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/admin/users 200 OK (98ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/admin/users 200 OK (40ms)
+2025-09-09T23:47:02: [wrangler:info] GET /api/admin/users 200 OK (40ms)
+2025-09-09T23:47:04: [wrangler:info] GET /api/nutrition 200 OK (29ms)
+2025-09-09T23:47:04: [wrangler:info] GET /api/nutrition 200 OK (29ms)
+2025-09-09T23:47:05: [wrangler:info] GET /api/habits 200 OK (21ms)
+2025-09-09T23:47:05: [wrangler:info] GET /api/habits 200 OK (21ms)
+2025-09-09T23:47:10: [wrangler:info] GET /api/achievements 200 OK (31ms)
+2025-09-09T23:47:10: [wrangler:info] GET /api/achievements 200 OK (31ms)
+2025-09-09T23:54:45: 
+2025-09-09T23:54:45:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T23:54:45: ─────────────────────────────────────────────
+2025-09-09T23:54:45: 
+2025-09-09T23:54:45:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-09T23:54:45: ─────────────────────────────────────────────
+2025-09-09T23:54:45: ✨ Compiled Worker successfully
+2025-09-09T23:54:45: ✨ Compiled Worker successfully
+2025-09-09T23:54:45: Your Worker has access to the following bindings:
+2025-09-09T23:54:45: Your Worker has access to the following bindings:
+2025-09-09T23:54:45: Binding                                                    Resource                  Mode
+2025-09-09T23:54:45: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T23:54:45: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T23:54:45: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T23:54:45: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T23:54:45: Binding                                                    Resource                  Mode
+2025-09-09T23:54:45: env.DB (strivetrack)                                       D1 Database               local
+2025-09-09T23:54:45: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-09T23:54:45: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-09T23:54:45: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-09T23:54:45: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T23:54:45: 
+2025-09-09T23:54:45: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-09T23:54:45: 
+2025-09-09T23:54:46: ⎔ Starting local server...
+2025-09-09T23:54:46: ⎔ Starting local server...
+2025-09-09T23:54:46: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T23:54:46: [wrangler:info] Ready on http://localhost:8787
+2025-09-09T23:54:53: [wrangler:info] GET / 200 OK (99ms)
+2025-09-09T23:54:53: [wrangler:info] GET / 200 OK (99ms)
+2025-09-09T23:54:53: [wrangler:info] GET /app.js 200 OK (35ms)
+2025-09-09T23:54:53: [wrangler:info] GET /app.js 200 OK (35ms)
+2025-09-09T23:54:53: [wrangler:info] GET /favicon.ico 200 OK (21ms)
+2025-09-09T23:54:53: [wrangler:info] GET /favicon.ico 200 OK (21ms)
+2025-09-09T23:56:36: [wrangler:info] GET / 200 OK (26ms)
+2025-09-09T23:56:36: [wrangler:info] GET / 200 OK (26ms)
+2025-09-09T23:56:36: [wrangler:info] GET /app.js 200 OK (23ms)
+2025-09-09T23:56:36: [wrangler:info] GET /app.js 200 OK (23ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/auth/validate-session 200 OK (27ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/auth/validate-session 200 OK (27ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/media/enhanced 200 OK (26ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/media/enhanced 200 OK (26ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/habits 200 OK (49ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/habits 200 OK (49ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/admin/media 200 OK (33ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/admin/media 200 OK (33ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/achievements 200 OK (31ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/achievements 200 OK (31ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/habits/weekly 200 OK (85ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/habits/weekly 200 OK (85ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/admin/users 200 OK (82ms)
+2025-09-09T23:56:36: [wrangler:info] GET /api/admin/users 200 OK (82ms)
+2025-09-09T23:56:37: [wrangler:info] GET /api/admin/users 200 OK (29ms)
+2025-09-09T23:56:37: [wrangler:info] GET /api/admin/users 200 OK (29ms)
+2025-09-09T23:56:39: [wrangler:info] GET /api/achievements 200 OK (27ms)
+2025-09-09T23:56:39: [wrangler:info] GET /api/achievements 200 OK (27ms)
+2025-09-10T00:01:09: 
+2025-09-10T00:01:09:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-10T00:01:09: ─────────────────────────────────────────────
+2025-09-10T00:01:09: 
+2025-09-10T00:01:09:  ⛅️ wrangler 4.24.3 (update available 4.35.0)
+2025-09-10T00:01:09: ─────────────────────────────────────────────
+2025-09-10T00:01:10: ✨ Compiled Worker successfully
+2025-09-10T00:01:10: ✨ Compiled Worker successfully
+2025-09-10T00:01:10: Your Worker has access to the following bindings:
+2025-09-10T00:01:10: Your Worker has access to the following bindings:
+2025-09-10T00:01:10: Binding                                                    Resource                  Mode
+2025-09-10T00:01:10: Binding                                                    Resource                  Mode
+2025-09-10T00:01:10: env.DB (strivetrack)                                       D1 Database               local
+2025-09-10T00:01:10: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-10T00:01:10: env.DB (strivetrack)                                       D1 Database               local
+2025-09-10T00:01:10: env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+2025-09-10T00:01:10: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-10T00:01:10: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-10T00:01:10: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-10T00:01:10: 
+2025-09-10T00:01:10: env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+2025-09-10T00:01:10: env.ADMIN_PASSWORD ("password123")                         Environment Variable      local
+2025-09-10T00:01:10: env.ENVIRONMENT ("production")                             Environment Variable      local
+2025-09-10T00:01:10: 
+2025-09-10T00:01:10: ⎔ Starting local server...
+2025-09-10T00:01:10: ⎔ Starting local server...
+2025-09-10T00:01:10: [wrangler:info] Ready on http://localhost:8787
+2025-09-10T00:01:10: [wrangler:info] Ready on http://localhost:8787
+2025-09-10T00:01:17: [wrangler:info] GET / 200 OK (99ms)
+2025-09-10T00:01:17: [wrangler:info] GET / 200 OK (99ms)
+2025-09-10T00:01:17: [wrangler:info] GET /app.js 200 OK (34ms)
+2025-09-10T00:01:17: [wrangler:info] GET /app.js 200 OK (34ms)
+2025-09-10T00:01:17: [wrangler:info] GET /favicon.ico 200 OK (35ms)
+2025-09-10T00:01:17: [wrangler:info] GET /favicon.ico 200 OK (35ms)
+2025-09-10T00:01:37: [wrangler:info] GET /api/media/enhanced 200 OK (22ms)
+2025-09-10T00:01:37: [wrangler:info] GET /api/media/enhanced 200 OK (22ms)
+2025-09-10T00:01:40: [wrangler:info] GET /api/achievements 200 OK (32ms)
+2025-09-10T00:01:40: [wrangler:info] GET /api/achievements 200 OK (32ms)
+2025-09-10T00:01:54: [wrangler:info] GET /api/achievements 200 OK (28ms)
+2025-09-10T00:01:54: [wrangler:info] GET /api/achievements 200 OK (28ms)

@@ -513,6 +513,727 @@
             letter-spacing: 1px;
         }
         
+        /* Daily Challenges Styles */
+        .daily-challenge-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+        
+        .daily-challenge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Stats Cards Styles */
+        .stats-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Leaderboard Styles */
+        .leaderboard-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        .friends-ranking-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        /* Social Hub Button Styles */
+        #add-friend-btn, #friends-list-btn {
+            transition: all 0.3s ease;
+        }
+        
+        #add-friend-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        #friends-list-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Social Hub Styles */
+        .social-nav-tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .social-nav-tab:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .social-nav-tab.active {
+            color: white;
+            border-bottom-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .social-content-section {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .friend-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .friend-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .activity-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .challenge-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .challenge-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        /* Challenge Navigation Tabs */
+        .challenge-nav-tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .challenge-nav-tab:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .challenge-nav-tab.active {
+            color: white;
+            border-bottom-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .challenge-content-section {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        /* Enhanced Challenge Cards */
+        .enhanced-challenge-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .enhanced-challenge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .enhanced-challenge-card:hover::before {
+            opacity: 1;
+        }
+        
+        .enhanced-challenge-card:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .enhanced-challenge-card.completed {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Weekly Challenge Cards */
+        .weekly-challenge-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .weekly-challenge-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.2);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0.08) 100%);
+        }
+        
+        /* Enhanced Upload Challenge Cards */
+        .enhanced-upload-challenge-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            padding: 0;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .enhanced-upload-challenge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6, #06b6d4);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .enhanced-upload-challenge-card:hover::before {
+            opacity: 1;
+        }
+        
+        .enhanced-upload-challenge-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.25);
+            border-color: rgba(139, 92, 246, 0.5);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+        }
+        
+        /* Upload Card Header */
+        .upload-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 24px 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        }
+        
+        .upload-icon-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-icon {
+            font-size: 3.5rem;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .upload-glow {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        
+        .upload-info {
+            text-align: right;
+        }
+        
+        .upload-points {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fbbf24;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .upload-points-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 4px;
+        }
+        
+        .upload-timer {
+            font-size: 0.75rem;
+            color: #60a5fa;
+            font-weight: 600;
+        }
+        
+        /* Upload Content */
+        .upload-content {
+            padding: 0 24px 24px;
+        }
+        
+        .upload-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .upload-description {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        /* Upload Slots */
+        .upload-slots-container {
+            margin-bottom: 20px;
+        }
+        
+        .upload-slots-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .upload-progress-text {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+        
+        .upload-percentage {
+            font-size: 0.875rem;
+            color: #60a5fa;
+            font-weight: bold;
+        }
+        
+        .upload-slots-grid {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .upload-slot {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-slot.uploaded {
+            border: 2px solid #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+        }
+        
+        .upload-slot.empty {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .upload-slot:hover {
+            transform: scale(1.05);
+            border-color: #8b5cf6;
+        }
+        
+        .uploaded-indicator {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+        
+        .empty-indicator {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+        
+        .slot-label {
+            font-size: 0.625rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        /* Recent Uploads */
+        .recent-uploads {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .recent-uploads-header {
+            font-size: 0.875rem;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .recent-uploads-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .recent-upload-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .upload-thumbnail {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .upload-details {
+            flex: 1;
+        }
+        
+        .upload-name {
+            font-size: 0.75rem;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .upload-date {
+            font-size: 0.625rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Empty Uploads */
+        .empty-uploads {
+            text-align: center;
+            padding: 24px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .empty-uploads-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .empty-uploads-text {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Upload Action Buttons */
+        .upload-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .upload-primary-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+        
+        .upload-secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 500;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .upload-completed-state {
+            flex: 1;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-weight: 600;
+            padding: 14px 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        
+        .upload-view-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 500;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upload-view-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        /* Upload Modal Styles */
+        .upload-option-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-option-card:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .upload-gallery-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .upload-preview {
+            height: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        
+        .upload-placeholder {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 40px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-placeholder:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+        
+        .placeholder-icon {
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 8px;
+        }
+        
+        .placeholder-text {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+        }
+        
+        /* Upload Tips Modal */
+        .tip-card {
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        .tip-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .tip-content h4 {
+            margin-bottom: 4px;
+        }
+        
+        /* Enhanced Achievement Gallery */
+        .achievement-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .enhanced-achievement-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .enhanced-achievement-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+        }
+        
+        .enhanced-achievement-card.unlocked {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+        
+        .enhanced-achievement-card.locked {
+            opacity: 0.6;
+            background: linear-gradient(135deg, rgba(100, 100, 100, 0.1) 0%, rgba(100, 100, 100, 0.05) 100%);
+            border-color: rgba(100, 100, 100, 0.2);
+        }
+        
+        .achievement-icon-large {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #3b82f6 0deg, #3b82f6 calc(var(--progress) * 3.6deg), rgba(255, 255, 255, 0.2) calc(var(--progress) * 3.6deg));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            position: relative;
+        }
+        
+        .progress-ring::after {
+            content: '';
+            width: 45px;
+            height: 45px;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 50%;
+            position: absolute;
+        }
+        
+        .progress-text {
+            position: absolute;
+            z-index: 1;
+            color: white;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        
         .hidden {
             display: none !important;
         }
@@ -1275,9 +1996,17 @@
                         <i class="fas fa-utensils"></i>
                         Nutrition
                     </button>
+                    <button class="nav-tab" data-section="goals">
+                        <i class="fas fa-target"></i>
+                        Goals
+                    </button>
                     <button class="nav-tab" data-section="achievements">
                         <i class="fas fa-trophy"></i>
                         Achievements
+                    </button>
+                    <button class="nav-tab" data-section="social">
+                        <i class="fas fa-users"></i>
+                        Social Hub
                     </button>
                     <button class="nav-tab hidden" id="admin-tab" data-section="admin">
                         <i class="fas fa-shield-alt"></i>
@@ -1471,93 +2200,328 @@
                 </div>
             </div>
             
-            <!-- Achievements Section -->
-            <div id="achievements-section" class="section hidden">
+            <!-- Goals Section -->
+            <div id="goals-section" class="section hidden">
                 <div class="glass-card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold text-white">Achievements & Social Hub</h2>
-                            <p class="text-white/70">Compete, connect, and celebrate your fitness accomplishments</p>
+                            <h2 class="text-2xl font-bold text-white">Goals & Targets</h2>
+                            <p class="text-white/70">Set, track, and achieve your fitness milestones</p>
+                        </div>
+                        <button onclick="showCreateGoalModal()" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            Create Goal
+                        </button>
+                    </div>
+                    
+                    <!-- Goal Categories -->
+                    <div class="mb-6">
+                        <div class="flex space-x-4 mb-4">
+                            <select id="goal-category-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                                <option value="all">All Goals</option>
+                                <option value="fitness">Fitness Goals</option>
+                                <option value="weight">Weight Goals</option>
+                                <option value="strength">Strength Goals</option>
+                                <option value="endurance">Endurance Goals</option>
+                                <option value="habit">Habit Goals</option>
+                            </select>
                         </div>
                     </div>
                     
-                    <!-- Daily Challenges Section - Moved to Top for Priority -->
-                    <div id="daily-challenges-section" class="mb-8">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-bold text-white">🏆 Daily Challenges</h3>
-                            <div class="text-sm text-white/60" id="challenge-date"></div>
+                    <!-- Active Goals -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold text-white mb-4">🎯 Active Goals</h3>
+                        <div id="active-goals-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Active goals will be loaded here -->
                         </div>
-                        <div class="text-white/70 text-sm mb-4">Complete today's challenges to earn bonus points and streaks!</div>
-                        <div id="daily-challenges-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    </div>
+                    
+                    <!-- Completed Goals -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold text-white mb-4">✅ Completed Goals</h3>
+                        <div id="completed-goals-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Completed goals will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Goal Statistics -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-white" id="total-goals">0</div>
+                            <div class="text-white/60 text-sm">Total Goals</div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-green-400" id="completed-goals-count">0</div>
+                            <div class="text-white/60 text-sm">Completed</div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-400" id="active-goals-count">0</div>
+                            <div class="text-white/60 text-sm">Active</div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-yellow-400" id="goals-completion-rate">0%</div>
+                            <div class="text-white/60 text-sm">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Achievements Section -->
+            <div id="achievements-section" class="section hidden">
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-3xl font-bold text-white">🏆 Achievements Hub</h2>
+                            <p class="text-white/70">Complete challenges, track progress, and unlock epic achievements</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-yellow-400" id="total-points-display">1,250</div>
+                            <div class="text-white/60 text-sm">Total Points</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Challenge Tabs -->
+                    <div class="flex space-x-4 mb-6 border-b border-white/10">
+                        <button class="challenge-nav-tab active" data-challenge-type="daily">
+                            <i class="fas fa-calendar-day mr-2"></i>Daily Challenges
+                        </button>
+                        <button class="challenge-nav-tab" data-challenge-type="weekly">
+                            <i class="fas fa-calendar-week mr-2"></i>Weekly Challenges
+                        </button>
+                    </div>
+                    
+                    <!-- Daily Challenges Section -->
+                    <div id="daily-challenges-section" class="challenge-content-section">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">⚡ Today's Challenges</h3>
+                                <div class="text-white/70 text-sm" id="daily-challenge-date"></div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-green-400" id="daily-completed-count">2/3</div>
+                                <div class="text-white/60 text-xs">Completed Today</div>
+                            </div>
+                        </div>
+                        <div id="daily-challenges-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <!-- Daily challenges will be loaded here -->
                         </div>
                     </div>
                     
-                    <!-- Your Progress Section -->
-                    <div id="your-progress-section" class="mb-8">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-bold text-white">📊 Your Progress</h3>
-                            <div class="text-sm text-white/60">Track your journey and achievements</div>
+                    <!-- Weekly Challenges Section -->
+                    <div id="weekly-challenges-section" class="challenge-content-section hidden">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">🗓️ This Week's Challenges</h3>
+                                <div class="text-white/70 text-sm" id="weekly-challenge-date">September 8 - September 14, 2025</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-purple-400" id="weekly-completed-count">1/4</div>
+                                <div class="text-white/60 text-xs">Completed This Week</div>
+                            </div>
                         </div>
-                        <div id="stats-and-streaks-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
+                        <div id="weekly-challenges-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <!-- Weekly challenges will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    
+                    <!-- Your Progress Stats -->
+                    <div class="mt-8 pt-6 border-t border-white/10">
+                        <h3 class="text-lg font-bold text-white mb-4">📊 Your Progress Overview</h3>
+                        <div id="stats-and-streaks-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
                             <!-- Achievement stats and streaks will be loaded here -->
                         </div>
                     </div>
                     
-                    <!-- Social Hub Section -->
-                    <div id="social-hub-section" class="mb-8">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-bold text-white">🌟 Social Hub</h3>
-                            <div class="flex space-x-2">
-                                <button id="add-friend-btn" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
-                                    👥 Add Friend
-                                </button>
-                                <button id="friends-list-btn" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors">
-                                    📋 Friends List
-                                </button>
-                            </div>
+                    <!-- Achievement Gallery Section -->
+                    <div id="achievement-gallery-section" class="mt-8 pt-6 border-t border-white/10">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-white">🎖️ Achievement Gallery</h3>
+                            <select id="achievement-category-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                                <option value="all">All Categories</option>
+                                <option value="onboarding">🚀 Getting Started</option>
+                                <option value="habits">🔥 Habit Building</option>
+                                <option value="progress">📸 Progress Tracking</option>
+                                <option value="nutrition">🍎 Nutrition & Health</option>
+                                <option value="social">👥 Social & Community</option>
+                                <option value="consistency">⚡ Consistency & Streaks</option>
+                                <option value="challenges">🎯 Challenges & Goals</option>
+                                <option value="analytics">📊 Data & Analytics</option>
+                            </select>
                         </div>
-                        
-                        <!-- User Ranking and Leaderboards -->
-                        <div id="user-ranking-section" class="mb-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-lg font-semibold text-white">🏅 Your Ranking</h4>
-                                <select id="leaderboard-filter" class="px-2 py-1 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
-                                    <option value="weekly">This Week</option>
-                                    <option value="achievements">Total Achievements</option>
-                                    <option value="streaks">Current Streaks</option>
-                                    <option value="challenges">Daily Challenges</option>
-                                </select>
-                            </div>
-                            <div id="user-rank-card" class="mb-4">
-                                <!-- User's current ranking will be displayed here -->
-                            </div>
-                            <div id="leaderboard-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Leaderboards will be loaded here -->
+                        <div id="achievements-container" class="achievement-gallery-grid">
+                            <!-- Achievements will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Hub Section -->
+            <div id="social-section" class="section hidden">
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">🌟 Social Hub</h2>
+                            <p class="text-white/70">Connect, compete, and celebrate together with the StriveTrack community</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="social-add-friend-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+                                <i class="fas fa-user-plus mr-2"></i>Add Friend
+                            </button>
+                            <button id="social-create-challenge-btn" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors">
+                                <i class="fas fa-trophy mr-2"></i>Create Challenge
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- User Profile Card -->
+                    <div class="mb-8">
+                        <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold text-2xl">🎯</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-white">Your Profile</h3>
+                                        <p class="text-white/70 text-sm">Keep pushing to reach your goals!</p>
+                                        <div class="flex items-center space-x-4 mt-2">
+                                            <span class="text-green-400 text-sm font-semibold">🔥 5 day streak</span>
+                                            <span class="text-yellow-400 text-sm font-semibold">⭐ Level 3</span>
+                                            <span class="text-blue-400 text-sm font-semibold">🏆 12 achievements</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-3xl font-bold text-white" id="social-user-rank">#25</div>
+                                    <div class="text-green-400 text-sm">+3 this week</div>
+                                    <div class="text-white/60 text-xs mt-1">Weekly Rank</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Achievement Gallery Section -->
-                    <div id="achievement-gallery-section">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-xl font-bold text-white">🎖️ Achievement Gallery</h3>
-                            <div class="flex space-x-2">
-                                <select id="achievement-category-filter" class="px-2 py-1 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
-                                    <option value="all">All Categories</option>
-                                    <option value="onboarding">🚀 Getting Started</option>
-                                    <option value="habits">🔥 Habit Building</option>
-                                    <option value="progress">📸 Progress Tracking</option>
-                                    <option value="nutrition">🍎 Nutrition & Health</option>
-                                    <option value="social">👥 Social & Community</option>
-                                    <option value="consistency">⚡ Consistency & Streaks</option>
-                                    <option value="challenges">🎯 Challenges & Goals</option>
-                                    <option value="analytics">📊 Data & Analytics</option>
-                                </select>
+                    <!-- Social Navigation Tabs -->
+                    <div class="flex space-x-4 mb-6 border-b border-white/10">
+                        <button class="social-nav-tab active" data-social-section="friends">
+                            <i class="fas fa-users mr-2"></i>Friends
+                        </button>
+                        <button class="social-nav-tab" data-social-section="leaderboards">
+                            <i class="fas fa-trophy mr-2"></i>Leaderboards
+                        </button>
+                        <button class="social-nav-tab" data-social-section="challenges">
+                            <i class="fas fa-fire mr-2"></i>Challenges
+                        </button>
+                        <button class="social-nav-tab" data-social-section="community">
+                            <i class="fas fa-globe mr-2"></i>Community
+                        </button>
+                    </div>
+                    
+                    <!-- Friends Section -->
+                    <div id="social-friends-section" class="social-content-section">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Friends List -->
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-bold text-white">👥 Your Friends</h3>
+                                    <button onclick="showAddFriendModal()" class="text-blue-400 hover:text-blue-300 text-sm">
+                                        + Add New Friend
+                                    </button>
+                                </div>
+                                <div id="social-friends-list" class="space-y-3">
+                                    <!-- Friends will be loaded here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Friend Activity Feed -->
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-4">📢 Friend Activity</h3>
+                                <div id="friend-activity-feed" class="space-y-3">
+                                    <!-- Friend activity will be loaded here -->
+                                </div>
                             </div>
                         </div>
-                        <div id="achievements-container" class="space-y-8">
-                            <!-- Achievements will be loaded here -->
+                    </div>
+                    
+                    <!-- Leaderboards Section -->
+                    <div id="social-leaderboards-section" class="social-content-section hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Weekly Leaderboard -->
+                            <div class="leaderboard-section">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-bold text-white">🏆 Weekly Leaders</h3>
+                                    <select id="social-leaderboard-filter" class="px-3 py-1 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                                        <option value="weekly">This Week</option>
+                                        <option value="achievements">Total Achievements</option>
+                                        <option value="streaks">Current Streaks</option>
+                                        <option value="challenges">Daily Challenges</option>
+                                    </select>
+                                </div>
+                                <div id="social-leaderboard-container">
+                                    <!-- Leaderboard entries will be loaded here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Your Stats Comparison -->
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-4">📊 Your Performance</h3>
+                                <div id="social-user-stats" class="grid grid-cols-2 gap-4">
+                                    <!-- User stats comparison will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Challenges Section -->
+                    <div id="social-challenges-section" class="social-content-section hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Active Challenges -->
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-4">🔥 Active Challenges</h3>
+                                <div id="social-active-challenges" class="space-y-4">
+                                    <!-- Active challenges will be loaded here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Challenge Invitations -->
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-4">📨 Challenge Invites</h3>
+                                <div id="social-challenge-invites" class="space-y-4">
+                                    <!-- Challenge invitations will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Community Section -->
+                    <div id="social-community-section" class="social-content-section hidden">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Community Stats -->
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-4">🌍 Community</h3>
+                                <div class="space-y-4">
+                                    <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-white">1,247</div>
+                                        <div class="text-white/60 text-sm">Active Members</div>
+                                    </div>
+                                    <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-green-400">89%</div>
+                                        <div class="text-white/60 text-sm">Goal Success Rate</div>
+                                    </div>
+                                    <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                                        <div class="text-2xl font-bold text-blue-400">456</div>
+                                        <div class="text-white/60 text-sm">Challenges This Week</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Recent Community Activity -->
+                            <div class="lg:col-span-2">
+                                <h3 class="text-lg font-bold text-white mb-4">📈 Community Feed</h3>
+                                <div id="community-feed" class="space-y-4">
+                                    <!-- Community activity will be loaded here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

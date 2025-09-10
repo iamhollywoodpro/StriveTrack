@@ -3520,8 +3520,14 @@ function createLeaderboardEntry(entry, type) {
     `;
 }
 
-// Social Hub functionality - Initialize event listeners
+// Initialize app - Load user progress and set up event listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize user progress system
+    loadUserProgress();
+    
+    // Initialize points display
+    updatePointsDisplay();
+    
     // Add event listeners for social hub buttons
     const addFriendBtn = document.getElementById('add-friend-btn');
     const friendsListBtn = document.getElementById('friends-list-btn');
@@ -4012,12 +4018,48 @@ async function loadDailyChallenges() {
     loadUserProgressStats();
 }
 
+// Global user progress and achievement state
+let userProgress = {
+    points: 0,
+    completedChallenges: new Set(),
+    completedAchievements: new Set(),
+    streaks: {
+        daily: 0,
+        weekly: 0
+    },
+    lastActivity: null
+};
+
+// Load user progress from localStorage
+function loadUserProgress() {
+    const saved = localStorage.getItem('strivetrack_user_progress');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        userProgress = {
+            ...userProgress,
+            ...parsed,
+            completedChallenges: new Set(parsed.completedChallenges || []),
+            completedAchievements: new Set(parsed.completedAchievements || [])
+        };
+    }
+}
+
+// Save user progress to localStorage
+function saveUserProgress() {
+    const toSave = {
+        ...userProgress,
+        completedChallenges: Array.from(userProgress.completedChallenges),
+        completedAchievements: Array.from(userProgress.completedAchievements)
+    };
+    localStorage.setItem('strivetrack_user_progress', JSON.stringify(toSave));
+}
+
 function generateEnhancedDailyChallenges() {
     const today = new Date();
     const dayOfWeek = today.getDay();
     
     const challengeTemplates = {
-        0: [ // Sunday
+        0: [ // Sunday - 5 challenges
             { 
                 id: 'sunday_1', 
                 type: 'recovery', 
@@ -4026,7 +4068,8 @@ function generateEnhancedDailyChallenges() {
                 points: 15, 
                 icon: '🧘‍♂️',
                 color: 'purple',
-                difficulty: 'Easy'
+                difficulty: 'Easy',
+                category: 'mindfulness'
             },
             { 
                 id: 'sunday_2', 
@@ -4036,29 +4079,54 @@ function generateEnhancedDailyChallenges() {
                 points: 20, 
                 icon: '📝',
                 color: 'blue',
-                difficulty: 'Easy'
+                difficulty: 'Easy',
+                category: 'planning'
             },
             { 
                 id: 'sunday_3', 
                 type: 'nutrition', 
                 title: 'Meal Prep Master', 
-                description: 'Prepare healthy meals or snacks for tomorrow', 
+                description: 'Prepare healthy meals or snacks for the next 3 days', 
                 points: 25, 
                 icon: '🥗',
                 color: 'green',
-                difficulty: 'Medium'
+                difficulty: 'Medium',
+                category: 'nutrition'
+            },
+            { 
+                id: 'sunday_4', 
+                type: 'learning', 
+                title: 'Fitness Education', 
+                description: 'Read an article or watch a video about fitness/health', 
+                points: 15, 
+                icon: '📚',
+                color: 'indigo',
+                difficulty: 'Easy',
+                category: 'education'
+            },
+            { 
+                id: 'sunday_5', 
+                type: 'social', 
+                title: 'Community Connect', 
+                description: 'Share your weekly fitness journey with friends or community', 
+                points: 20, 
+                icon: '🌟',
+                color: 'yellow',
+                difficulty: 'Easy',
+                category: 'social'
             }
         ],
-        1: [ // Monday
+        1: [ // Monday - 5 challenges
             { 
                 id: 'monday_1', 
                 type: 'motivation', 
                 title: 'Monday Momentum', 
-                description: 'Complete your morning workout or habit', 
-                points: 20, 
+                description: 'Complete your morning workout or habit within 2 hours of waking', 
+                points: 25, 
                 icon: '🚀',
                 color: 'orange',
-                difficulty: 'Medium'
+                difficulty: 'Medium',
+                category: 'workout'
             },
             { 
                 id: 'monday_2', 
@@ -4068,188 +4136,337 @@ function generateEnhancedDailyChallenges() {
                 points: 15, 
                 icon: '💧',
                 color: 'blue',
-                difficulty: 'Easy'
+                difficulty: 'Easy',
+                category: 'health'
             },
             { 
                 id: 'monday_3', 
                 type: 'steps', 
                 title: 'Step Champion', 
-                description: 'Take 10,000 steps or walk for 30 minutes', 
-                points: 25, 
+                description: 'Take 10,000 steps or walk for 45 minutes', 
+                points: 30, 
                 icon: '👟',
                 color: 'green',
-                difficulty: 'Medium'
+                difficulty: 'Medium',
+                category: 'cardio'
+            },
+            { 
+                id: 'monday_4', 
+                type: 'energy', 
+                title: 'Energy Booster', 
+                description: 'Do 10 jumping jacks every hour for 4 hours', 
+                points: 20, 
+                icon: '⚡',
+                color: 'yellow',
+                difficulty: 'Medium',
+                category: 'activity'
+            },
+            { 
+                id: 'monday_5', 
+                type: 'mindset', 
+                title: 'Positive Monday', 
+                description: 'Write down 3 things you\'re excited about this week', 
+                points: 10, 
+                icon: '😊',
+                color: 'pink',
+                difficulty: 'Easy',
+                category: 'mindfulness'
             }
         ],
-        2: [ // Tuesday
+        2: [ // Tuesday - 5 challenges
             { 
                 id: 'tuesday_1', 
                 type: 'strength', 
                 title: 'Strength Builder', 
-                description: 'Complete 20 push-ups (can be modified)', 
+                description: 'Complete 25 push-ups (can be modified or spread throughout day)', 
                 points: 30, 
                 icon: '💪',
                 color: 'red',
-                difficulty: 'Medium'
+                difficulty: 'Medium',
+                category: 'strength'
             },
             { 
                 id: 'tuesday_2', 
                 type: 'nutrition', 
                 title: 'Protein Power', 
-                description: 'Include protein in every meal today', 
-                points: 20, 
+                description: 'Include protein in every meal and snack today', 
+                points: 25, 
                 icon: '🍗',
                 color: 'orange',
-                difficulty: 'Easy'
+                difficulty: 'Medium',
+                category: 'nutrition'
             },
             { 
                 id: 'tuesday_3', 
                 type: 'habit', 
                 title: 'Consistency King', 
-                description: 'Complete 3 different healthy habits', 
+                description: 'Complete 3 different healthy habits before noon', 
                 points: 35, 
                 icon: '🔥',
                 color: 'purple',
-                difficulty: 'Hard'
+                difficulty: 'Hard',
+                category: 'habits'
+            },
+            { 
+                id: 'tuesday_4', 
+                type: 'core', 
+                title: 'Core Crusher', 
+                description: 'Hold a plank for 2 minutes total (can be broken into sets)', 
+                points: 25, 
+                icon: '🎯',
+                color: 'blue',
+                difficulty: 'Medium',
+                category: 'strength'
+            },
+            { 
+                id: 'tuesday_5', 
+                type: 'sleep', 
+                title: 'Sleep Optimizer', 
+                description: 'Set a bedtime and avoid screens 1 hour before', 
+                points: 20, 
+                icon: '🌙',
+                color: 'indigo',
+                difficulty: 'Medium',
+                category: 'recovery'
             }
         ],
-        3: [ // Wednesday
+        3: [ // Wednesday - 5 challenges
             { 
                 id: 'wednesday_1', 
                 type: 'cardio', 
                 title: 'Cardio Crusher', 
-                description: '20-minute cardio session (any activity)', 
-                points: 30, 
+                description: 'Complete 30 minutes of cardio (any activity that raises heart rate)', 
+                points: 35, 
                 icon: '🏃‍♂️',
                 color: 'blue',
-                difficulty: 'Medium'
+                difficulty: 'Medium',
+                category: 'cardio'
             },
             { 
                 id: 'wednesday_2', 
                 type: 'mindfulness', 
-                title: 'Mindful Wednesday', 
-                description: 'Practice 5 minutes of deep breathing', 
+                title: 'Midweek Mindfulness', 
+                description: 'Practice 10 minutes of deep breathing or meditation', 
                 points: 15, 
                 icon: '🌸',
                 color: 'pink',
-                difficulty: 'Easy'
+                difficulty: 'Easy',
+                category: 'mindfulness'
             },
             { 
                 id: 'wednesday_3', 
                 type: 'social', 
                 title: 'Workout Buddy', 
-                description: 'Exercise with a friend or share your progress', 
+                description: 'Exercise with a friend or share your progress online', 
                 points: 25, 
                 icon: '👫',
                 color: 'green',
-                difficulty: 'Medium'
-            }
-        ],
-        4: [ // Thursday
+                difficulty: 'Medium',
+                category: 'social'
+            },
             { 
-                id: 'thursday_1', 
+                id: 'wednesday_4', 
                 type: 'flexibility', 
                 title: 'Flexibility Focus', 
-                description: '15-minute stretching or yoga session', 
-                points: 20, 
+                description: 'Complete a 20-minute stretching routine or yoga session', 
+                points: 25, 
                 icon: '🤸‍♀️',
                 color: 'purple',
-                difficulty: 'Easy'
+                difficulty: 'Easy',
+                category: 'flexibility'
+            },
+            { 
+                id: 'wednesday_5', 
+                type: 'water', 
+                title: 'Hydration Plus', 
+                description: 'Drink water with every meal and add natural flavoring', 
+                points: 15, 
+                icon: '🥤',
+                color: 'cyan',
+                difficulty: 'Easy',
+                category: 'health'
+            }
+        ],
+        4: [ // Thursday - 5 challenges
+            { 
+                id: 'thursday_1', 
+                type: 'strength', 
+                title: 'Technique Thursday', 
+                description: 'Focus on perfect form - quality over quantity in your workout', 
+                points: 30, 
+                icon: '⚖️',
+                color: 'orange',
+                difficulty: 'Medium',
+                category: 'strength'
             },
             { 
                 id: 'thursday_2', 
                 type: 'nutrition', 
-                title: 'Veggie Victory', 
-                description: 'Eat 5 servings of fruits and vegetables', 
+                title: 'Rainbow Plate', 
+                description: 'Eat foods of 5 different colors throughout the day', 
                 points: 25, 
-                icon: '🥕',
-                color: 'orange',
-                difficulty: 'Medium'
+                icon: '🌈',
+                color: 'rainbow',
+                difficulty: 'Medium',
+                category: 'nutrition'
             },
             { 
                 id: 'thursday_3', 
                 type: 'challenge', 
                 title: 'Personal Best', 
-                description: 'Try to beat a personal fitness record', 
+                description: 'Try to beat a personal fitness record or achieve new goal', 
                 points: 40, 
                 icon: '🏆',
                 color: 'gold',
-                difficulty: 'Hard'
+                difficulty: 'Hard',
+                category: 'achievement'
+            },
+            { 
+                id: 'thursday_4', 
+                type: 'balance', 
+                title: 'Balance Challenge', 
+                description: 'Stand on one foot for 30 seconds, 3 times each leg', 
+                points: 20, 
+                icon: '⚖️',
+                color: 'teal',
+                difficulty: 'Easy',
+                category: 'balance'
+            },
+            { 
+                id: 'thursday_5', 
+                type: 'social', 
+                title: 'Fitness Friend', 
+                description: 'Workout with a friend, join a class, or encourage someone else', 
+                points: 25, 
+                icon: '👥',
+                color: 'green',
+                difficulty: 'Easy',
+                category: 'social'
             }
         ],
-        5: [ // Friday
+        5: [ // Friday - 5 challenges
             { 
                 id: 'friday_1', 
                 type: 'endurance', 
                 title: 'Friday Finisher', 
-                description: 'Complete a 30-minute workout session', 
-                points: 35, 
-                icon: '⚡',
-                color: 'yellow',
-                difficulty: 'Medium'
+                description: 'Complete your most challenging workout of the week', 
+                points: 45, 
+                icon: '🏆',
+                color: 'gold',
+                difficulty: 'Hard',
+                category: 'workout'
             },
             { 
                 id: 'friday_2', 
                 type: 'recovery', 
-                title: 'Recovery Ready', 
-                description: 'Take an ice bath, sauna, or hot shower', 
-                points: 15, 
-                icon: '🛁',
+                title: 'Recovery Prep', 
+                description: 'Spend 15 minutes on self-care: stretching, massage, or bath', 
+                points: 20, 
+                icon: '🛀',
                 color: 'blue',
-                difficulty: 'Easy'
+                difficulty: 'Easy',
+                category: 'recovery'
             },
             { 
                 id: 'friday_3', 
                 type: 'planning', 
                 title: 'Weekend Warrior Prep', 
-                description: 'Plan an active weekend activity', 
+                description: 'Plan 2 active weekend activities or workouts', 
                 points: 20, 
                 icon: '📅',
                 color: 'green',
-                difficulty: 'Easy'
+                difficulty: 'Easy',
+                category: 'planning'
+            },
+            { 
+                id: 'friday_4', 
+                type: 'celebration', 
+                title: 'Week Winner', 
+                description: 'Celebrate your weekly achievements - treat yourself healthy!', 
+                points: 15, 
+                icon: '🎉',
+                color: 'rainbow',
+                difficulty: 'Easy',
+                category: 'mindset'
+            },
+            { 
+                id: 'friday_5', 
+                type: 'energy', 
+                title: 'Power Hour', 
+                description: 'Do high-energy exercises for 1 minute every 15 minutes (4x total)', 
+                points: 30, 
+                icon: '⚡',
+                color: 'yellow',
+                difficulty: 'Medium',
+                category: 'activity'
             }
         ],
-        6: [ // Saturday
+        6: [ // Saturday - 5 challenges
             { 
                 id: 'saturday_1', 
                 type: 'adventure', 
                 title: 'Adventure Seeker', 
-                description: 'Try a new outdoor activity or sport', 
+                description: 'Try a completely new outdoor activity, sport, or fitness class', 
                 points: 40, 
                 icon: '🏔️',
                 color: 'green',
-                difficulty: 'Medium'
+                difficulty: 'Medium',
+                category: 'adventure'
             },
             { 
                 id: 'saturday_2', 
                 type: 'strength', 
                 title: 'Weekend Warrior', 
-                description: 'Complete a full-body strength workout', 
-                points: 35, 
+                description: 'Complete a full-body strength workout with extra intensity', 
+                points: 40, 
                 icon: '⚔️',
                 color: 'red',
-                difficulty: 'Hard'
+                difficulty: 'Hard',
+                category: 'strength'
             },
             { 
                 id: 'saturday_3', 
                 type: 'fun', 
                 title: 'Active Fun', 
-                description: 'Play a sport or active game with others', 
-                points: 30, 
+                description: 'Play a sport, dance, or do active games with others for 30+ minutes', 
+                points: 35, 
                 icon: '🎮',
                 color: 'purple',
-                difficulty: 'Medium'
+                difficulty: 'Medium',
+                category: 'social'
+            },
+            { 
+                id: 'saturday_4', 
+                type: 'nature', 
+                title: 'Nature Therapy', 
+                description: 'Spend 45+ minutes exercising or relaxing in nature', 
+                points: 25, 
+                icon: '🌳',
+                color: 'green',
+                difficulty: 'Easy',
+                category: 'outdoor'
+            },
+            { 
+                id: 'saturday_5', 
+                type: 'creative', 
+                title: 'Creative Movement', 
+                description: 'Try dance, martial arts, or creative movement for 20+ minutes', 
+                points: 30, 
+                icon: '💃',
+                color: 'pink',
+                difficulty: 'Medium',
+                category: 'creative'
             }
         ]
     };
     
     const todayChallenges = challengeTemplates[dayOfWeek] || challengeTemplates[1];
     
-    // Add random completion status for demo
+    // Use actual user progress instead of random completion
     return todayChallenges.map(challenge => ({
         ...challenge,
-        completed: Math.random() > 0.7,
-        progress: Math.floor(Math.random() * 100)
+        completed: userProgress.completedChallenges.has(challenge.id),
+        progress: userProgress.completedChallenges.has(challenge.id) ? 100 : 0
     }));
 }
 
@@ -4291,9 +4508,9 @@ function createEnhancedChallengeCard(challenge) {
             </div>
             
             ${!challenge.completed ? `
-                <button class="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
+                <button class="complete-challenge-btn w-full px-4 py-2 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
                         onclick="completeEnhancedChallenge('${challenge.id}')">
-                    Complete Challenge
+                    <i class="fas fa-trophy mr-2"></i>Complete Challenge
                 </button>
             ` : `
                 <div class="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg text-center">
@@ -4305,23 +4522,250 @@ function createEnhancedChallengeCard(challenge) {
 }
 
 function completeEnhancedChallenge(challengeId) {
-    showNotification('🎉 Challenge completed! Points earned!', 'success');
+    // Load user progress
+    loadUserProgress();
+    
+    // Check if already completed
+    if (userProgress.completedChallenges.has(challengeId)) {
+        showNotification('⚠️ Challenge already completed!', 'warning');
+        return;
+    }
+    
+    // Find the challenge to get points
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const challengeTemplates = {
+        0: [ // Sunday challenges... (would need full template here)
+    };
+    
+    // For now, let's get points from the challenge card
+    const challengeCard = document.querySelector(`button[onclick="completeEnhancedChallenge('${challengeId}')"]`).closest('.enhanced-challenge-card');
+    const pointsText = challengeCard.querySelector('.text-yellow-400').textContent;
+    const points = parseInt(pointsText.replace('+', ''));
+    
+    // Add to completed challenges
+    userProgress.completedChallenges.add(challengeId);
+    userProgress.points += points;
+    userProgress.lastActivity = new Date().toISOString();
+    
+    // Save progress
+    saveUserProgress();
+    
+    // Show notification with points
+    showNotification(`🎉 Challenge completed! +${points} points earned!`, 'success');
     
     // Add celebration effect
-    celebrateChallenge();
+    celebrateChallenge(points);
     
+    // Check for achievements
+    checkAchievements();
+    
+    // Update displays
     setTimeout(() => {
         loadDailyChallenges();
+        updatePointsDisplay();
+        updateDashboardStats();
     }, 1000);
 }
 
-function celebrateChallenge() {
-    // Simple celebration effect (you can enhance this with animations)
-    const body = document.body;
-    body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+function celebrateChallenge(points = 0) {
+    // Enhanced celebration effect with particles and animations
+    createCelebrationParticles();
+    
+    // Show floating points animation
+    if (points > 0) {
+        createFloatingPoints(points);
+    }
+    
+    // Pulse effect on the achievement section
+    const achievementSection = document.getElementById('achievements-section');
+    if (achievementSection) {
+        achievementSection.classList.add('celebration-pulse');
+        setTimeout(() => {
+            achievementSection.classList.remove('celebration-pulse');
+        }, 1000);
+    }
+}
+
+function createCelebrationParticles() {
+    // Create confetti-like particles
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.className = 'celebration-particle';
+            particle.innerHTML = ['🎉', '⭐', '🏆', '💪', '🔥'][Math.floor(Math.random() * 5)];
+            particle.style.cssText = `
+                position: fixed;
+                top: 20%;
+                left: ${Math.random() * 100}%;
+                font-size: 2rem;
+                z-index: 10000;
+                pointer-events: none;
+                animation: celebrationFloat 2s ease-out forwards;
+            `;
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 2000);
+        }, i * 100);
+    }
+}
+
+function createFloatingPoints(points) {
+    const pointsElement = document.createElement('div');
+    pointsElement.textContent = `+${points} pts`;
+    pointsElement.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ffd700;
+        z-index: 10000;
+        pointer-events: none;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        animation: floatingPoints 2s ease-out forwards;
+    `;
+    document.body.appendChild(pointsElement);
+    
     setTimeout(() => {
-        body.style.background = '';
-    }, 500);
+        pointsElement.remove();
+    }, 2000);
+}
+
+// Achievement System
+function checkAchievements() {
+    const achievements = [
+        {
+            id: 'first_challenge',
+            title: '🎯 First Steps',
+            description: 'Complete your first daily challenge',
+            condition: () => userProgress.completedChallenges.size >= 1,
+            points: 50
+        },
+        {
+            id: 'challenge_streak_3',
+            title: '🔥 Getting Consistent',
+            description: 'Complete challenges on 3 different days',
+            condition: () => userProgress.completedChallenges.size >= 3,
+            points: 100
+        },
+        {
+            id: 'challenge_streak_7',
+            title: '⚡ Weekly Warrior',
+            description: 'Complete challenges for 7 days',
+            condition: () => userProgress.completedChallenges.size >= 7,
+            points: 200
+        },
+        {
+            id: 'points_100',
+            title: '💯 Century Club',
+            description: 'Earn 100 total points',
+            condition: () => userProgress.points >= 100,
+            points: 75
+        },
+        {
+            id: 'points_500',
+            title: '🏆 Point Master',
+            description: 'Earn 500 total points',
+            condition: () => userProgress.points >= 500,
+            points: 150
+        },
+        {
+            id: 'daily_complete',
+            title: '🌟 Daily Dominator',
+            description: 'Complete all 5 daily challenges in one day',
+            condition: () => {
+                const today = new Date().toDateString();
+                const todaysChallenges = Array.from(userProgress.completedChallenges).filter(id => 
+                    id.includes(getDayPrefix(new Date().getDay()))
+                );
+                return todaysChallenges.length >= 5;
+            },
+            points: 200
+        }
+    ];
+    
+    achievements.forEach(achievement => {
+        if (!userProgress.completedAchievements.has(achievement.id) && achievement.condition()) {
+            unlockAchievement(achievement);
+        }
+    });
+}
+
+function getDayPrefix(dayOfWeek) {
+    const prefixes = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return prefixes[dayOfWeek];
+}
+
+function unlockAchievement(achievement) {
+    // Mark as unlocked
+    userProgress.completedAchievements.add(achievement.id);
+    userProgress.points += achievement.points;
+    saveUserProgress();
+    
+    // Show achievement notification
+    setTimeout(() => {
+        showAchievementModal(achievement);
+    }, 1500);
+}
+
+function showAchievementModal(achievement) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-gradient-to-br from-purple-800 to-blue-900 p-8 rounded-xl max-w-md mx-4 text-center transform scale-100 animate-pulse">
+            <div class="text-6xl mb-4">${achievement.title.split(' ')[0]}</div>
+            <h2 class="text-2xl font-bold text-white mb-2">Achievement Unlocked!</h2>
+            <h3 class="text-xl text-yellow-400 mb-4">${achievement.title.slice(2)}</h3>
+            <p class="text-white/80 mb-6">${achievement.description}</p>
+            <div class="text-3xl text-green-400 font-bold mb-4">+${achievement.points} Points!</div>
+            <button onclick="closeAchievementModal()" class="px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold rounded-lg hover:from-green-600 hover:to-blue-600 transition-all">
+                Claim Reward
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Auto-close after 10 seconds
+    setTimeout(() => {
+        closeAchievementModal();
+    }, 10000);
+}
+
+function closeAchievementModal() {
+    const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-75');
+    if (modal) {
+        modal.remove();
+        updatePointsDisplay();
+        updateDashboardStats();
+    }
+}
+
+function updatePointsDisplay() {
+    loadUserProgress();
+    
+    // Update main points display in achievements section
+    const totalPointsDisplay = document.getElementById('total-points-display');
+    if (totalPointsDisplay) {
+        totalPointsDisplay.textContent = userProgress.points.toLocaleString();
+        totalPointsDisplay.classList.add('points-display');
+    }
+    
+    // Update other points displays
+    const pointsElements = document.querySelectorAll('.points-display, [data-points]');
+    pointsElements.forEach(el => {
+        el.textContent = `${userProgress.points.toLocaleString()} pts`;
+    });
+    
+    // Update header if exists
+    const header = document.querySelector('.user-points, .total-points');
+    if (header) {
+        header.textContent = `${userProgress.points.toLocaleString()} Points`;
+    }
 }
 
 // Weekly Challenges

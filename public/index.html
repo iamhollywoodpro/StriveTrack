@@ -1891,6 +1891,89 @@
             justify-content: space-between;
             align-items: center;
         }
+        
+        /* Celebration Animations */
+        @keyframes celebrationFloat {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-100px) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-200px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes floatingPoints {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            80% {
+                transform: translate(-50%, -80%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -120%) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        .celebration-pulse {
+            animation: celebrationPulse 1s ease-out;
+        }
+        
+        @keyframes celebrationPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Enhanced Button Styles */
+        .complete-challenge-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .complete-challenge-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .complete-challenge-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .complete-challenge-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* Points Display Enhancement */
+        .points-display {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+        }
     </style>
 </head>
 <body>

@@ -46,6 +46,15 @@ function setupEventListeners() {
         updateEmojiPreview(); // Initialize emoji preview
     });
     
+    // Add habit button in habits section
+    const addHabitBtn = document.getElementById('add-habit-btn');
+    if (addHabitBtn) {
+        addHabitBtn.addEventListener('click', () => {
+            showModal('create-habit-modal');
+            updateEmojiPreview(); // Initialize emoji preview
+        });
+    }
+    
     document.getElementById('create-habit-form').addEventListener('submit', createHabit);
     
     // Emoji preview auto-update
@@ -357,6 +366,7 @@ async function loadHabits() {
 
 function displayHabits(habits) {
     const container = document.getElementById('habits-container');
+    const emptyState = document.getElementById('habits-empty-state');
     
     if (!container) {
         console.error('habits-container element not found!');
@@ -366,11 +376,20 @@ function displayHabits(habits) {
     container.innerHTML = '';
     
     if (habits.length === 0) {
-        container.innerHTML = '<p class="text-white/70">No habits created yet. Create your first habit to get started!</p>';
+        // Show empty state
+        if (emptyState) {
+            emptyState.classList.remove('hidden');
+        }
+        container.innerHTML = '';
         return;
+    } else {
+        // Hide empty state
+        if (emptyState) {
+            emptyState.classList.add('hidden');
+        }
     }
     
-    // Display habits using the proper createHabitElement function
+    // Display habits using the enhanced createHabitElement function
     habits.forEach(habit => {
         const habitElement = createHabitElement(habit, false);
         container.appendChild(habitElement);
@@ -491,6 +510,33 @@ function createHabitElement(habit, showWeekView = false) {
     `;
     
     return div;
+}
+
+// Delete habit function
+async function deleteHabit(habitId) {
+    if (!confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/habits/${habitId}`, {
+            method: 'DELETE',
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification('Habit deleted successfully', 'success');
+            loadHabits(); // Reload habits
+            updateDashboardStats(); // Update dashboard
+        } else {
+            const data = await response.json();
+            showNotification(data.error || 'Failed to delete habit', 'error');
+        }
+    } catch (error) {
+        console.error('Delete habit error:', error);
+        showNotification('Failed to delete habit', 'error');
+    }
 }
 
 function createWeeklyHabitElement(habit) {
@@ -2221,7 +2267,12 @@ function createFoodLogElement(log) {
                 </span>
                 ${log.is_custom_recipe ? '<span class="ml-2 text-xs bg-purple-600 text-white px-2 py-1 rounded">Custom Recipe</span>' : ''}
             </div>
-            <div class="text-white/70 text-sm">${new Date(log.created_at).toLocaleTimeString()}</div>
+            <div class="flex items-center space-x-2">
+                <div class="text-white/70 text-sm">${new Date(log.created_at).toLocaleTimeString()}</div>
+                <button class="btn-danger text-xs px-2 py-1" onclick="deleteNutritionEntry('${log.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </div>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -2281,6 +2332,32 @@ async function submitNutrition(event) {
     } catch (error) {
         console.error('Nutrition submission error:', error);
         showNotification('Failed to log nutrition', 'error');
+    }
+}
+
+// Delete nutrition entry function
+async function deleteNutritionEntry(entryId) {
+    if (!confirm('Are you sure you want to delete this nutrition entry? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/nutrition/${entryId}`, {
+            method: 'DELETE',
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification('Nutrition entry deleted successfully', 'success');
+            loadNutrition(); // Reload nutrition data
+        } else {
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Failed to delete nutrition entry', 'error');
+        }
+    } catch (error) {
+        console.error('Delete nutrition entry error:', error);
+        showNotification('Failed to delete nutrition entry', 'error');
     }
 }
 
@@ -3167,6 +3244,9 @@ function createGoalElement(goal) {
                 <button class="btn-secondary text-xs px-2 py-1" onclick="viewGoalDetails('${goal.id}')">
                     Details
                 </button>
+                <button class="btn-danger text-xs px-2 py-1" onclick="deleteGoal('${goal.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
     `;
@@ -3189,6 +3269,21 @@ function updateGoalStats(goals) {
 function showCreateGoalModal() {
     // Placeholder for now
     showNotification('Create Goal feature coming soon! 🎯', 'info');
+}
+
+function deleteGoal(goalId) {
+    if (!confirm('Are you sure you want to delete this goal? This action cannot be undone.')) {
+        return;
+    }
+    
+    // Since goals are currently mock data, we'll show a notification
+    // In a real implementation, this would make an API call
+    showNotification('Goal deleted successfully! (Mock deletion)', 'success');
+    
+    // Reload goals to update the display
+    setTimeout(() => {
+        loadGoals();
+    }, 1000);
 }
 
 function updateGoalProgress(goalId) {

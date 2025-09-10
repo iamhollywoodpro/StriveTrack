@@ -2630,6 +2630,23 @@ function closeNotification() {
     }, 300);
 }
 
+// Test function for notifications (can be called from browser console)
+function testNotifications() {
+    showNotification('🎉 Success notification test!', 'success');
+    
+    setTimeout(() => {
+        showNotification('⚠️ Warning notification test!', 'warning');
+    }, 1000);
+    
+    setTimeout(() => {
+        showNotification('ℹ️ Info notification test!', 'info');
+    }, 2000);
+    
+    setTimeout(() => {
+        showNotification('❌ Error notification test!', 'error');
+    }, 3000);
+}
+
 function updateDashboardStats() {
     // This will be called after loading habits to update the dashboard stats
     // Implementation depends on the loaded data

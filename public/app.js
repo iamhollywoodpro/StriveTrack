@@ -13,10 +13,10 @@ window.testDeleteHabit = function() {
 let sessionId = localStorage.getItem('sessionId');
 let currentUser = null;
 
-// ===== LOCALSTORAGE-BASED SYSTEM FOR STATIC DEPLOYMENT =====
-// This replaces all API calls with localStorage operations for static hosting
+// ===== HYBRID STORAGE SYSTEM: CLOUDFLARE API + LOCALSTORAGE FALLBACK =====
+// Primary: Use Cloudflare API when online | Fallback: Use localStorage when offline/API fails
 
-// Initialize localStorage data structures
+// Initialize localStorage data structures for offline fallback
 function initializeLocalStorage() {
     if (!localStorage.getItem('strivetrack_habits')) {
         localStorage.setItem('strivetrack_habits', JSON.stringify([]));
@@ -29,6 +29,124 @@ function initializeLocalStorage() {
     }
     if (!localStorage.getItem('strivetrack_media')) {
         localStorage.setItem('strivetrack_media', JSON.stringify([]));
+    }
+    if (!localStorage.getItem('strivetrack_pending_sync')) {
+        localStorage.setItem('strivetrack_pending_sync', JSON.stringify([]));
+    }
+}
+
+// Online/Offline detection
+function isOnline() {
+    return navigator.onLine && sessionId;
+}
+
+// Queue actions for sync when offline
+function queueForSync(action) {
+    const pending = JSON.parse(localStorage.getItem('strivetrack_pending_sync') || '[]');
+    pending.push({
+        ...action,
+        timestamp: Date.now()
+    });
+    localStorage.setItem('strivetrack_pending_sync', JSON.stringify(pending));
+}
+
+// Sync user points and profile from server
+async function syncUserPointsFromServer() {
+    if (!isOnline()) return;
+    
+    try {
+        const response = await fetch('/api/profile', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.user && currentUser) {
+                // Update points from server (authoritative)
+                if (data.user.points !== undefined) {
+                    currentUser.points = data.user.points;
+                }
+                
+                // Update profile info
+                if (data.user.username) {
+                    currentUser.username = data.user.username;
+                }
+                
+                if (data.user.profile_picture_url) {
+                    currentUser.profile_picture_url = data.user.profile_picture_url;
+                }
+                
+                // Save updated user data
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                console.log('✅ User data synced from server');
+            }
+        }
+    } catch (error) {
+        console.log('❌ Failed to sync user data from server:', error);
+    }
+}
+
+// Set up online/offline sync monitoring
+function setupOnlineOfflineSync() {
+    // Monitor online/offline status
+    window.addEventListener('online', async () => {
+        console.log('🌐 Back online - processing pending sync...');
+        showNotification('Back online! Syncing data...', 'info');
+        await processPendingSync();
+    });
+    
+    window.addEventListener('offline', () => {
+        console.log('📱 Gone offline - will queue changes for sync');
+        showNotification('Offline mode - changes will sync when back online', 'info');
+    });
+    
+    // Periodic sync check (every 30 seconds when online)
+    setInterval(async () => {
+        if (isOnline()) {
+            const pending = JSON.parse(localStorage.getItem('strivetrack_pending_sync') || '[]');
+            if (pending.length > 0) {
+                console.log(`🔄 Periodic sync check - ${pending.length} items pending`);
+                await processPendingSync();
+            }
+        }
+    }, 30000);
+}
+
+// Process sync queue when back online
+async function processPendingSync() {
+    if (!isOnline()) return;
+    
+    const pending = JSON.parse(localStorage.getItem('strivetrack_pending_sync') || '[]');
+    const processed = [];
+    
+    for (const action of pending) {
+        try {
+            switch (action.type) {
+                case 'create_habit':
+                    await createHabitAPI(action.data);
+                    break;
+                case 'toggle_habit':
+                    await toggleHabitAPI(action.data);
+                    break;
+                case 'delete_habit':
+                    await deleteHabitAPI(action.data.habitId);
+                    break;
+            }
+            processed.push(action);
+        } catch (error) {
+            console.error('Sync failed for action:', action, error);
+        }
+    }
+    
+    // Remove successfully processed actions
+    const remaining = pending.filter(p => !processed.includes(p));
+    localStorage.setItem('strivetrack_pending_sync', JSON.stringify(remaining));
+    
+    if (processed.length > 0) {
+        console.log(`✅ Synced ${processed.length} pending actions`);
+        // Refresh data after sync
+        loadHabits();
+        updatePointsDisplay();
     }
 }
 
@@ -174,6 +292,84 @@ function getLocalHabitsWithCompletions() {
             completedDays: weeklyCompletedDays
         };
     });
+}
+
+// API Helper Functions
+async function createHabitAPI(habitData) {
+    const response = await fetch('/api/habits', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-session-id': sessionId
+        },
+        body: JSON.stringify(habitData)
+    });
+    
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
+async function toggleHabitAPI(data) {
+    const response = await fetch('/api/habits/weekly', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'x-session-id': sessionId 
+        },
+        body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
+async function deleteHabitAPI(habitId) {
+    const response = await fetch(`/api/habits/${habitId}`, {
+        method: 'DELETE',
+        headers: { 'x-session-id': sessionId }
+    });
+    
+    if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
+function updateLocalCompletionsFromAPI(apiHabits) {
+    const completions = {};
+    
+    apiHabits.forEach(habit => {
+        if (habit.completed_days || habit.completedDays) {
+            completions[habit.id] = habit.completed_days || habit.completedDays;
+        }
+    });
+    
+    saveLocalCompletions(completions);
+}
+
+function updateLocalHabitId(oldId, newId) {
+    const habits = getLocalHabits();
+    const habitIndex = habits.findIndex(h => h.id === oldId);
+    
+    if (habitIndex !== -1) {
+        habits[habitIndex].id = newId;
+        saveLocalHabits(habits);
+        
+        // Also update completions
+        const completions = getLocalCompletions();
+        if (completions[oldId]) {
+            completions[newId] = completions[oldId];
+            delete completions[oldId];
+            saveLocalCompletions(completions);
+        }
+    }
 }
 
 // Achievement System
@@ -764,7 +960,8 @@ function showDashboard() {
     const username = currentUser.username || currentUser.email.split('@')[0];
     updateHeaderProfilePicture(currentUser.profile_picture_url, username);
     
-    // Update points display with local progress (achievements points)
+    // Update points display and sync from server if online
+    await syncUserPointsFromServer();
     updatePointsDisplay();
     
     // Show admin tab ONLY for iamhollywoodpro@protonmail.com
@@ -779,8 +976,11 @@ function showDashboard() {
         }
     }
     
-    // Initialize localStorage system for static deployment
+    // Initialize hybrid storage system 
     initializeLocalStorage();
+    
+    // Set up online/offline sync
+    setupOnlineOfflineSync();
     
     // Load initial data
     console.log('Loading dashboard data...');
@@ -792,17 +992,45 @@ function showDashboard() {
 
 async function loadDashboardWeeklyProgress() {
     try {
-        console.log('📊 Loading dashboard weekly progress from localStorage...');
+        console.log('📊 Loading dashboard weekly progress with hybrid storage...');
         
-        // Initialize localStorage if needed
+        // Initialize localStorage for fallback
         initializeLocalStorage();
         
-        // Get habits with their completion data
+        if (isOnline()) {
+            try {
+                console.log('🌐 Fetching dashboard data from API...');
+                
+                const response = await fetch('/api/habits/weekly', {
+                    headers: { 'x-session-id': sessionId }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const habits = data.habits || [];
+                    console.log('✅ Dashboard API success');
+                    
+                    // Cache to localStorage
+                    saveLocalHabits(habits);
+                    updateLocalCompletionsFromAPI(habits);
+                    
+                    displayDashboardWeeklyProgress(habits);
+                    return;
+                }
+            } catch (apiError) {
+                console.log('❌ Dashboard API failed, using localStorage');
+            }
+        }
+        
+        // Fallback to localStorage
         const habits = getLocalHabitsWithCompletions();
         displayDashboardWeeklyProgress(habits);
         
     } catch (error) {
         console.error('Load dashboard weekly progress error:', error);
+        // Final fallback
+        const habits = getLocalHabitsWithCompletions();
+        displayDashboardWeeklyProgress(habits);
     }
 }
 
@@ -906,23 +1134,51 @@ async function syncUserPointsFromServer() {
 
 // Habits functions
 async function loadHabits() {
-    console.log('📚 Loading habits from localStorage...');
+    console.log('📚 Loading habits with hybrid storage...');
     
     try {
-        // Initialize localStorage if needed
+        // Initialize localStorage for fallback
         initializeLocalStorage();
         
-        // Get habits with their completion data
-        const habits = getLocalHabitsWithCompletions();
-        console.log('🎯 Loaded habits:', habits.length, 'habits');
+        // Process any pending sync items first
+        await processPendingSync();
         
-        if (habits.length > 0) {
-            console.log('📋 First habit sample:', habits[0]);
+        if (isOnline()) {
+            console.log('🌐 Online - fetching from Cloudflare API...');
+            
+            // Try API first
+            const response = await fetch('/api/habits/weekly', {
+                headers: { 'x-session-id': sessionId }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const habits = data.habits || [];
+                console.log('✅ API Success - loaded', habits.length, 'habits');
+                
+                // Cache to localStorage for offline access
+                saveLocalHabits(habits);
+                updateLocalCompletionsFromAPI(habits);
+                
+                displayHabits(habits);
+                return;
+            } else {
+                console.log('❌ API failed, status:', response.status);
+            }
         }
         
+        // Fallback to localStorage (offline or API failed)
+        console.log('💾 Using localStorage fallback...');
+        const habits = getLocalHabitsWithCompletions();
+        console.log('📱 Offline - loaded', habits.length, 'habits from localStorage');
+        
         displayHabits(habits);
+        
     } catch (error) {
         console.error('💥 Load habits error:', error);
+        // Final fallback to localStorage
+        const habits = getLocalHabitsWithCompletions();
+        displayHabits(habits);
     }
 }
 
@@ -1280,36 +1536,77 @@ function createSimpleHabitElement(habit) {
 
 async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
     try {
-        console.log('🔄 Toggling habit completion locally:', { habitId, date, dayOfWeek });
+        console.log('🔄 Toggling habit completion with hybrid storage:', { habitId, date, dayOfWeek });
         
-        // Use localStorage-based toggle
-        const result = toggleLocalHabitCompletion(habitId, date, dayOfWeek);
+        // Always update localStorage immediately for instant UI feedback
+        const localResult = toggleLocalHabitCompletion(habitId, date, dayOfWeek);
         
-        // Update header points display immediately
+        // Update UI immediately
         const userPointsDisplay = document.getElementById('user-points');
         if (userPointsDisplay) {
             userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
         }
-        
-        // Show appropriate notification with points feedback
-        const pointsText = result.points > 0 ? `+${result.points}` : result.points;
-        if (result.completed) {
-            showNotification(`Day completed! ${pointsText} pts`, 'success');
-        } else {
-            showNotification(`Day unmarked! ${pointsText} pts`, 'error');
-        }
-        
-        // Update points display immediately
         updatePointsDisplay();
         
-        // Refresh the views
+        const pointsText = localResult.points > 0 ? `+${localResult.points}` : localResult.points;
+        
+        if (isOnline()) {
+            try {
+                console.log('🌐 Syncing to API...');
+                
+                // Sync to API
+                const apiResult = await toggleHabitAPI({ habitId, date, dayOfWeek });
+                
+                // Update user points from API response (authoritative)
+                if (apiResult.points !== undefined && currentUser) {
+                    // Adjust for any difference between local and API points
+                    const pointsDiff = apiResult.points - localResult.points;
+                    if (pointsDiff !== 0) {
+                        currentUser.points += pointsDiff;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        updatePointsDisplay();
+                    }
+                }
+                
+                if (localResult.completed) {
+                    showNotification(`Day completed! ${pointsText} pts`, 'success');
+                } else {
+                    showNotification(`Day unmarked! ${pointsText} pts`, 'error');
+                }
+                
+                console.log('✅ API sync successful');
+                
+            } catch (apiError) {
+                console.log('❌ API sync failed, queuing for later:', apiError);
+                
+                // Queue for sync when back online
+                queueForSync({
+                    type: 'toggle_habit',
+                    data: { habitId, date, dayOfWeek }
+                });
+                
+                showNotification(`${localResult.completed ? 'Day completed' : 'Day unmarked'}! ${pointsText} pts (Offline)`, 'info');
+            }
+        } else {
+            console.log('📱 Offline - queuing for sync');
+            
+            // Queue for sync when back online
+            queueForSync({
+                type: 'toggle_habit',
+                data: { habitId, date, dayOfWeek }
+            });
+            
+            showNotification(`${localResult.completed ? 'Day completed' : 'Day unmarked'}! ${pointsText} pts (Offline)`, 'info');
+        }
+        
+        // Refresh views
         loadHabits(); 
         loadDashboardWeeklyProgress(); 
         updateDashboardStats();
         
-        // Check for achievements after habit completion
-        if (result.completed) {
-            checkLocalAchievements('habit_completion', { habitId, habit: result.habit });
+        // Check for achievements
+        if (localResult.completed) {
+            checkLocalAchievements('habit_completion', { habitId, habit: localResult.habit });
         }
         
     } catch (error) {
@@ -1455,27 +1752,73 @@ async function createHabit(event) {
     const emoji = getHabitEmoji(name, category);
     const displayName = `${emoji} ${name}`;
     
+    const habitData = {
+        name: displayName, 
+        description: description || `${category} habit - ${difficulty} difficulty`,
+        category: category,
+        weekly_target: weeklyTarget
+    };
+    
     try {
-        console.log('🎯 Creating habit locally:', displayName);
+        console.log('🎯 Creating habit with hybrid storage:', displayName);
         
-        // Create habit using localStorage
-        const newHabit = createLocalHabit({
-            name: displayName, 
-            description: description || `${category} habit - ${difficulty} difficulty`,
-            category: category,
-            weekly_target: weeklyTarget
-        });
+        // Create habit locally for immediate UI feedback
+        const localHabit = createLocalHabit(habitData);
         
+        // Update UI immediately
         showNotification('Habit created successfully! 🎯', 'success');
         closeModal('create-habit-modal');
         document.getElementById('create-habit-form').reset();
-        updateEmojiPreview(); // Reset preview
+        updateEmojiPreview();
         loadHabits();
         loadDashboardWeeklyProgress(); 
         updateDashboardStats();
         
-        // Check for achievements after habit creation
-        checkLocalAchievements('habit_creation', { habit: newHabit });
+        if (isOnline()) {
+            try {
+                console.log('🌐 Syncing habit to API...');
+                
+                // Sync to API
+                const apiResult = await createHabitAPI(habitData);
+                console.log('✅ Habit synced to API successfully');
+                
+                // Update local habit with API ID if different
+                if (apiResult.habitId && apiResult.habitId !== localHabit.id) {
+                    updateLocalHabitId(localHabit.id, apiResult.habitId);
+                }
+                
+                // Check for API-side achievements
+                if (apiResult.newAchievements && apiResult.newAchievements.length > 0) {
+                    apiResult.newAchievements.forEach(achievement => {
+                        setTimeout(() => {
+                            showNotification(`🏆 Achievement: ${achievement.name}! +${achievement.points} pts`, 'success');
+                        }, 1000);
+                    });
+                }
+                
+            } catch (apiError) {
+                console.log('❌ API sync failed, queuing for later:', apiError);
+                
+                // Queue for sync when back online
+                queueForSync({
+                    type: 'create_habit',
+                    data: habitData,
+                    localId: localHabit.id
+                });
+            }
+        } else {
+            console.log('📱 Offline - queuing habit for sync');
+            
+            // Queue for sync when back online
+            queueForSync({
+                type: 'create_habit',
+                data: habitData,
+                localId: localHabit.id
+            });
+        }
+        
+        // Check for local achievements
+        checkLocalAchievements('habit_creation', { habit: localHabit });
         
     } catch (error) {
         console.error('Create habit error:', error);
@@ -1486,15 +1829,43 @@ async function createHabit(event) {
 async function deleteHabit(habitId) {
     showConfirmationModal('Are you sure you want to delete this habit? This action cannot be undone.', async function() {
         try {
-            console.log('🗑️ Deleting habit locally:', habitId);
+            console.log('🗑️ Deleting habit with hybrid storage:', habitId);
             
-            // Delete habit using localStorage
+            // Delete locally for immediate UI feedback
             deleteLocalHabit(habitId);
             
+            // Update UI immediately
             showNotification('Habit deleted successfully', 'success');
             loadHabits();
             loadDashboardWeeklyProgress();
             updateDashboardStats();
+            
+            if (isOnline()) {
+                try {
+                    console.log('🌐 Syncing deletion to API...');
+                    
+                    // Sync to API
+                    await deleteHabitAPI(habitId);
+                    console.log('✅ Habit deletion synced to API');
+                    
+                } catch (apiError) {
+                    console.log('❌ API deletion failed, queuing for later:', apiError);
+                    
+                    // Queue for sync when back online
+                    queueForSync({
+                        type: 'delete_habit',
+                        data: { habitId }
+                    });
+                }
+            } else {
+                console.log('📱 Offline - queuing deletion for sync');
+                
+                // Queue for sync when back online
+                queueForSync({
+                    type: 'delete_habit',
+                    data: { habitId }
+                });
+            }
             
         } catch (error) {
             console.error('Delete habit error:', error);

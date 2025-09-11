@@ -38,6 +38,10 @@ export async function onRequestDelete(context) {
         await env.DB.prepare('DELETE FROM habit_completions WHERE habit_id = ?')
             .bind(habitId).run();
             
+        // Also delete weekly habit completions
+        await env.DB.prepare('DELETE FROM weekly_habit_completions WHERE habit_id = ?')
+            .bind(habitId).run();
+            
         // Delete the habit
         await env.DB.prepare('DELETE FROM habits WHERE id = ? AND user_id = ?')
             .bind(habitId, user.id).run();

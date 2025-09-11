@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StriveTrack - Local Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white min-h-screen">
+    
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold mb-2">🧪 Local Test Mode</h1>
+                <p class="text-white/70">Bypass authentication for local testing</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="loginAsAdmin()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                    🔑 Login as Admin (iamhollywoodpro@protonmail.com)
+                </button>
+                
+                <button onclick="loginAsUser()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                    👤 Login as Regular User (test@example.com)
+                </button>
+                
+                <button onclick="redirectToReal()" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors">
+                    🌐 Go to Real StriveTrack App
+                </button>
+            </div>
+            
+            <div class="mt-6 p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+                <p class="text-yellow-200 text-sm">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    This bypasses authentication for local testing only. All new challenge/achievement changes are included.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loginAsAdmin() {
+            // Create mock admin user for local testing
+            const adminUser = {
+                id: 'admin-test',
+                email: 'iamhollywoodpro@protonmail.com',
+                username: 'iamhollywoodpro',
+                role: 'admin',
+                points: 1250,
+                profile_picture_url: null
+            };
+            
+            // Store in localStorage for the main app to pick up
+            localStorage.setItem('localTestUser', JSON.stringify(adminUser));
+            localStorage.setItem('localTestMode', 'true');
+            
+            // Redirect to main app
+            window.location.href = '/index.html?localTest=admin';
+        }
+        
+        function loginAsUser() {
+            // Create mock regular user for local testing
+            const regularUser = {
+                id: 'user-test',
+                email: 'test@example.com',
+                username: 'testuser',
+                role: 'user',
+                points: 150,
+                profile_picture_url: null
+            };
+            
+            // Store in localStorage for the main app to pick up
+            localStorage.setItem('localTestUser', JSON.stringify(regularUser));
+            localStorage.setItem('localTestMode', 'true');
+            
+            // Redirect to main app
+            window.location.href = '/index.html?localTest=user';
+        }
+        
+        function redirectToReal() {
+            window.location.href = '/index.html';
+        }
+    </script>
+</body>
+</html>

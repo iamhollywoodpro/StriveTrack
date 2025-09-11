@@ -120,8 +120,8 @@
         }
         
         .nav-tab {
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
             color: rgba(255, 255, 255, 0.7);
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -129,7 +129,11 @@
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            min-width: 0;
         }
         
         .nav-tab.active {
@@ -141,6 +145,142 @@
         .nav-tab:hover:not(.active) {
             background: rgba(255, 255, 255, 0.1);
             color: white;
+        }
+        
+        /* Header profile picture hover effect */
+        #header-profile-pic:hover::after {
+            content: '⚙️';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Mobile responsive nav tabs */
+        @media (max-width: 768px) {
+            .nav-tab {
+                padding: 6px 12px;
+                font-size: 13px;
+                gap: 4px;
+            }
+            
+            .nav-tab i {
+                font-size: 14px;
+            }
+            
+            /* Improve mobile stats cards */
+            .stats-card {
+                padding: 16px;
+                min-height: auto;
+            }
+            
+            .glass-card {
+                padding: 16px !important;
+                margin: 8px;
+            }
+            
+            /* Mobile modal improvements */
+            .modal-content {
+                margin: 10px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            /* Mobile admin improvements */
+            .admin-users-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .user-card {
+                padding: 12px;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .nav-tab {
+                padding: 6px 10px;
+                font-size: 12px;
+                gap: 3px;
+            }
+            
+            .nav-tab i {
+                font-size: 13px;
+            }
+            
+            /* Hide text on very small screens, show only icons */
+            .nav-tab span {
+                display: none;
+            }
+            
+            /* Mobile-specific layouts */
+            body {
+                font-size: 14px;
+            }
+            
+            .header-content {
+                padding: 8px 16px !important;
+            }
+            
+            .max-w-7xl {
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+            }
+            
+            /* Coming soon mobile improvements */
+            .feature-item {
+                padding: 8px;
+            }
+            
+            /* Media upload mobile */
+            .upload-area {
+                min-height: 120px;
+                padding: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Extra small mobile devices */
+            .glass-card {
+                padding: 12px !important;
+                margin: 4px;
+            }
+            
+            .grid {
+                gap: 8px !important;
+            }
+            
+            .text-3xl {
+                font-size: 1.5rem !important;
+            }
+            
+            .text-2xl {
+                font-size: 1.25rem !important;
+            }
+            
+            /* Mobile buttons */
+            .btn-primary {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            /* Mobile forms */
+            .input-field {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
         }
         
         .progress-bar {
@@ -379,7 +519,7 @@
             right: 4px;
             opacity: 0;
             transition: all 0.2s ease;
-            z-index: 100;
+            z-index: 1000;
         }
         
         .media-item:hover .media-actions {
@@ -408,6 +548,86 @@
         .delete-btn:hover {
             background: rgba(239, 68, 68, 1);
             transform: scale(1.05);
+        }
+        
+        /* Compare Mode Styles */
+        .compare-mode .media-item {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .compare-mode {
+            border: 2px dashed #3b82f6;
+            border-radius: 12px;
+            padding: 16px;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .compare-mode .media-item {
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .compare-mode .media-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .media-item.selected {
+            border: 2px solid #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .media-item.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #3b82f6;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .btn-compare {
+            background: #3b82f6;
+            color: white;
+            border: 3px solid white;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+            min-width: 48px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            position: relative;
+        }
+        
+        .btn-compare:hover {
+            background: rgba(59, 130, 246, 1);
+            transform: scale(1.05);
+        }
+        
+
+        
+        .compare-actions {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
         }
         
         .notification {
@@ -1461,6 +1681,7 @@
             font-weight: 600;
             text-transform: uppercase;
             backdrop-filter: blur(10px);
+            z-index: 10;
         }
         
         .media-type-badge.before {
@@ -1560,6 +1781,7 @@
             border-radius: 12px;
             font-size: 0.7rem;
             font-weight: 600;
+            z-index: 10;
         }
         
         .week-calendar {
@@ -2081,6 +2303,104 @@
         </div>
     </div>
     
+    <!-- Signup Screen -->
+    <div id="signup-screen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <!-- Logo and Title -->
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-dumbbell text-white text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">Join StriveTrack</h1>
+                <p class="text-white/80">Start your fitness journey today</p>
+            </div>
+            
+            <!-- Signup Form -->
+            <div class="glass-card p-8 mb-6">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">Create Account</h2>
+                
+                <form id="signup-form">
+                    <div class="mb-4">
+                        <label for="signup-username" class="block text-white/90 text-sm font-medium mb-2">Username</label>
+                        <input type="text" id="signup-username" name="username" class="input-field" placeholder="Choose a username" required>
+                        <div class="text-xs text-white/50 mt-1">This will be your display name</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="signup-email" class="block text-white/90 text-sm font-medium mb-2">Email</label>
+                        <input type="email" id="signup-email" name="email" class="input-field" placeholder="your@email.com" required>
+                        <div class="text-xs text-white/50 mt-1">We'll never spam you</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="signup-password" class="block text-white/90 text-sm font-medium mb-2">Password</label>
+                        <input type="password" id="signup-password" name="password" class="input-field" placeholder="••••••••" required>
+                        <div class="text-xs text-white/50 mt-1">Minimum 6 characters</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="signup-confirm-password" class="block text-white/90 text-sm font-medium mb-2">Confirm Password</label>
+                        <input type="password" id="signup-confirm-password" name="confirmPassword" class="input-field" placeholder="••••••••" required>
+                    </div>
+                    
+                    <!-- Terms Agreement -->
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="agree-terms" class="mr-3 w-4 h-4 text-indigo-600 bg-white/10 border-white/20 rounded focus:ring-indigo-500 focus:ring-2" required>
+                            <span class="text-white/80 text-sm">
+                                I agree to the <a href="#" class="text-indigo-300 hover:text-indigo-200 underline">Terms of Service</a> 
+                                and <a href="#" class="text-indigo-300 hover:text-indigo-200 underline">Privacy Policy</a>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary w-full mb-4">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create Account
+                    </button>
+                </form>
+                
+                <div class="text-center">
+                    <p class="text-white/70 text-sm">Already have an account?</p>
+                    <button id="show-login" class="text-indigo-300 hover:text-indigo-200 text-sm font-medium">
+                        Sign in here
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Features Preview -->
+            <div class="glass-card p-6">
+                <h3 class="text-lg font-bold text-white mb-4 text-center">🚀 What you'll get:</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-center text-white/80">
+                        <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-check text-green-400 text-xs"></i>
+                        </div>
+                        Track habits and build streaks
+                    </div>
+                    <div class="flex items-center text-white/80">
+                        <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-check text-green-400 text-xs"></i>
+                        </div>
+                        Set and achieve fitness goals
+                    </div>
+                    <div class="flex items-center text-white/80">
+                        <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-check text-green-400 text-xs"></i>
+                        </div>
+                        Connect with fitness community
+                    </div>
+                    <div class="flex items-center text-white/80">
+                        <div class="w-6 h-6 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-check text-green-400 text-xs"></i>
+                        </div>
+                        Unlock achievements & rewards
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Main Dashboard -->
     <div id="dashboard" class="hidden min-h-screen">
         <!-- Header -->
@@ -2098,6 +2418,14 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="text-yellow-400 font-semibold" id="user-points">⭐ 0 pts</div>
+                        
+                        <!-- User Profile Picture -->
+                        <div class="flex items-center space-x-3">
+                            <div id="header-profile-pic" class="relative w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-white/30 hover:scale-105 transition-all" onclick="showSection('profile')" title="Click to open Profile Settings">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                        </div>
+                        
                         <button id="logout-btn" class="btn-secondary">
                             <i class="fas fa-sign-out-alt mr-2"></i>
                             Logout
@@ -2109,39 +2437,43 @@
         
         <!-- Navigation -->
         <div class="bg-slate-800/30 backdrop-blur-sm border-b border-white/10">
-            <div class="max-w-7xl mx-auto px-4 py-4">
-                <div class="flex space-x-4 overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-2 sm:px-4 py-3">
+                <div class="flex space-x-2 overflow-x-auto pb-1">
                     <button class="nav-tab active" data-section="dashboard">
                         <i class="fas fa-home"></i>
-                        Dashboard
+                        <span>Dashboard</span>
                     </button>
                     <button class="nav-tab" data-section="habits">
                         <i class="fas fa-list-check"></i>
-                        Habits
+                        <span>Habits</span>
                     </button>
                     <button class="nav-tab" data-section="progress">
                         <i class="fas fa-images"></i>
-                        Progress
+                        <span>Progress</span>
                     </button>
                     <button class="nav-tab" data-section="nutrition">
                         <i class="fas fa-utensils"></i>
-                        Nutrition
+                        <span>Nutrition</span>
                     </button>
                     <button class="nav-tab" data-section="goals">
                         <i class="fas fa-target"></i>
-                        Goals
+                        <span>Goals</span>
                     </button>
                     <button class="nav-tab" data-section="achievements">
                         <i class="fas fa-trophy"></i>
-                        Achievements
+                        <span>Achievements</span>
                     </button>
                     <button class="nav-tab" data-section="social">
                         <i class="fas fa-users"></i>
-                        Social Hub
+                        <span>Social Hub</span>
+                    </button>
+                    <button class="nav-tab" data-section="coming-soon">
+                        <i class="fas fa-rocket"></i>
+                        <span>Coming Soon</span>
                     </button>
                     <button class="nav-tab hidden" id="admin-tab" data-section="admin">
                         <i class="fas fa-shield-alt"></i>
-                        ADMIN Dashboard
+                        <span>ADMIN Dashboard</span>
                     </button>
                 </div>
             </div>
@@ -2251,13 +2583,15 @@
                             <p class="text-white/70">Document your fitness transformation journey with photos and videos</p>
                         </div>
                         <div class="flex space-x-3">
-                            <select id="gallery-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg">
+                            <select id="gallery-filter" class="px-3 py-2 bg-white/10 border border-white/20 text-white text-sm rounded-lg" onchange="loadMedia()">
                                 <option value="all">All Media</option>
                                 <option value="before">Before</option>
                                 <option value="progress">Progress</option>
                                 <option value="after">After</option>
                                 <option value="comparisons">Before/After Pairs</option>
                             </select>
+
+
                             <input type="file" id="media-upload" accept="image/*,video/*" class="hidden">
                             <button id="upload-media-btn" class="btn-primary">
                                 <i class="fas fa-upload mr-2"></i>
@@ -2673,105 +3007,613 @@
                 </div>
             </div>
             
+            <!-- Profile Section -->
+            <div id="profile-section" class="section hidden">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Profile Header -->
+                    <div class="glass-card p-6 mb-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-bold text-white">Profile Settings</h2>
+                                <p class="text-white/70">Manage your account and personalize your experience</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-xl"></i>
+                                </div>
+                                <div class="text-white/80 text-sm" id="profile-points-display">0 Points</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Picture Section -->
+                    <div class="glass-card p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            <i class="fas fa-camera mr-2"></i>Profile Picture
+                        </h3>
+                        <div class="flex items-center space-x-6">
+                            <!-- Current Profile Picture -->
+                            <div class="relative">
+                                <div id="current-profile-pic" class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-2xl"></i>
+                                </div>
+                                <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-indigo-700 transition-colors" onclick="document.getElementById('profile-pic-input').click()">
+                                    <i class="fas fa-camera text-white text-sm"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Upload Controls -->
+                            <div class="flex-1">
+                                <input type="file" id="profile-pic-input" class="hidden" accept="image/*" onchange="handleProfilePicture(this)">
+                                <div class="space-y-3">
+                                    <button onclick="document.getElementById('profile-pic-input').click()" class="btn-primary">
+                                        <i class="fas fa-upload mr-2"></i>
+                                        Upload New Picture
+                                    </button>
+                                    <button id="remove-profile-pic" onclick="removeProfilePicture()" class="btn-secondary hidden">
+                                        <i class="fas fa-trash mr-2"></i>
+                                        Remove Picture
+                                    </button>
+                                </div>
+                                <div class="text-white/60 text-sm mt-2">
+                                    Recommended: Square image, max 2MB (JPG, PNG, WEBP, HEIC)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <div class="glass-card p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            <i class="fas fa-user-edit mr-2"></i>Account Information
+                        </h3>
+                        <form id="profile-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Username -->
+                                <div>
+                                    <label class="block text-white/90 text-sm font-medium mb-2">Username</label>
+                                    <input type="text" id="profile-username" class="input-field" placeholder="Your username">
+                                    <div class="text-xs text-white/50 mt-1">This will be your display name</div>
+                                </div>
+                                
+                                <!-- Email -->
+                                <div>
+                                    <label class="block text-white/90 text-sm font-medium mb-2">Email Address</label>
+                                    <input type="email" id="profile-email" class="input-field" placeholder="your@email.com">
+                                    <div class="text-xs text-white/50 mt-1">Used for notifications and account recovery</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Save Changes Button -->
+                            <div class="flex space-x-3 pt-4">
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Save Changes
+                                </button>
+                                <button type="button" onclick="loadProfileData()" class="btn-secondary">
+                                    <i class="fas fa-undo mr-2"></i>
+                                    Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Password Change -->
+                    <div class="glass-card p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            <i class="fas fa-key mr-2"></i>Change Password
+                        </h3>
+                        <form id="password-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-white/90 text-sm font-medium mb-2">Current Password</label>
+                                    <input type="password" id="current-password" class="input-field" placeholder="••••••••">
+                                </div>
+                                <div>
+                                    <label class="block text-white/90 text-sm font-medium mb-2">New Password</label>
+                                    <input type="password" id="new-password" class="input-field" placeholder="••••••••">
+                                </div>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-white/90 text-sm font-medium mb-2">Confirm New Password</label>
+                                <input type="password" id="confirm-new-password" class="input-field" placeholder="••••••••">
+                            </div>
+                            
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-shield-alt mr-2"></i>
+                                Update Password
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Account Statistics -->
+                    <div class="glass-card p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-4">
+                            <i class="fas fa-chart-line mr-2"></i>Account Statistics
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center p-4 bg-white/5 rounded-lg">
+                                <div class="text-2xl font-bold text-white" id="stats-total-points">0</div>
+                                <div class="text-white/60 text-sm">Total Points</div>
+                            </div>
+                            <div class="text-center p-4 bg-white/5 rounded-lg">
+                                <div class="text-2xl font-bold text-white" id="stats-habits-count">0</div>
+                                <div class="text-white/60 text-sm">Active Habits</div>
+                            </div>
+                            <div class="text-center p-4 bg-white/5 rounded-lg">
+                                <div class="text-2xl font-bold text-white" id="stats-achievements-count">0</div>
+                                <div class="text-white/60 text-sm">Achievements</div>
+                            </div>
+                            <div class="text-center p-4 bg-white/5 rounded-lg">
+                                <div class="text-2xl font-bold text-white" id="stats-days-active">0</div>
+                                <div class="text-white/60 text-sm">Days Active</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="glass-card p-6 border border-red-500/20">
+                        <h3 class="text-xl font-bold text-red-400 mb-4">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Danger Zone
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+                                <div>
+                                    <div class="text-white font-medium">Delete Account</div>
+                                    <div class="text-white/60 text-sm">Permanently delete your account and all data</div>
+                                </div>
+                                <button onclick="confirmDeleteAccount()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coming Soon Section -->
+            <div id="coming-soon-section" class="section hidden">
+                <div class="glass-card p-6">
+                    <div class="text-center mb-8">
+                        <div class="text-6xl mb-4">🚀</div>
+                        <h2 class="text-3xl font-bold text-white mb-2">Coming Soon in 2026</h2>
+                        <p class="text-white/70 text-lg">Exciting new features planned for StriveTrack's future</p>
+                    </div>
+
+                    <!-- Feature Categories -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                        <!-- AI & Machine Learning -->
+                        <div class="bg-gradient-to-br from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-lg p-6">
+                            <div class="text-3xl mb-4">🤖</div>
+                            <h3 class="text-xl font-bold text-white mb-3">AI & Machine Learning</h3>
+                            <div class="space-y-3">
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">AI Personal Trainer</span>
+                                        <span class="text-purple-400 text-xs">Q2 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Personalized workout plans generated by AI based on your progress and goals</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Smart Progress Predictions</span>
+                                        <span class="text-purple-400 text-xs">Q3 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">AI-powered insights to predict your fitness journey and optimize results</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Intelligent Form Analysis</span>
+                                        <span class="text-purple-400 text-xs">Q4 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Computer vision to analyze workout form and provide real-time corrections</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Analytics -->
+                        <div class="bg-gradient-to-br from-green-600/20 to-teal-600/20 border border-green-500/30 rounded-lg p-6">
+                            <div class="text-3xl mb-4">📊</div>
+                            <h3 class="text-xl font-bold text-white mb-3">Advanced Analytics</h3>
+                            <div class="space-y-3">
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Body Composition Tracking</span>
+                                        <span class="text-green-400 text-xs">Q1 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Advanced body fat, muscle mass, and bone density analysis through photos</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Biomarker Integration</span>
+                                        <span class="text-green-400 text-xs">Q2 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Connect with health devices to track sleep, heart rate variability, and more</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Performance Predictions</span>
+                                        <span class="text-green-400 text-xs">Q3 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Predict your 1RM, race times, and performance peaks using advanced analytics</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Social & Community -->
+                        <div class="bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-lg p-6">
+                            <div class="text-3xl mb-4">🌟</div>
+                            <h3 class="text-xl font-bold text-white mb-3">Social & Community</h3>
+                            <div class="space-y-3">
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Virtual Training Groups</span>
+                                        <span class="text-orange-400 text-xs">Q1 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Join live virtual workout sessions with friends and trainers worldwide</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Fitness Challenges 2.0</span>
+                                        <span class="text-orange-400 text-xs">Q2 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Team-based challenges with rewards, rankings, and global competitions</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Expert Coach Network</span>
+                                        <span class="text-orange-400 text-xs">Q4 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Connect with certified trainers and nutritionists for personalized guidance</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nutrition & Wellness -->
+                        <div class="bg-gradient-to-br from-pink-600/20 to-purple-600/20 border border-pink-500/30 rounded-lg p-6">
+                            <div class="text-3xl mb-4">🍎</div>
+                            <h3 class="text-xl font-bold text-white mb-3">Nutrition & Wellness</h3>
+                            <div class="space-y-3">
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">AI Meal Planning</span>
+                                        <span class="text-pink-400 text-xs">Q1 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Personalized meal plans based on your goals, preferences, and dietary restrictions</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Food Recognition Scanner</span>
+                                        <span class="text-pink-400 text-xs">Q2 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Take photos of meals for instant nutrition tracking and calorie counting</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Supplement Optimizer</span>
+                                        <span class="text-pink-400 text-xs">Q3 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Personalized supplement recommendations based on your training and nutrition</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wearables & Integration -->
+                        <div class="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 rounded-lg p-6">
+                            <div class="text-3xl mb-4">⌚</div>
+                            <h3 class="text-xl font-bold text-white mb-3">Wearables & Integration</h3>
+                            <div class="space-y-3">
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Universal Device Sync</span>
+                                        <span class="text-blue-400 text-xs">Q1 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Connect with Apple Watch, Fitbit, Garmin, and 20+ other fitness devices</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Smart Gym Equipment</span>
+                                        <span class="text-blue-400 text-xs">Q3 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Direct integration with smart treadmills, bikes, and strength equipment</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">Voice Assistant Integration</span>
+                                        <span class="text-blue-400 text-xs">Q4 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Control StriveTrack with Alexa, Siri, and Google Assistant voice commands</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Premium Features -->
+                        <div class="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-lg p-6">
+                            <div class="text-3xl mb-4">💎</div>
+                            <h3 class="text-xl font-bold text-white mb-3">Premium Features</h3>
+                            <div class="space-y-3">
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">3D Body Modeling</span>
+                                        <span class="text-yellow-400 text-xs">Q2 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Create detailed 3D body models to visualize your transformation over time</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">AR Workout Mirror</span>
+                                        <span class="text-yellow-400 text-xs">Q3 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Augmented reality workout guidance with form correction and rep counting</p>
+                                </div>
+                                <div class="feature-item">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-white/90 font-medium">DNA-Based Fitness Plans</span>
+                                        <span class="text-yellow-400 text-xs">Q4 2026</span>
+                                    </div>
+                                    <p class="text-white/60 text-sm">Optimize training based on your genetic predispositions and metabolism</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Roadmap Timeline -->
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
+                        <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                            <i class="fas fa-calendar-alt mr-3 text-blue-400"></i>
+                            2026 Release Timeline
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-blue-400 mb-2">Q1 2026</div>
+                                <div class="text-sm text-white/70">
+                                    • Body Composition<br>
+                                    • Virtual Groups<br>
+                                    • AI Meal Planning<br>
+                                    • Device Sync
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-green-400 mb-2">Q2 2026</div>
+                                <div class="text-sm text-white/70">
+                                    • AI Personal Trainer<br>
+                                    • Fitness Challenges 2.0<br>
+                                    • Food Scanner<br>
+                                    • 3D Body Modeling
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-yellow-400 mb-2">Q3 2026</div>
+                                <div class="text-sm text-white/70">
+                                    • Progress Predictions<br>
+                                    • Performance Analytics<br>
+                                    • Supplement Optimizer<br>
+                                    • Smart Gym Integration
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-purple-400 mb-2">Q4 2026</div>
+                                <div class="text-sm text-white/70">
+                                    • Form Analysis AI<br>
+                                    • Expert Coach Network<br>
+                                    • Voice Assistant<br>
+                                    • DNA-Based Plans
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stay Updated -->
+                    <div class="text-center">
+                        <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6">
+                            <h3 class="text-xl font-bold text-white mb-2">Stay Updated</h3>
+                            <p class="text-white/80 mb-4">Be the first to know when new features are released</p>
+                            <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                                <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60">
+                                <button class="px-6 py-2 bg-white text-purple-600 font-semibold rounded-lg hover:bg-white/90 transition-colors">
+                                    Notify Me
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Admin Section -->
             <div id="admin-section" class="section hidden">
+                <!-- Admin Header -->
                 <div class="glass-card p-6 mb-6">
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-2xl font-bold text-white">StriveTrack Admin Dashboard</h2>
-                            <p class="text-white/70">Platform management and user oversight</p>
+                            <h2 class="text-2xl font-bold text-white flex items-center">
+                                <i class="fas fa-shield-alt mr-3 text-red-500"></i>
+                                StriveTrack Admin Dashboard
+                            </h2>
+                            <p class="text-white/70 mt-1">User management and platform oversight</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-green-400 text-sm">
+                                <i class="fas fa-circle text-xs mr-2"></i>
+                                Online
+                            </div>
+                            <button onclick="refreshAdminData()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                <i class="fas fa-sync mr-2"></i>Refresh
+                            </button>
                         </div>
                     </div>
-                    
-                    <!-- Admin Stats -->
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-                        <div class="stats-card">
-                            <div class="text-2xl font-bold text-white mb-2" id="admin-total-users">-</div>
-                            <div class="text-white/70 text-sm">Total Users</div>
-                            <div class="text-blue-400 text-xs">Registered members</div>
-                        </div>
-                        <div class="stats-card">
-                            <div class="text-2xl font-bold text-white mb-2" id="admin-total-media">-</div>
-                            <div class="text-white/70 text-sm">Media Uploads</div>
-                            <div class="text-green-400 text-xs">Total files</div>
-                        </div>
-                        <div class="stats-card">
-                            <div class="text-2xl font-bold text-white mb-2" id="admin-total-habits">-</div>
-                            <div class="text-white/70 text-sm">Total Habits</div>
-                            <div class="text-purple-400 text-xs">Created goals</div>
-                        </div>
-                        <div class="stats-card">
-                            <div class="text-2xl font-bold text-white mb-2" id="admin-flagged-media">-</div>
-                            <div class="text-white/70 text-sm">Flagged Media</div>
-                            <div class="text-red-400 text-xs">Need attention</div>
-                        </div>
-                        <div class="stats-card">
-                            <div class="text-2xl font-bold text-green-400 mb-2">🟢 Active</div>
-                            <div class="text-white/70 text-sm">Platform Status</div>
-                            <div class="text-green-400 text-xs">All systems go</div>
+                </div>
+
+                <!-- Admin Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                    <div class="glass-card p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-white" id="admin-total-users">-</div>
+                                <div class="text-white/70 text-sm">Total Users</div>
+                            </div>
+                            <i class="fas fa-users text-blue-400 text-xl"></i>
                         </div>
                     </div>
-                    
-                    <!-- Admin Navigation -->
-                    <div class="flex space-x-4 mb-6">
-                        <button class="nav-tab active" id="admin-users-tab">
-                            <i class="fas fa-users mr-2"></i>
-                            User Management
-                        </button>
-                        <button class="nav-tab" id="admin-media-tab">
-                            <i class="fas fa-images mr-2"></i>
-                            Media Management
-                        </button>
-                    </div>
-                    
-                    <!-- Admin Users Table -->
-                    <div id="admin-users-section">
-                        <h3 class="text-xl font-bold text-white mb-4">User Management</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead>
-                                    <tr class="border-b border-white/10">
-                                        <th class="text-left text-white/70 py-3 px-4">User</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Email</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Role</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Points</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-users-table">
-                                    <!-- Users will be loaded here -->
-                                </tbody>
-                            </table>
+                    <div class="glass-card p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-white" id="admin-online-users">-</div>
+                                <div class="text-white/70 text-sm">Online Now</div>
+                            </div>
+                            <i class="fas fa-circle text-green-400 text-xl"></i>
                         </div>
                     </div>
-                    
-                    <!-- Admin Media Table -->
-                    <div id="admin-media-section" class="hidden">
-                        <h3 class="text-xl font-bold text-white mb-4">Media Management</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead>
-                                    <tr class="border-b border-white/10">
-                                        <th class="text-left text-white/70 py-3 px-4">Preview</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Filename</th>
-                                        <th class="text-left text-white/70 py-3 px-4">User</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Upload Date</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Size</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Flagged</th>
-                                        <th class="text-left text-white/70 py-3 px-4">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-media-table">
-                                    <!-- Media will be loaded here -->
-                                </tbody>
-                            </table>
+                    <div class="glass-card p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-white" id="admin-total-media">-</div>
+                                <div class="text-white/70 text-sm">Media Files</div>
+                            </div>
+                            <i class="fas fa-images text-purple-400 text-xl"></i>
                         </div>
+                    </div>
+                    <div class="glass-card p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-2xl font-bold text-white" id="admin-flagged-media">-</div>
+                                <div class="text-white/70 text-sm">Flagged</div>
+                            </div>
+                            <i class="fas fa-flag text-red-400 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Grid -->
+                <div class="glass-card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Platform Users</h3>
+                        <div class="flex items-center space-x-3">
+                            <div class="relative">
+                                <input type="text" id="admin-search-users" placeholder="Search users..." class="input-field pl-10 w-64">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50"></i>
+                            </div>
+                            <select id="admin-filter-users" class="input-field w-32">
+                                <option value="all">All Users</option>
+                                <option value="online">Online</option>
+                                <option value="offline">Offline</option>
+                                <option value="flagged">Flagged</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Users Grid -->
+                    <div id="admin-users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <!-- User cards will be loaded here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
+    <!-- Enhanced User Management Modal -->
+    <!-- User Detail Modal -->
+    <div id="user-detail-modal" class="modal hidden">
+        <div class="modal-content max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-white">User Management</h3>
+                <button onclick="closeUserDetailModal()" class="text-white/70 hover:text-white text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- User Info Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- User Profile Card -->
+                <div class="glass-card p-6">
+                    <div class="text-center mb-4">
+                        <div id="user-detail-avatar" class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-user text-white text-2xl"></i>
+                        </div>
+                        <h4 id="user-detail-name" class="text-xl font-bold text-white">User Name</h4>
+                        <p id="user-detail-email" class="text-white/70 text-sm">user@example.com</p>
+                        <div id="user-detail-status" class="mt-2">
+                            <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
+                                <i class="fas fa-circle mr-1"></i>Online
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- User Stats -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Points:</span>
+                            <span id="user-detail-points" class="text-white font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Habits:</span>
+                            <span id="user-detail-habits" class="text-white font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Media:</span>
+                            <span id="user-detail-media-count" class="text-white font-semibold">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/70">Joined:</span>
+                            <span id="user-detail-joined" class="text-white font-semibold">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Actions -->
+                <div class="glass-card p-6">
+                    <h5 class="text-lg font-bold text-white mb-4">Account Actions</h5>
+                    <div class="space-y-3">
+                        <button onclick="viewUserProfile()" class="w-full btn-secondary">
+                            <i class="fas fa-eye mr-2"></i>View Full Profile
+                        </button>
+                        <button onclick="sendUserMessage()" class="w-full btn-secondary">
+                            <i class="fas fa-envelope mr-2"></i>Send Message
+                        </button>
+                        <button onclick="resetUserPassword()" class="w-full btn-secondary">
+                            <i class="fas fa-key mr-2"></i>Reset Password
+                        </button>
+                        <button onclick="toggleUserStatus()" class="w-full btn-secondary" id="toggle-user-btn">
+                            <i class="fas fa-ban mr-2"></i>Suspend Account
+                        </button>
+                        <button onclick="confirmDeleteUser()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-trash mr-2"></i>Delete Account
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Flags/Notes -->
+                <div class="glass-card p-6">
+                    <h5 class="text-lg font-bold text-white mb-4">Admin Notes</h5>
+                    <textarea id="user-admin-notes" class="input-field h-32 resize-none" placeholder="Add admin notes about this user..."></textarea>
+                    <button onclick="saveUserNotes()" class="w-full mt-3 btn-primary">
+                        <i class="fas fa-save mr-2"></i>Save Notes
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Media Section -->
+            <div class="glass-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h5 class="text-lg font-bold text-white">User Media</h5>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="selectAllMedia()" class="text-sm text-indigo-400 hover:text-indigo-300">Select All</button>
+                        <button onclick="bulkDeleteMedia()" class="text-sm text-red-400 hover:text-red-300">Delete Selected</button>
+                    </div>
+                </div>
+
+                <!-- Media Grid -->
+                <div id="user-media-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <!-- Media items will be loaded here -->
+                </div>
+
+                <!-- No Media State -->
+                <div id="no-media-state" class="text-center py-12 hidden">
+                    <i class="fas fa-images text-white/30 text-4xl mb-4"></i>
+                    <p class="text-white/60">This user hasn't uploaded any media yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modals -->
     <div id="create-habit-modal" class="modal hidden">
         <div class="modal-content">
@@ -2884,7 +3726,7 @@
                 <div class="mb-4">
                     <label for="media-file" class="block text-white/90 text-sm font-medium mb-2">Select Photo or Video</label>
                     <input type="file" id="media-file" name="file" accept="image/*,video/*" class="input-field" required>
-                    <div class="text-white/60 text-xs mt-1">Supported: JPG, PNG, MP4, MOV (Max 50MB)</div>
+                    <div class="text-white/60 text-xs mt-1">Supported: All Images (JPG, PNG, WEBP, HEIC, GIF, BMP, TIFF, SVG) & Videos (MP4, MOV, AVI, WMV, WEBM, 3GP, FLV, MKV) - Max 50MB</div>
                 </div>
                 
                 <div class="mb-6">
@@ -3039,6 +3881,77 @@
         </div>
     </div>
     
+    <!-- Create Goal Modal -->
+    <div id="create-goal-modal" class="modal hidden">
+        <div class="modal-content max-w-md">
+            <h3 class="text-2xl font-bold text-white mb-6">🎯 Create New Goal</h3>
+            <form id="goal-form" onsubmit="createGoal(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white/80 text-sm font-medium mb-2">Goal Name</label>
+                        <input type="text" id="goal-name" name="name" required 
+                               class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="e.g., Run 5K, Bench Press 100kg">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/80 text-sm font-medium mb-2">Description</label>
+                        <textarea id="goal-description" name="description" rows="3"
+                                  class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Describe your goal..."></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Category</label>
+                            <select id="goal-category" name="category" 
+                                    class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="fitness">Fitness</option>
+                                <option value="weight">Weight</option>
+                                <option value="strength">Strength</option>
+                                <option value="endurance">Endurance</option>
+                                <option value="habit">Habit</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Target Value</label>
+                            <input type="number" id="goal-target" name="target_value" required min="1" step="0.1"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="100">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Unit</label>
+                            <input type="text" id="goal-unit" name="unit" 
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="kg, lbs, minutes, days">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Deadline</label>
+                            <input type="date" id="goal-deadline" name="deadline" 
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4 mt-6">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-plus mr-2"></i>
+                        Create Goal
+                    </button>
+                    <button type="button" onclick="closeCreateGoalModal()" class="btn-secondary flex-1">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Achievement Showcase Modal -->
     <div id="achievement-showcase-modal" class="modal hidden">
         <div class="achievement-showcase-modal">
@@ -3097,6 +4010,153 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Create Challenge Modal -->
+    <div id="create-challenge-modal" class="modal hidden">
+        <div class="modal-content max-w-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">🏆 Create Social Challenge</h3>
+                <button onclick="closeModal('create-challenge-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="challenge-form" onsubmit="createChallenge(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-white/80 text-sm font-medium mb-2">Challenge Title</label>
+                        <input type="text" id="challenge-title" name="title" required 
+                               class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                               placeholder="e.g., 30-Day Push-up Challenge">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/80 text-sm font-medium mb-2">Description</label>
+                        <textarea id="challenge-description" name="description" rows="3"
+                                  class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  placeholder="Describe your challenge and what participants need to do..."></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Type</label>
+                            <select id="challenge-type" name="type" 
+                                    class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="group">🤝 Group Challenge</option>
+                                <option value="versus">⚔️ Versus Challenge</option>
+                                <option value="individual">🎯 Individual Goal</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Category</label>
+                            <select id="challenge-category" name="category" 
+                                    class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="fitness">💪 Fitness</option>
+                                <option value="nutrition">🍎 Nutrition</option>
+                                <option value="habits">🔥 Habits</option>
+                                <option value="steps">👟 Steps/Walking</option>
+                                <option value="mindfulness">🧘 Mindfulness</option>
+                                <option value="other">⭐ Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Target Value</label>
+                            <input type="number" id="challenge-target-value" name="target_value" required min="1"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="e.g., 100">
+                        </div>
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Unit</label>
+                            <select id="challenge-target-unit" name="target_unit" 
+                                    class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="days">📅 Days</option>
+                                <option value="reps">🔢 Reps/Count</option>
+                                <option value="minutes">⏱️ Minutes</option>
+                                <option value="steps">👣 Steps</option>
+                                <option value="calories">🔥 Calories</option>
+                                <option value="kg">🏋️ Kilograms</option>
+                                <option value="miles">🏃 Miles</option>
+                                <option value="other">⭐ Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Duration</label>
+                            <select id="challenge-duration" name="duration_days" 
+                                    class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="1">1 Day</option>
+                                <option value="3">3 Days</option>
+                                <option value="7" selected>1 Week</option>
+                                <option value="14">2 Weeks</option>
+                                <option value="30">1 Month</option>
+                                <option value="60">2 Months</option>
+                                <option value="90">3 Months</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Max Participants</label>
+                            <select id="challenge-max-participants" name="max_participants" 
+                                    class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="2">2 People</option>
+                                <option value="5">5 People</option>
+                                <option value="10" selected>10 People</option>
+                                <option value="20">20 People</option>
+                                <option value="50">50 People</option>
+                                <option value="100">100 People</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Reward Points</label>
+                            <input type="number" id="challenge-reward-points" name="reward_points" min="50" max="1000" value="100"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-white/80 text-sm font-medium mb-2">Privacy</label>
+                            <select id="challenge-privacy" name="privacy" 
+                                    class="w-full px-3 py-2 bg-white/10 border border-white/20 text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="friends" selected>👥 Friends Only</option>
+                                <option value="public">🌍 Public</option>
+                                <option value="private">🔒 Private/Invite Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="invite-friends-section">
+                        <label class="block text-white/80 text-sm font-medium mb-2">Invite Friends (Optional)</label>
+                        <div class="flex space-x-2">
+                            <input type="email" id="invite-friend-email" 
+                                   class="flex-1 px-3 py-2 bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   placeholder="friend@example.com">
+                            <button type="button" onclick="addFriendToInvite()" 
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="invited-friends-list" class="mt-2 space-y-2">
+                            <!-- Invited friends will appear here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4 mt-6">
+                    <button type="submit" class="btn-primary flex-1">
+                        🏆 Create Challenge
+                    </button>
+                    <button type="button" onclick="closeModal('create-challenge-modal')" class="btn-secondary flex-1">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
     

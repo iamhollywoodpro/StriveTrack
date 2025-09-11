@@ -1,127 +1,71 @@
-// Admin media management endpoint for StriveTrack
-import { requireAdmin } from '../../utils/auth.js';
-import { getAllMedia } from '../../utils/database.js';
-
-export async function onRequestGet(context) {
-    const { request, env } = context;
+// Helper function to get user from session
+async function getUserFromSession(sessionId, env) {
+    if (!sessionId) return null;
     
-    try {
-        const authResult = await requireAdmin(request, env);
-        if (authResult instanceof Response) return authResult;
-        
-        const media = await getAllMedia(env);
-        
-        // Add URLs for admin access
-        const mediaWithUrls = media.map(item => ({
-            ...item,
-            url: `/api/media/file/${item.id}`,
-            download_url: `/api/admin/media/download/${item.id}`
-        }));
-        
-        return new Response(JSON.stringify({ media: mediaWithUrls }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
-    } catch (error) {
-        console.error('Get admin media error:', error);
-        return new Response(JSON.stringify({ 
-            error: 'Internal server error' 
-        }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
+    const session = await env.DB.prepare(`
+        SELECT s.*, u.id as user_id, u.email, u.role, u.points
+        FROM sessions s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.id = ? AND s.expires_at > datetime('now')
+    `).bind(sessionId).first();
+    
+    if (!session) return null;
+    
+    return {
+        id: session.user_id,
+        email: session.email,
+        role: session.role,
+        points: session.points
+    };
 }
 
-export async function onRequestPost(context) {
+// Check if user is admin (iamhollywoodpro@protonmail.com only)
+function isAdmin(user, env) {
+    return user && user.role === 'admin' && user.email === 'iamhollywoodpro@protonmail.com';
+}
+
+// GET - List all user media (admin only)
+export async function onRequestGet(context) {
     const { request, env } = context;
+    const sessionId = request.headers.get('x-session-id');
     
     try {
-        const authResult = await requireAdmin(request, env);
-        if (authResult instanceof Response) return authResult;
+        const user = await getUserFromSession(sessionId, env);
         
-        const body = await request.json();
-        const { mediaId, action } = body;
-        
-        if (!mediaId || !action) {
-            return new Response(JSON.stringify({ 
-                error: 'Media ID and action are required' 
-            }), {
-                status: 400,
+        if (!isAdmin(user, env)) {
+            return new Response(JSON.stringify({ error: 'Unauthorized - Admin access required' }), {
+                status: 403,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
-        
-        const media = await env.DB.prepare(
-            'SELECT * FROM media_uploads WHERE id = ?'
-        ).bind(mediaId).first();
-        
-        if (!media) {
-            return new Response(JSON.stringify({ 
-                error: 'Media not found' 
-            }), {
-                status: 404,
+
+        try {
+            const media = await env.DB.prepare(`
+                SELECT 
+                    m.*,
+                    u.email as userEmail,
+                    u.username
+                FROM media_uploads m
+                JOIN users u ON m.user_id = u.id
+                ORDER BY m.uploaded_at DESC
+            `).all();
+            
+            return new Response(JSON.stringify({ media: media.results || [] }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch (dbError) {
+            // If media_uploads table doesn't exist, return empty array
+            console.log('Media table query error:', dbError);
+            return new Response(JSON.stringify({ media: [] }), {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
-        
-        switch (action) {
-            case 'flag':
-                await env.DB.prepare(
-                    'UPDATE media_uploads SET is_flagged = 1 WHERE id = ?'
-                ).bind(mediaId).run();
-                return new Response(JSON.stringify({
-                    message: 'Media flagged successfully'
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-            case 'unflag':
-                await env.DB.prepare(
-                    'UPDATE media_uploads SET is_flagged = 0 WHERE id = ?'
-                ).bind(mediaId).run();
-                return new Response(JSON.stringify({
-                    message: 'Media unflagged successfully'
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-            case 'delete':
-                // Delete from R2
-                try {
-                    await env.MEDIA_BUCKET.delete(media.r2_key);
-                } catch (error) {
-                    console.error('Error deleting from R2:', error);
-                }
-                
-                // Delete from database
-                await env.DB.prepare('DELETE FROM media_uploads WHERE id = ?')
-                    .bind(mediaId).run();
-                
-                return new Response(JSON.stringify({
-                    message: 'Media deleted successfully'
-                }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-            default:
-                return new Response(JSON.stringify({ 
-                    error: 'Invalid action. Use: flag, unflag, or delete' 
-                }), {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-        }
-        
+
+
+
     } catch (error) {
-        console.error('Admin media action error:', error);
-        return new Response(JSON.stringify({ 
-            error: 'Internal server error' 
-        }), {
+        console.error('Admin get media error:', error);
+        return new Response(JSON.stringify({ error: 'Failed to fetch media' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });

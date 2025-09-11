@@ -15,7 +15,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "wrangler": "^4.34.0"
+    "wrangler": "^4.35.0"
   },
   "author": "Hollywood Pro",
   "license": "MIT"

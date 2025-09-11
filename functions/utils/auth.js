@@ -23,7 +23,7 @@ export async function getCurrentUser(request, env) {
 
     // Check if session exists and is valid
     const session = await env.DB.prepare(`
-        SELECT s.*, u.id as user_id, u.email, u.role, u.points
+        SELECT s.*, u.id as user_id, u.username, u.email, u.profile_picture_url, u.role, u.points
         FROM sessions s
         JOIN users u ON s.user_id = u.id
         WHERE s.id = ? AND s.expires_at > datetime('now')
@@ -35,7 +35,9 @@ export async function getCurrentUser(request, env) {
 
     return {
         id: session.user_id,
+        username: session.username,
         email: session.email,
+        profile_picture_url: session.profile_picture_url,
         role: session.role,
         points: session.points
     };

@@ -1,12 +1,43 @@
 // StriveTrack Frontend JavaScript
 
+// Global function test - ensure deleteHabit is accessible
+window.testDeleteHabit = function() {
+    console.log('🧪 Testing deleteHabit function availability:', typeof deleteHabit);
+    if (typeof deleteHabit === 'function') {
+        console.log('✅ deleteHabit function is available globally');
+    } else {
+        console.log('❌ deleteHabit function is NOT available globally');
+    }
+};
+
 let sessionId = localStorage.getItem('sessionId');
 let currentUser = null;
+
+// Compare mode functionality
+let compareMode = false;
+let selectedMedia = [];
+const MAX_COMPARE_ITEMS = 2;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
     console.log('StriveTrack app initializing...');
     console.log('Initial sessionId from localStorage:', sessionId);
+    
+    // CHECK FOR LOCAL TEST MODE
+    const urlParams = new URLSearchParams(window.location.search);
+    const localTestMode = localStorage.getItem('localTestMode') === 'true' || urlParams.has('localTest');
+    
+    if (localTestMode) {
+        console.log('🧪 LOCAL TEST MODE ACTIVATED');
+        const localTestUser = JSON.parse(localStorage.getItem('localTestUser') || '{}');
+        if (localTestUser.email) {
+            currentUser = localTestUser;
+            sessionId = 'local-test-session';
+            showDashboard();
+            setupEventListeners();
+            return;
+        }
+    }
     
     // CRITICAL FIX: Always show login screen first, then validate session
     showLoginScreen();
@@ -29,10 +60,34 @@ function setupEventListeners() {
     // Register button
     document.getElementById('show-register').addEventListener('click', showRegisterForm);
     
-    // Logout button
-    document.getElementById('logout-btn').addEventListener('click', logout);
+    // Signup form
+    document.getElementById('signup-form').addEventListener('submit', handleSignup);
     
-    // Navigation tabs
+    // Show login from signup screen
+    document.getElementById('show-login').addEventListener('click', () => {
+        document.getElementById('signup-screen').classList.add('hidden');
+        document.getElementById('login-screen').classList.remove('hidden');
+    });
+    
+    // Profile form event listeners
+    const profileForm = document.getElementById('profile-form');
+    const passwordForm = document.getElementById('password-form');
+    
+    if (profileForm) {
+        profileForm.addEventListener('submit', handleProfileUpdate);
+    }
+    
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordChange);
+    }
+    
+    // Logout button (only exists when logged in)
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    // Navigation tabs (only exist when logged in)
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             const section = tab.dataset.section;
@@ -40,13 +95,16 @@ function setupEventListeners() {
         });
     });
     
-    // Create habit card and modal
-    document.getElementById('create-habit-card').addEventListener('click', () => {
-        showModal('create-habit-modal');
-        updateEmojiPreview(); // Initialize emoji preview
-    });
+    // Create habit card and modal (only exists when logged in)
+    const createHabitCard = document.getElementById('create-habit-card');
+    if (createHabitCard) {
+        createHabitCard.addEventListener('click', () => {
+            showModal('create-habit-modal');
+            updateEmojiPreview(); // Initialize emoji preview
+        });
+    }
     
-    // Add habit button in habits section
+    // Add habit button in habits section (only exists when logged in)
     const addHabitBtn = document.getElementById('add-habit-btn');
     if (addHabitBtn) {
         addHabitBtn.addEventListener('click', () => {
@@ -55,39 +113,69 @@ function setupEventListeners() {
         });
     }
     
-    document.getElementById('create-habit-form').addEventListener('submit', createHabit);
+    // Create habit form (only exists when logged in)
+    const createHabitForm = document.getElementById('create-habit-form');
+    if (createHabitForm) {
+        createHabitForm.addEventListener('submit', createHabit);
+    }
     
-    // Emoji preview auto-update
-    document.getElementById('habit-name').addEventListener('input', updateEmojiPreview);
-    document.getElementById('habit-category').addEventListener('change', updateEmojiPreview);
+    // Emoji preview auto-update (only exists when logged in)
+    const habitName = document.getElementById('habit-name');
+    const habitCategory = document.getElementById('habit-category');
+    if (habitName) {
+        habitName.addEventListener('input', updateEmojiPreview);
+    }
+    if (habitCategory) {
+        habitCategory.addEventListener('change', updateEmojiPreview);
+    }
     
-    // Nutrition form
-    document.getElementById('nutrition-form').addEventListener('submit', submitNutrition);
+    // Nutrition form (only exists when logged in)
+    const nutritionForm = document.getElementById('nutrition-form');
+    if (nutritionForm) {
+        nutritionForm.addEventListener('submit', submitNutrition);
+    }
     
-    // Upload progress card
-    document.getElementById('upload-progress-card').addEventListener('click', () => {
-        showMediaUploadModal();
-    });
+    // Upload progress card (only exists when logged in)
+    const uploadProgressCard = document.getElementById('upload-progress-card');
+    if (uploadProgressCard) {
+        uploadProgressCard.addEventListener('click', () => {
+            showMediaUploadModal();
+        });
+    }
     
-    // Media upload
-    document.getElementById('upload-media-btn').addEventListener('click', () => {
-        showMediaUploadModal();
-    });
+    // Media upload (only exists when logged in)
+    const uploadMediaBtn = document.getElementById('upload-media-btn');
+    if (uploadMediaBtn) {
+        uploadMediaBtn.addEventListener('click', () => {
+            showMediaUploadModal();
+        });
+    }
     
-    // Connect media upload form to submit handler
-    document.getElementById('media-upload-form').addEventListener('submit', submitMediaUpload);
+    // Connect media upload form to submit handler (only exists when logged in)
+    const mediaUploadForm = document.getElementById('media-upload-form');
+    if (mediaUploadForm) {
+        mediaUploadForm.addEventListener('submit', submitMediaUpload);
+    }
     
-    // Admin tabs
-    document.getElementById('admin-users-tab').addEventListener('click', () => {
-        showAdminSection('users');
-    });
+    // Admin tabs (only exist for admin users)
+    const adminUsersTab = document.getElementById('admin-users-tab');
+    const adminMediaTab = document.getElementById('admin-media-tab');
+    if (adminUsersTab) {
+        adminUsersTab.addEventListener('click', () => {
+            showAdminSection('users');
+        });
+    }
+    if (adminMediaTab) {
+        adminMediaTab.addEventListener('click', () => {
+            showAdminSection('media');
+        });
+    }
     
-    document.getElementById('admin-media-tab').addEventListener('click', () => {
-        showAdminSection('media');
-    });
-    
-    // Install app
-    document.getElementById('install-app').addEventListener('click', installPWA);
+    // Install app (only exists when logged in)
+    const installApp = document.getElementById('install-app');
+    if (installApp) {
+        installApp.addEventListener('click', installPWA);
+    }
     
     // Close modals when clicking outside
     window.addEventListener('click', (event) => {
@@ -118,6 +206,143 @@ function setupEventListeners() {
     }, 1000);
 }
 
+// Setup event listeners for elements that are created after login
+function setupDashboardEventListeners() {
+    // Logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn && !logoutBtn.hasEventListener) {
+        logoutBtn.addEventListener('click', logout);
+        logoutBtn.hasEventListener = true;
+    }
+    
+    // Navigation tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        if (!tab.hasEventListener) {
+            tab.addEventListener('click', () => {
+                const section = tab.dataset.section;
+                showSection(section);
+            });
+            tab.hasEventListener = true;
+        }
+    });
+    
+    // Create habit card and modal
+    const createHabitCard = document.getElementById('create-habit-card');
+    if (createHabitCard && !createHabitCard.hasEventListener) {
+        createHabitCard.addEventListener('click', () => {
+            showModal('create-habit-modal');
+            updateEmojiPreview();
+        });
+        createHabitCard.hasEventListener = true;
+    }
+    
+    // Add habit button in habits section
+    const addHabitBtn = document.getElementById('add-habit-btn');
+    if (addHabitBtn && !addHabitBtn.hasEventListener) {
+        addHabitBtn.addEventListener('click', () => {
+            showModal('create-habit-modal');
+            updateEmojiPreview();
+        });
+        addHabitBtn.hasEventListener = true;
+    }
+    
+    // Create habit form
+    const createHabitForm = document.getElementById('create-habit-form');
+    if (createHabitForm && !createHabitForm.hasEventListener) {
+        createHabitForm.addEventListener('submit', createHabit);
+        createHabitForm.hasEventListener = true;
+    }
+    
+    // Emoji preview auto-update
+    const habitName = document.getElementById('habit-name');
+    const habitCategory = document.getElementById('habit-category');
+    if (habitName && !habitName.hasEventListener) {
+        habitName.addEventListener('input', updateEmojiPreview);
+        habitName.hasEventListener = true;
+    }
+    if (habitCategory && !habitCategory.hasEventListener) {
+        habitCategory.addEventListener('change', updateEmojiPreview);
+        habitCategory.hasEventListener = true;
+    }
+    
+    // Nutrition form
+    const nutritionForm = document.getElementById('nutrition-form');
+    if (nutritionForm && !nutritionForm.hasEventListener) {
+        nutritionForm.addEventListener('submit', submitNutrition);
+        nutritionForm.hasEventListener = true;
+    }
+    
+    // Upload progress card
+    const uploadProgressCard = document.getElementById('upload-progress-card');
+    if (uploadProgressCard && !uploadProgressCard.hasEventListener) {
+        uploadProgressCard.addEventListener('click', () => {
+            showMediaUploadModal();
+        });
+        uploadProgressCard.hasEventListener = true;
+    }
+    
+    // Media upload
+    const uploadMediaBtn = document.getElementById('upload-media-btn');
+    if (uploadMediaBtn && !uploadMediaBtn.hasEventListener) {
+        uploadMediaBtn.addEventListener('click', () => {
+            showMediaUploadModal();
+        });
+        uploadMediaBtn.hasEventListener = true;
+    }
+    
+    // Connect media upload form to submit handler
+    const mediaUploadForm = document.getElementById('media-upload-form');
+    if (mediaUploadForm && !mediaUploadForm.hasEventListener) {
+        mediaUploadForm.addEventListener('submit', submitMediaUpload);
+        mediaUploadForm.hasEventListener = true;
+    }
+    
+    // Admin tabs (only for admin users)
+    const adminUsersTab = document.getElementById('admin-users-tab');
+    const adminMediaTab = document.getElementById('admin-media-tab');
+    if (adminUsersTab && !adminUsersTab.hasEventListener) {
+        adminUsersTab.addEventListener('click', () => {
+            showAdminSection('users');
+        });
+        adminUsersTab.hasEventListener = true;
+    }
+    if (adminMediaTab && !adminMediaTab.hasEventListener) {
+        adminMediaTab.addEventListener('click', () => {
+            showAdminSection('media');
+        });
+        adminMediaTab.hasEventListener = true;
+    }
+    
+    // Install app
+    const installApp = document.getElementById('install-app');
+    if (installApp && !installApp.hasEventListener) {
+        installApp.addEventListener('click', installPWA);
+        installApp.hasEventListener = true;
+    }
+    
+    // Social Hub event listeners
+    const addFriendBtn = document.getElementById('add-friend-btn');
+    const friendsListBtn = document.getElementById('friends-list-btn');
+    const leaderboardFilter = document.getElementById('leaderboard-filter');
+    
+    if (addFriendBtn && !addFriendBtn.hasEventListener) {
+        addFriendBtn.addEventListener('click', showFriendsModal);
+        addFriendBtn.hasEventListener = true;
+    }
+    
+    if (friendsListBtn && !friendsListBtn.hasEventListener) {
+        friendsListBtn.addEventListener('click', showFriendsModal);
+        friendsListBtn.hasEventListener = true;
+    }
+    
+    if (leaderboardFilter && !leaderboardFilter.hasEventListener) {
+        leaderboardFilter.addEventListener('change', (e) => {
+            loadLeaderboards(e.target.value);
+        });
+        leaderboardFilter.hasEventListener = true;
+    }
+}
+
 // Authentication functions
 async function validateSession() {
     try {
@@ -128,6 +353,13 @@ async function validateSession() {
         if (response.ok) {
             const data = await response.json();
             currentUser = data.user;
+            
+            // CRITICAL FIX: Ensure points are properly loaded from server
+            if (currentUser && typeof currentUser.points !== 'number') {
+                currentUser.points = 0; // Initialize if missing
+            }
+            console.log('Session validated - User points:', currentUser.points);
+            
             showDashboard();
         } else {
             localStorage.removeItem('sessionId');
@@ -176,38 +408,106 @@ async function handleLogin(event) {
 }
 
 function showRegisterForm() {
-    const email = prompt('Enter your email address:');
-    if (!email) return;
-    
-    const password = prompt('Create a password (min 6 characters):');
-    if (!password || password.length < 6) {
-        showNotification('Password must be at least 6 characters', 'error');
-        return;
-    }
-    
-    register(email, password);
+    // Hide login screen and show signup screen
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('signup-screen').classList.remove('hidden');
 }
 
-async function register(email, password) {
+async function register(formData) {
     try {
+        console.log('Starting registration process...', { username: formData.username, email: formData.email });
+        
         const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(formData)
         });
         
+        console.log('Registration response status:', response.status);
+        
         const data = await response.json();
+        console.log('Registration response data:', data);
         
         if (response.ok) {
-            showNotification('Account created successfully! Please log in.', 'success');
-            document.getElementById('email').value = email;
+            // Store session info for automatic login
+            sessionId = data.sessionId;
+            localStorage.setItem('sessionId', sessionId);
+            currentUser = data.user;
+            
+            showNotification('Registration successful! Welcome to StriveTrack! 🎉', 'success');
+            
+            // Auto-login after registration with proper initialization
+            try {
+                // Use showDashboard which properly initializes user progress
+                showDashboard();
+                // Delay achievements check to ensure everything is loaded
+                setTimeout(() => {
+                    try {
+                        checkAchievements();
+                    } catch (achievementError) {
+                        console.warn('Achievement check failed after registration:', achievementError);
+                        // Don't show error to user - this is not critical for signup success
+                    }
+                }, 1000);
+            } catch (dashboardError) {
+                console.error('Error showing dashboard after registration:', dashboardError);
+                // Minimal fallback - just show the main screen
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('signup-screen').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+            }
         } else {
             showNotification(data.error || 'Registration failed', 'error');
         }
     } catch (error) {
         console.error('Registration error:', error);
-        showNotification('Registration failed. Please try again.', 'error');
+        showNotification('Network error during registration. Please check your connection and try again.', 'error');
     }
+}
+
+function handleSignup(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const username = formData.get('username').trim();
+    const email = formData.get('email').trim();
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+    const agreeTerms = document.getElementById('agree-terms').checked;
+    
+    // Validation
+    if (!username || username.length < 3) {
+        showNotification('Username must be at least 3 characters long', 'error');
+        return;
+    }
+    
+    if (!email || !password) {
+        showNotification('All fields are required', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showNotification('Password must be at least 6 characters long', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+    }
+    
+    if (!agreeTerms) {
+        showNotification('You must agree to the Terms of Service and Privacy Policy', 'error');
+        return;
+    }
+    
+    // Submit registration
+    register({
+        username,
+        email,
+        password,
+        confirmPassword
+    });
 }
 
 function logout() {
@@ -243,21 +543,31 @@ function showDashboard() {
     // Initialize and load user progress from localStorage
     loadUserProgress();
     
-    // Update welcome text with username
+    // Update header with user data including profile picture
     const username = currentUser.username || currentUser.email.split('@')[0];
-    document.getElementById('welcome-text').textContent = `Welcome, ${username}`;
+    updateHeaderProfilePicture(currentUser.profile_picture_url, username);
     
     // Update points display with local progress (achievements points)
     updatePointsDisplay();
     
-    // Show admin tab if user is admin
-    if (currentUser.role === 'admin') {
+    // Show admin tab ONLY for iamhollywoodpro@protonmail.com
+    if (currentUser.role === 'admin' && currentUser.email === 'iamhollywoodpro@protonmail.com') {
         document.getElementById('admin-tab').classList.remove('hidden');
+    } else {
+        // Ensure admin tab is always hidden for non-admin users
+        const adminTab = document.getElementById('admin-tab');
+        if (adminTab) {
+            adminTab.classList.add('hidden');
+            adminTab.style.display = 'none'; // Extra security
+        }
     }
     
     // Load initial data
     console.log('Loading dashboard data...');
     loadDashboardData();
+    
+    // Re-setup event listeners now that dashboard elements are available
+    setupDashboardEventListeners();
 }
 
 async function loadDashboardWeeklyProgress() {
@@ -335,32 +645,79 @@ async function loadDashboardData() {
         loadMedia(),
         loadAchievements(),
         loadDailyChallenges(),
-        loadAdminData()
+        loadAdminData(),
+        syncUserPointsFromServer() // CRITICAL FIX: Sync points from server
     ]);
     
     updateDashboardStats();
 }
 
-// Habits functions
-async function loadHabits() {
-    console.log('Loading habits with sessionId:', sessionId);
+// CRITICAL FIX: Function to sync user points from server
+async function syncUserPointsFromServer() {
     try {
-        const response = await fetch('/api/habits', {
+        const response = await fetch('/api/user/profile', {
             headers: { 'x-session-id': sessionId }
         });
         
-        console.log('Habits response status:', response.status);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.user && typeof data.user.points === 'number') {
+                const serverPoints = data.user.points;
+                const currentPoints = currentUser.points || 0;
+                
+                // Update currentUser points from server
+                currentUser.points = serverPoints;
+                
+                // Update header display
+                const userPointsDisplay = document.getElementById('user-points');
+                if (userPointsDisplay) {
+                    userPointsDisplay.textContent = `⭐ ${serverPoints} pts`;
+                }
+                
+                console.log(`Points synced: ${currentPoints} -> ${serverPoints}`);
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to sync points from server:', error);
+        // Don't show error to user - this is not critical
+    }
+}
+
+// Habits functions
+async function loadHabits() {
+    console.log('🔄 Loading habits with sessionId:', sessionId);
+    
+    if (!sessionId) {
+        console.log('❌ No sessionId available, cannot load habits');
+        return;
+    }
+    
+    try {
+        console.log('📡 Fetching from /api/habits/weekly...');
+        const response = await fetch('/api/habits/weekly', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        console.log('📡 Response status:', response.status);
         
         if (response.ok) {
             const data = await response.json();
+            console.log('📊 Raw API response:', data);
+            
             const habits = data.habits || [];
-            console.log('Loaded habits:', habits.length);
+            console.log('🎯 Extracted habits:', habits.length, 'habits');
+            
+            if (habits.length > 0) {
+                console.log('📋 First habit sample:', habits[0]);
+            }
+            
             displayHabits(habits);
         } else {
-            console.error('Habits API failed:', response.status, await response.text());
+            const errorText = await response.text();
+            console.error('❌ Habits API failed:', response.status, errorText);
         }
     } catch (error) {
-        console.error('Load habits error:', error);
+        console.error('💥 Load habits error:', error);
     }
 }
 
@@ -394,6 +751,9 @@ function displayHabits(habits) {
         const habitElement = createHabitElement(habit, false);
         container.appendChild(habitElement);
     });
+    
+    // CRITICAL: Add event delegation for day cell clicks
+    setupHabitDayClickHandlers(container);
 }
 
 async function loadWeeklyHabits() {
@@ -432,31 +792,101 @@ function displayWeeklyHabits(habits) {
     
     // Add event delegation for day cell clicks
     setupHabitDayClickHandlers(container);
+    
+    // Event listeners are now properly set up
 }
 
 function setupHabitDayClickHandlers(container) {
+    console.log('🎯 Setting up habit click handlers on:', container);
+    
     // Remove any existing listeners to prevent duplicates
     container.removeEventListener('click', handleHabitDayClick);
     
-    // Add event delegation for day cell clicks
+    // Add event delegation for both day cell clicks and delete buttons
     container.addEventListener('click', handleHabitDayClick);
+    
+    console.log('✅ Click handler attached - ready to detect day cells and delete buttons');
 }
 
 function handleHabitDayClick(event) {
-    // Find the clicked day cell
-    const dayCell = event.target.closest('.day-cell');
-    if (!dayCell) return;
+    console.log('🖱️ CLICK DETECTED! Target:', event.target);
+    console.log('🖱️ Target classes:', event.target.className);
+    console.log('🖱️ Target tag:', event.target.tagName);
+    console.log('🖱️ Target parent:', event.target.parentElement);
+    
+    // Handle button clicks in habits container
+    if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
+        console.log('Button click detected:', event.target.tagName, event.target.className);
+    }
+    
+    // Check various ways the delete button might be clicked
+    let deleteBtn = null;
+    
+    // Method 1: Direct delete button click
+    if (event.target.classList.contains('delete-habit-btn')) {
+        deleteBtn = event.target;
+        console.log('🗑️ Method 1: Direct delete button click');
+    }
+    
+    // Method 2: Clicked child element (like the trash icon)
+    if (!deleteBtn) {
+        deleteBtn = event.target.closest('.delete-habit-btn');
+        if (deleteBtn) {
+            console.log('🗑️ Method 2: Child element of delete button clicked');
+        }
+    }
+    
+    // Method 3: Check if parent has delete button class
+    if (!deleteBtn && event.target.parentElement && event.target.parentElement.classList.contains('delete-habit-btn')) {
+        deleteBtn = event.target.parentElement;
+        console.log('🗑️ Method 3: Parent is delete button');
+    }
+    
+    if (deleteBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const habitId = deleteBtn.getAttribute('data-habit-id');
+        console.log('🗑️ DELETE BUTTON FOUND! Habit ID:', habitId);
+        console.log('🗑️ Button element:', deleteBtn);
+        console.log('🗑️ Button classes:', deleteBtn.className);
+        console.log('Delete button clicked for habit ID:', habitId);
+        console.log('🗑️ About to call deleteHabit function...');
+        deleteHabit(habitId);
+        console.log('🗑️ deleteHabit function called');
+        return;
+    }
+    
+    console.log('🚫 No delete button found, checking for day cell...');
+    
+    // Find the clicked day cell - handle both direct clicks and child element clicks
+    let dayCell = event.target.closest('.day-cell');
+    
+    // If not found, check if the target itself is a day-cell
+    if (!dayCell && event.target.classList.contains('day-cell')) {
+        dayCell = event.target;
+    }
+    
+    console.log('📅 Day cell found:', dayCell);
+    
+    if (!dayCell) {
+        console.log('❌ Not a day cell click, ignoring');
+        return; // Not a day cell click
+    }
     
     // Get the data attributes
     const habitId = dayCell.getAttribute('data-habit-id');
     const date = dayCell.getAttribute('data-date');
     const dayIndex = parseInt(dayCell.getAttribute('data-day-index'));
     
+    console.log('📊 Day cell data:', { habitId, date, dayIndex });
+    
     // Validate data
     if (!habitId || !date || isNaN(dayIndex)) {
-        console.error('Invalid day cell data:', { habitId, date, dayIndex });
+        console.error('❌ Invalid day cell data:', { habitId, date, dayIndex });
         return;
     }
+    
+    console.log('✅ Valid day cell click - calling toggleWeeklyHabit');
     
     // Add visual feedback immediately
     dayCell.style.opacity = '0.7';
@@ -497,34 +927,11 @@ function createHabitElement(habit, showWeekView = true) {
     return createWeeklyHabitElement(habit);
 }
 
-// Delete habit function
-async function deleteHabit(habitId) {
-    if (!confirm('Are you sure you want to delete this habit? This action cannot be undone.')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/habits/${habitId}`, {
-            method: 'DELETE',
-            headers: { 'x-session-id': sessionId }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            showNotification('Habit deleted successfully', 'success');
-            loadHabits(); // Reload habits
-            updateDashboardStats(); // Update dashboard
-        } else {
-            const data = await response.json();
-            showNotification(data.error || 'Failed to delete habit', 'error');
-        }
-    } catch (error) {
-        console.error('Delete habit error:', error);
-        showNotification('Failed to delete habit', 'error');
-    }
-}
+// Delete habit function - removed duplicate, keeping the modal version below
 
 function createWeeklyHabitElement(habit) {
+    console.log('🏗️ Creating habit element for:', habit.name, 'ID:', habit.id);
+    
     const div = document.createElement('div');
     div.className = 'habit-card';
     
@@ -532,7 +939,8 @@ function createWeeklyHabitElement(habit) {
     
     // Handle different data formats for completed days
     const completedDays = habit.completed_days || habit.completedDays || [];
-    const targetFrequency = habit.target_frequency || habit.targetCount || 7;
+    // Use weekly_target first, then targetCount from weekly API, then default to 7
+    const targetFrequency = habit.weekly_target || habit.targetCount || 7;
     
     // Calculate this week's dates and completion status
     const today = new Date();
@@ -582,7 +990,7 @@ function createWeeklyHabitElement(habit) {
     const totalCompletions = habit.total_completions || 0;
     const weeklyPercentage = Math.round((weeklyCompletedCount / targetFrequency) * 100);
     
-    div.innerHTML = `
+    const htmlContent = `
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
@@ -599,7 +1007,7 @@ function createWeeklyHabitElement(habit) {
                     </span>
                 </div>
             </div>
-            <button class="btn-danger" onclick="deleteHabit('${habit.id}')" title="Delete habit">
+            <button class="btn-danger delete-habit-btn" data-habit-id="${habit.id}" title="Delete habit">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -626,6 +1034,13 @@ function createWeeklyHabitElement(habit) {
             ✅ Completed | ⭕ Available | ❌ Missed
         </div>
     `;
+    
+    div.innerHTML = htmlContent;
+    
+    console.log('🏗️ Habit element created. Delete button check:');
+    console.log('   - Habit ID:', habit.id);
+    console.log('   - Delete button exists:', div.querySelector('.delete-habit-btn') !== null);
+    console.log('   - Delete button data-habit-id:', div.querySelector('.delete-habit-btn')?.getAttribute('data-habit-id'));
     
     return div;
 }
@@ -889,7 +1304,7 @@ async function deleteHabit(habitId) {
             if (response.ok) {
                 showNotification('Habit deleted successfully', 'success');
                 loadHabits();
-                loadDashboardWeeklyProgress(); // Refresh dashboard progress bars
+                loadDashboardWeeklyProgress();
                 updateDashboardStats();
             } else {
                 const data = await response.json();
@@ -966,13 +1381,33 @@ async function submitMediaUpload(event) {
                 const data = JSON.parse(xhr.responseText);
                 const mediaTypeText = isVideo ? '🎥 Video' : '📸 Image';
                 const mediaType = data.media_type || 'progress';
-                const pointsText = data.total_points ? `+${data.total_points} pts` : `+${data.points || 10} pts`;
+                const totalPointsEarned = data.total_points || data.points || 10;
+                const pointsText = `+${totalPointsEarned} pts`;
                 showNotification(`${mediaTypeText} (${mediaType.toUpperCase()}) uploaded successfully! (${pointsText})`, 'success');
+                
+                // CRITICAL FIX: Update currentUser points immediately
+                if (currentUser && totalPointsEarned > 0) {
+                    currentUser.points = (currentUser.points || 0) + totalPointsEarned;
+                    // Update header points display immediately
+                    const userPointsDisplay = document.getElementById('user-points');
+                    if (userPointsDisplay) {
+                        userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
+                    }
+                    console.log('Points updated after media upload:', currentUser.points);
+                }
                 
                 // Show pair bonus notification if applicable
                 if (data.pair_bonus && data.pair_bonus > 0) {
                     setTimeout(() => {
                         showNotification(`🎉 Before/After pair completed! Bonus +${data.pair_bonus} pts!`, 'success');
+                        // Update points for pair bonus too
+                        if (currentUser) {
+                            currentUser.points = (currentUser.points || 0) + data.pair_bonus;
+                            const userPointsDisplay = document.getElementById('user-points');
+                            if (userPointsDisplay) {
+                                userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
+                            }
+                        }
                     }, 1500);
                 }
                 
@@ -1020,6 +1455,9 @@ async function uploadMedia(event) {
     event.target.value = '';
 }
 
+// Removed setupProgressEventListeners - compare functionality is always available
+// Gallery filter is set up automatically via HTML onchange attribute
+
 async function loadMedia() {
     try {
         const response = await fetch('/api/media/enhanced?stats=true&pairs=true', {
@@ -1028,15 +1466,18 @@ async function loadMedia() {
         
         if (response.ok) {
             const data = await response.json();
+            console.log('✅ Enhanced API response:', data);
             displayEnhancedMedia(data);
             updateMediaStats(data);
         } else {
+            console.log('⚠️ Enhanced API failed, using fallback. Status:', response.status);
             // Fallback to regular media API
             const fallbackResponse = await fetch('/api/media', {
                 headers: { 'x-session-id': sessionId }
             });
             if (fallbackResponse.ok) {
                 const media = await fallbackResponse.json();
+                console.log('📷 Fallback API response:', media);
                 displayMedia(media);
             }
         }
@@ -1081,11 +1522,16 @@ function displayEnhancedMedia(data) {
     filteredMedia.forEach(item => {
         const div = document.createElement('div');
         div.className = 'media-item';
-        div.onclick = () => showEnhancedMediaModal(item);
+        div.onclick = (e) => {
+            // Always show media modal on click, compare happens via + button
+            showEnhancedMediaModal(item);
+        };
         
-        const mediaType = item.media_type || item.video_type || item.image_type || 'progress';
+        const mediaType = item.media_type || 'progress';
         const isVideo = item.file_type && item.file_type.startsWith('video/');
         const isPaired = item.paired_with_id;
+        
+        // Clean media type determination
         
         div.innerHTML = `
             <div class="media-preview" id="media-${item.id}">
@@ -1097,6 +1543,11 @@ function displayEnhancedMedia(data) {
                 <div class="media-actions">
                     <button onclick="event.stopPropagation(); deleteMedia('${item.id}')" class="delete-btn" title="Delete media">
                         <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="compare-actions" style="position: absolute; bottom: 8px; left: 8px; z-index: 200;" data-media-id="${item.id}">
+                    <button onclick="event.stopPropagation(); selectMediaForComparison('${item.id}', this.closest('.media-item'))" class="btn-compare" title="Select for comparison">
+                        <i class="fas fa-plus"></i>
                     </button>
                 </div>
             </div>
@@ -1121,6 +1572,13 @@ function displayEnhancedMedia(data) {
         // Load the actual media
         loadMediaPreview(item.id, `media-${item.id}`, isVideo);
     });
+    
+    // FRONTEND FIX: Update stats after all media items are rendered
+    setTimeout(() => {
+        updateMediaStats(data);
+        
+        // Compare buttons are always visible now
+    }, 100);
 }
 
 function displayBeforeAfterPairs(comparisons) {
@@ -1177,22 +1635,58 @@ function displayBeforeAfterPairs(comparisons) {
 }
 
 function updateMediaStats(data) {
-    const stats = data.stats || {
-        total: 0,
-        before_count: 0,
-        after_count: 0,
-        comparison_count: 0
-    };
+    // Count based on the actual media data, not DOM elements
+    let totalCount = 0;
+    let beforeCount = 0;
+    let afterCount = 0;
     
-    document.getElementById('total-uploads').textContent = stats.total;
-    document.getElementById('before-count').textContent = stats.before_count;
-    document.getElementById('after-count').textContent = stats.after_count;
-    document.getElementById('comparison-count').textContent = stats.comparison_count;
+    if (data && data.media && Array.isArray(data.media)) {
+        totalCount = data.media.length;
+        
+        data.media.forEach(item => {
+            // Use only media_type from API (which includes fallback to 'progress')
+            const type = item.media_type;
+            
+            if (type === 'before') beforeCount++;
+            else if (type === 'after') afterCount++;
+        });
+    }
+    
+    // Update stats with calculated counts
+    
+    // Update the display
+    document.getElementById('total-uploads').textContent = totalCount;
+    document.getElementById('before-count').textContent = beforeCount;
+    document.getElementById('after-count').textContent = afterCount;
+    document.getElementById('comparison-count').textContent = '0';
 }
 
 // Legacy display function for compatibility
 function displayMedia(media) {
-    displayEnhancedMedia({ media, stats: { total: media.length, before_count: 0, after_count: 0, comparison_count: 0 } });
+    console.log('📷 Raw media data for stats calculation:', media);
+    
+    // Calculate proper stats from the media array
+    const beforeCount = media.filter(item => (item.media_type || item.image_type || item.video_type) === 'before').length;
+    const afterCount = media.filter(item => (item.media_type || item.image_type || item.video_type) === 'after').length;
+    const progressCount = media.filter(item => (item.media_type || item.image_type || item.video_type) === 'progress').length;
+    
+    console.log('📊 Stats calculation debug:', {
+        total: media.length,
+        beforeCount,
+        afterCount, 
+        progressCount,
+        sampleItem: media[0] // Show first item structure
+    });
+    
+    const stats = {
+        total: media.length,
+        before_count: beforeCount,
+        after_count: afterCount,
+        progress_count: progressCount,
+        comparison_count: 0 // Will be calculated separately
+    };
+    
+    displayEnhancedMedia({ media, stats });
 }
 
 async function loadMediaPreview(mediaId, containerId, isVideo = false) {
@@ -1207,17 +1701,29 @@ async function loadMediaPreview(mediaId, containerId, isVideo = false) {
             
             const container = document.getElementById(containerId);
             if (container) {
-                if (isVideo) {
-                    container.innerHTML = `
-                        <video style="width: 100%; height: 100%; object-fit: cover;" muted>
-                            <source src="${mediaUrl}" type="${blob.type}">
-                        </video>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <img src="${mediaUrl}" alt="Progress media" style="width: 100%; height: 100%; object-fit: cover;">
-                    `;
+                // Remove the placeholder icon
+                const placeholderIcon = container.querySelector('.fas.fa-image, .fas.fa-video');
+                if (placeholderIcon) {
+                    placeholderIcon.remove();
                 }
+                
+                // Create media element without replacing existing content
+                const mediaElement = document.createElement(isVideo ? 'video' : 'img');
+                if (isVideo) {
+                    mediaElement.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;';
+                    mediaElement.muted = true;
+                    mediaElement.innerHTML = `<source src="${mediaUrl}" type="${blob.type}">`;
+                } else {
+                    mediaElement.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;';
+                    mediaElement.src = mediaUrl;
+                    mediaElement.alt = 'Progress media';
+                }
+                
+                // Ensure container is positioned relative
+                container.style.position = 'relative';
+                
+                // Insert media element as first child (behind buttons)
+                container.insertBefore(mediaElement, container.firstChild);
             }
         }
     } catch (error) {
@@ -1329,6 +1835,156 @@ async function deleteMedia(mediaId) {
         console.error('Delete media error:', error);
         showNotification('Failed to delete media', 'error');
     }
+}
+
+// Compare functionality - always available, no mode toggle needed
+
+function selectMediaForComparison(mediaId, element) {
+    // Compare functionality is always available
+    
+    // Check if already selected
+    const index = selectedMedia.indexOf(mediaId);
+    
+    if (index > -1) {
+        // Deselect
+        selectedMedia.splice(index, 1);
+        element.classList.remove('selected');
+    } else {
+        // Select (max 2 items)
+        if (selectedMedia.length >= MAX_COMPARE_ITEMS) {
+            showNotification(`You can only select ${MAX_COMPARE_ITEMS} items for comparison`, 'warning');
+            return;
+        }
+        
+        selectedMedia.push(mediaId);
+        element.classList.add('selected');
+        
+        // If we have 2 items, show comparison
+        if (selectedMedia.length === MAX_COMPARE_ITEMS) {
+            showUserSelectedComparison();
+        }
+    }
+    
+    // Show notification about selection count
+    if (selectedMedia.length === 1) {
+        showNotification('1 item selected. Click + on another item to compare.', 'info');
+    }
+}
+
+async function showUserSelectedComparison() {
+    if (selectedMedia.length !== 2) {
+        showNotification('Please select exactly 2 items to compare', 'warning');
+        return;
+    }
+    
+    try {
+        // Fetch both media items
+        const [mediaId1, mediaId2] = selectedMedia;
+        
+        const [response1, response2] = await Promise.all([
+            fetch(`/api/media/file/${mediaId1}`, { headers: { 'x-session-id': sessionId }}),
+            fetch(`/api/media/file/${mediaId2}`, { headers: { 'x-session-id': sessionId }})
+        ]);
+        
+        if (response1.ok && response2.ok) {
+            const [blob1, blob2] = await Promise.all([
+                response1.blob(),
+                response2.blob()
+            ]);
+            
+            const url1 = URL.createObjectURL(blob1);
+            const url2 = URL.createObjectURL(blob2);
+            
+            // Find media info from current loaded media
+            const allMediaItems = document.querySelectorAll('.media-item');
+            let media1Info = null, media2Info = null;
+            
+            allMediaItems.forEach(item => {
+                const preview = item.querySelector('.media-preview');
+                if (preview && preview.id === `media-${mediaId1}`) {
+                    const dateEl = item.querySelector('.media-date');
+                    const descEl = item.querySelector('.media-description');
+                    media1Info = {
+                        date: dateEl ? dateEl.textContent : 'Unknown date',
+                        description: descEl ? descEl.textContent : 'No description',
+                        isVideo: blob1.type.startsWith('video/')
+                    };
+                }
+                if (preview && preview.id === `media-${mediaId2}`) {
+                    const dateEl = item.querySelector('.media-date');
+                    const descEl = item.querySelector('.media-description');
+                    media2Info = {
+                        date: dateEl ? dateEl.textContent : 'Unknown date', 
+                        description: descEl ? descEl.textContent : 'No description',
+                        isVideo: blob2.type.startsWith('video/')
+                    };
+                }
+            });
+            
+            showCustomComparison(url1, url2, media1Info, media2Info);
+        } else {
+            showNotification('Failed to load selected media for comparison', 'error');
+        }
+    } catch (error) {
+        console.error('Comparison error:', error);
+        showNotification('Failed to create comparison', 'error');
+    }
+}
+
+function showCustomComparison(url1, url2, media1Info, media2Info) {
+    const modal = document.getElementById('comparison-modal');
+    const content = document.getElementById('comparison-content');
+    
+    content.innerHTML = `
+        <div class="comparison-item">
+            <div class="comparison-header">
+                <h4 class="text-lg font-semibold text-white">📷 Media 1</h4>
+                <div class="text-white/60 text-sm">${media1Info.date}</div>
+            </div>
+            <div class="comparison-media">
+                ${media1Info.isVideo ? `
+                    <video controls style="width: 100%; height: 100%; object-fit: cover;">
+                        <source src="${url1}" type="video/*">
+                    </video>
+                ` : `
+                    <img src="${url1}" alt="Media 1" style="width: 100%; height: 100%; object-fit: cover;">
+                `}
+            </div>
+            <div class="p-4 text-white/80 text-sm border-t border-white/10">
+                ${media1Info.description}
+            </div>
+        </div>
+        
+        <div class="comparison-item">
+            <div class="comparison-header">
+                <h4 class="text-lg font-semibold text-white">📷 Media 2</h4>
+                <div class="text-white/60 text-sm">${media2Info.date}</div>
+            </div>
+            <div class="comparison-media">
+                ${media2Info.isVideo ? `
+                    <video controls style="width: 100%; height: 100%; object-fit: cover;">
+                        <source src="${url2}" type="video/*">
+                    </video>
+                ` : `
+                    <img src="${url2}" alt="Media 2" style="width: 100%; height: 100%; object-fit: cover;">
+                `}
+            </div>
+            <div class="p-4 text-white/80 text-sm border-t border-white/10">
+                ${media2Info.description}
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+    
+    // Reset selection after showing comparison
+    setTimeout(() => {
+        selectedMedia = [];
+        document.querySelectorAll('.media-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+        showNotification('Selection cleared', 'info');
+    }, 1000);
 }
 
 async function showComparisonModal(comparison) {
@@ -2403,16 +3059,46 @@ async function deleteNutritionEntry(entryId) {
     }
 }
 
+// Admin Security Check Function
+function isCurrentUserAdmin() {
+    return currentUser && 
+           currentUser.role === 'admin' && 
+           currentUser.email === 'iamhollywoodpro@protonmail.com';
+}
+
+function enforceAdminAccess() {
+    if (!isCurrentUserAdmin()) {
+        showNotification('🚫 Access Denied: Admin privileges required', 'error');
+        showSection('dashboard');
+        
+        // Hide admin tab immediately
+        const adminTab = document.getElementById('admin-tab');
+        if (adminTab) {
+            adminTab.classList.add('hidden');
+            adminTab.style.display = 'none';
+        }
+        
+        return false;
+    }
+    return true;
+}
+
 // Admin functions
-async function loadAdminData() {
-    if (currentUser && currentUser.role === 'admin') {
+// DUPLICATE FUNCTION DISABLED - Using the newer version at line 7391
+/* async function loadAdminData() {
+    if (!enforceAdminAccess()) return;
+    
+    try {
         await Promise.all([
             loadAdminStats(),
             loadAdminUsers(),
             loadAdminMedia()
         ]);
+    } catch (error) {
+        console.error('Admin data loading error:', error);
+        showNotification('Failed to load admin data', 'error');
     }
-}
+} */
 
 async function loadAdminStats() {
     try {
@@ -2433,20 +3119,44 @@ async function loadAdminStats() {
     }
 }
 
-async function loadAdminUsers() {
+// DUPLICATE FUNCTION DISABLED - Using the newer grid-based version at line 7404
+/* async function loadAdminUsers() {
+    if (!enforceAdminAccess()) return;
+    
     try {
         const response = await fetch('/api/admin/users', {
             headers: { 'x-session-id': sessionId }
         });
         
+        if (response.status === 403) {
+            showNotification('🚫 Admin access denied', 'error');
+            showSection('dashboard');
+            return;
+        }
+        
         if (response.ok) {
-            const users = await response.json();
-            displayAdminUsers(users);
+            const data = await response.json();
+            displayAdminUsers(data.users);
+        } else {
+            throw new Error('Failed to fetch users');
         }
     } catch (error) {
         console.error('Load admin users error:', error);
+        const tbody = document.getElementById('admin-users-table');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-8 text-white/60">
+                        Error loading users
+                        <button onclick="loadAdminUsers()" class="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded">
+                            Try Again
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
     }
-}
+} */
 
 function displayAdminUsers(users) {
     const tbody = document.getElementById('admin-users-table');
@@ -2456,8 +3166,16 @@ function displayAdminUsers(users) {
         const row = document.createElement('tr');
         row.className = 'border-b border-white/5 hover:bg-white/5';
         
+        // Show online/offline status
+        const statusIcon = user.status === 'online' ? 
+            '<span class="inline-block w-2 h-2 bg-green-400 rounded-full mr-2"></span>' :
+            '<span class="inline-block w-2 h-2 bg-gray-400 rounded-full mr-2"></span>';
+        
         row.innerHTML = `
-            <td class="py-3 px-4 text-white">${user.email.split('@')[0]}</td>
+            <td class="py-3 px-4 text-white">
+                ${statusIcon}${user.email.split('@')[0]}
+                <div class="text-xs text-white/50">${user.status}</div>
+            </td>
             <td class="py-3 px-4 text-white/70">${user.email}</td>
             <td class="py-3 px-4">
                 <span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-purple-600' : 'bg-blue-600'} text-white">
@@ -2466,7 +3184,7 @@ function displayAdminUsers(users) {
             </td>
             <td class="py-3 px-4 text-white/70">${user.points || 0} pts</td>
             <td class="py-3 px-4">
-                ${user.role !== 'admin' ? `<button onclick="deleteAdminUser(${user.id})" class="btn-danger text-xs">Delete</button>` : ''}
+                ${user.role !== 'admin' ? `<button onclick="deleteAdminUser('${user.id}')" class="btn-danger text-xs">Delete</button>` : '<span class="text-purple-400 text-xs">Protected</span>'}
             </td>
         `;
         
@@ -2663,6 +3381,8 @@ function showSection(section) {
         loadHabits();
     } else if (section === 'progress') {
         loadMedia();
+        // Set up compare mode event listener
+        // Progress section loaded - compare functionality is always available
     } else if (section === 'nutrition') {
         loadNutrition();
     } else if (section === 'goals') {
@@ -2676,6 +3396,8 @@ function showSection(section) {
         setupChallengeNavigation();
     } else if (section === 'social') {
         loadSocialHub();
+    } else if (section === 'profile') {
+        loadProfileData();
     } else if (section === 'admin') {
         loadAdminData();
     }
@@ -2772,26 +3494,68 @@ function updateDashboardStats() {
 }
 
 // Global Confirmation Modal functions
-let confirmationCallback = null;
+let currentConfirmHandler = null;
 
 function showConfirmationModal(message, onConfirm) {
-    document.getElementById('confirmation-message').textContent = message;
-    confirmationCallback = onConfirm;
-    document.getElementById('confirmation-modal').classList.remove('hidden');
+    const messageEl = document.getElementById('confirmation-message');
+    const modalEl = document.getElementById('confirmation-modal');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
     
-    // Set up the confirm button click handler
-    document.getElementById('confirm-delete-btn').onclick = function() {
-        closeConfirmationModal();
-        if (confirmationCallback) {
-            confirmationCallback();
-            confirmationCallback = null;
+    if (!messageEl || !modalEl || !confirmBtn) {
+        console.error('Modal elements not found, falling back to browser confirm');
+        if (confirm(message)) {
+            onConfirm();
         }
+        return;
+    }
+    
+    // Set message
+    messageEl.textContent = message;
+    
+    // Clean up any existing handlers
+    if (currentConfirmHandler) {
+        confirmBtn.removeEventListener('click', currentConfirmHandler);
+    }
+    
+    // Create new handler that properly executes the callback
+    currentConfirmHandler = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Close modal immediately
+        closeConfirmationModal();
+        
+        // Execute callback after a brief delay to ensure modal is closed
+        setTimeout(() => {
+            if (onConfirm && typeof onConfirm === 'function') {
+                onConfirm();
+            }
+        }, 50);
     };
+    
+    // Add event listener
+    confirmBtn.addEventListener('click', currentConfirmHandler);
+    
+    // Show modal
+    modalEl.classList.remove('hidden');
+    
+    // Focus the modal for accessibility
+    modalEl.focus();
 }
 
 function closeConfirmationModal() {
-    document.getElementById('confirmation-modal').classList.add('hidden');
-    confirmationCallback = null;
+    const modalEl = document.getElementById('confirmation-modal');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    
+    if (modalEl) {
+        modalEl.classList.add('hidden');
+    }
+    
+    // Clean up handlers
+    if (currentConfirmHandler && confirmBtn) {
+        confirmBtn.removeEventListener('click', currentConfirmHandler);
+        currentConfirmHandler = null;
+    }
 }
 
 // PWA functions
@@ -3160,48 +3924,24 @@ async function unlockAchievement(achievementId) {
 async function loadGoals() {
     console.log('Loading goals...');
     
-    // For now, display placeholder goals since we don't have backend API yet
-    displayGoals([
-        {
-            id: 'goal-1',
-            name: '🏃‍♂️ Run 5K',
-            description: 'Complete a 5K run in under 30 minutes',
-            category: 'endurance',
-            target_value: 30,
-            current_value: 0,
-            unit: 'minutes',
-            status: 'active',
-            progress_percentage: 0,
-            deadline: '2024-12-31',
-            created_at: '2024-09-09'
-        },
-        {
-            id: 'goal-2',
-            name: '💪 Bench Press 100kg',
-            description: 'Increase bench press to 100kg',
-            category: 'strength',
-            target_value: 100,
-            current_value: 75,
-            unit: 'kg',
-            status: 'active',
-            progress_percentage: 75,
-            deadline: '2024-11-30',
-            created_at: '2024-08-15'
-        },
-        {
-            id: 'goal-3',
-            name: '🔥 30-Day Habit Streak',
-            description: 'Maintain daily workout habit for 30 days',
-            category: 'habit',
-            target_value: 30,
-            current_value: 30,
-            unit: 'days',
-            status: 'completed',
-            progress_percentage: 100,
-            deadline: '2024-09-01',
-            created_at: '2024-08-01'
+    try {
+        const response = await fetch('/api/goals', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayGoals(data.goals || []);
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to load goals', 'error');
+            displayGoals([]); // Show empty state
         }
-    ]);
+    } catch (error) {
+        console.error('Load goals error:', error);
+        showNotification('Failed to load goals', 'error');
+        displayGoals([]); // Show empty state
+    }
 }
 
 function displayGoals(goals) {
@@ -3309,28 +4049,92 @@ function updateGoalStats(goals) {
 }
 
 function showCreateGoalModal() {
-    // Placeholder for now
-    showNotification('Create Goal feature coming soon! 🎯', 'info');
-}
-
-function deleteGoal(goalId) {
-    if (!confirm('Are you sure you want to delete this goal? This action cannot be undone.')) {
+    const modal = document.getElementById('create-goal-modal');
+    if (!modal) {
+        showNotification('Create Goal modal not found', 'error');
         return;
     }
     
-    // Since goals are currently mock data, we'll show a notification
-    // In a real implementation, this would make an API call
-    showNotification('Goal deleted successfully! (Mock deletion)', 'success');
+    modal.classList.remove('hidden');
     
-    // Reload goals to update the display
-    setTimeout(() => {
-        loadGoals();
-    }, 1000);
+    // Reset form
+    document.getElementById('goal-form').reset();
+    
+    // Set default deadline to 1 month from now
+    const defaultDeadline = new Date();
+    defaultDeadline.setMonth(defaultDeadline.getMonth() + 1);
+    document.getElementById('goal-deadline').value = defaultDeadline.toISOString().split('T')[0];
+}
+
+async function deleteGoal(goalId) {
+    showConfirmationModal('Are you sure you want to delete this goal? This action cannot be undone.', async function() {
+        try {
+            const response = await fetch(`/api/goals/${goalId}`, {
+                method: 'DELETE',
+                headers: { 'x-session-id': sessionId }
+            });
+            
+            if (response.ok) {
+                showNotification('Goal deleted successfully', 'success');
+                loadGoals();
+            } else {
+                const data = await response.json();
+                showNotification(data.error || 'Failed to delete goal', 'error');
+            }
+        } catch (error) {
+            console.error('Delete goal error:', error);
+            showNotification('Failed to delete goal', 'error');
+        }
+    });
+}
+
+async function createGoal(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const goalData = {
+        name: formData.get('name'),
+        description: formData.get('description'),
+        category: formData.get('category'),
+        target_value: parseFloat(formData.get('target_value')),
+        unit: formData.get('unit'),
+        deadline: formData.get('deadline')
+    };
+    
+    try {
+        const response = await fetch('/api/goals', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(goalData)
+        });
+        
+        if (response.ok) {
+            showNotification('Goal created successfully!', 'success');
+            closeCreateGoalModal();
+            loadGoals();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to create goal', 'error');
+        }
+    } catch (error) {
+        console.error('Create goal error:', error);
+        showNotification('Failed to create goal', 'error');
+    }
+}
+
+function closeCreateGoalModal() {
+    const modal = document.getElementById('create-goal-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
 }
 
 function updateGoalProgress(goalId) {
-    // Placeholder for now
-    showNotification('Update progress for goal - coming soon!', 'info');
+    // Placeholder for now - could be enhanced later
+    showNotification('Update progress feature coming soon!', 'info');
 }
 
 function viewGoalDetails(goalId) {
@@ -3912,6 +4716,7 @@ async function loadSocialHub() {
     loadSocialLeaderboards();
     loadSocialChallenges();
     loadCommunityFeed();
+    loadSocialUserStats();
     
     // Setup social navigation
     setupSocialNavigation();
@@ -3963,201 +4768,813 @@ function showSocialSection(section) {
     }
 }
 
-function loadSocialFriends() {
+async function loadSocialFriends() {
     const friendsList = document.getElementById('social-friends-list');
     const activityFeed = document.getElementById('friend-activity-feed');
     
-    if (friendsList) {
-        const friends = [
-            { name: 'Alex Thunder', avatar: '🔥', status: 'online', streak: 12, points: 450, level: 4 },
-            { name: 'Sarah Storm', avatar: '⚡', status: 'offline', streak: 8, points: 380, level: 3 },
-            { name: 'Mike Blaze', avatar: '💪', status: 'online', streak: 15, points: 520, level: 5 },
-            { name: 'Emma Fire', avatar: '🚀', status: 'away', streak: 6, points: 290, level: 2 }
-        ];
+    try {
+        // Load friends from API
+        const response = await fetch('/api/friends', {
+            headers: { 'x-session-id': sessionId }
+        });
         
-        friendsList.innerHTML = friends.map(friend => `
-            <div class="friend-card">
+        if (response.ok) {
+            const data = await response.json();
+            displayFriendsList(data.friends || [], friendsList);
+        } else {
+            console.error('Failed to load friends');
+            if (friendsList) {
+                friendsList.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-white/60">No friends yet</p>
+                        <p class="text-white/40 text-sm mt-2">Add friends to see them here!</p>
+                        <button onclick="showAddFriendModal()" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+                            👥 Add Your First Friend
+                        </button>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Load friends error:', error);
+        if (friendsList) {
+            friendsList.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-white/60">Unable to load friends</p>
+                    <button onclick="loadSocialFriends()" class="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded">
+                        🔄 Retry
+                    </button>
+                </div>
+            `;
+        }
+    }
+    
+    // Load friend activity (placeholder for now)
+    if (activityFeed) {
+        activityFeed.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-white/60">Friend activity feed</p>
+                <p class="text-white/40 text-sm mt-2">Coming soon!</p>
+            </div>
+        `;
+    }
+}
+
+function displayFriendsList(friends, container) {
+    if (!container) return;
+    
+    if (friends.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-white/60">No friends yet</p>
+                <p class="text-white/40 text-sm mt-2">Add friends to see them here!</p>
+                <button onclick="showAddFriendModal()" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+                    👥 Add Your First Friend
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = friends.map(friend => {
+        const avatar = friend.email.charAt(0).toUpperCase();
+        const level = Math.floor(friend.points / 100) + 1;
+        
+        return `
+            <div class="friend-card bg-white/5 rounded-lg p-4 border border-white/10">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center relative">
-                            <span class="text-white text-lg">${friend.avatar}</span>
-                            <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white/20
-                                ${friend.status === 'online' ? 'bg-green-400' : 
-                                  friend.status === 'away' ? 'bg-yellow-400' : 'bg-gray-400'}">
-                            </div>
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-lg font-bold">${avatar}</span>
                         </div>
                         <div>
-                            <div class="text-white font-semibold">${friend.name}</div>
+                            <div class="text-white font-semibold">${friend.email.split('@')[0]}</div>
                             <div class="text-white/60 text-sm">
-                                Level ${friend.level} • ${friend.streak} day streak
+                                Level ${level} • ${friend.total_achievements} achievements
                             </div>
-                            <div class="text-yellow-400 text-xs">${friend.points} points</div>
+                            <div class="text-yellow-400 text-xs">${friend.points || 0} points</div>
                         </div>
                     </div>
                     <div class="flex space-x-2">
-                        <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg transition-colors"
-                                onclick="viewFriendProfile('${friend.name}')">
-                            View
-                        </button>
-                        <button class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-lg transition-colors"
-                                onclick="challengeFriend('${friend.name}')">
-                            Challenge
+                        <button class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors"
+                                onclick="removeFriend('${friend.id}')">
+                            Remove
                         </button>
                     </div>
                 </div>
             </div>
-        `).join('');
-    }
-    
-    if (activityFeed) {
-        const activities = [
-            { user: 'Alex Thunder', action: 'completed a 5K run', time: '2 hours ago', type: 'achievement' },
-            { user: 'Sarah Storm', action: 'unlocked "Consistency King" achievement', time: '4 hours ago', type: 'achievement' },
-            { user: 'Mike Blaze', action: 'started a new habit streak', time: '6 hours ago', type: 'habit' },
-            { user: 'Emma Fire', action: 'completed daily challenge', time: '1 day ago', type: 'challenge' }
-        ];
-        
-        activityFeed.innerHTML = activities.map(activity => `
-            <div class="activity-item">
-                <div class="flex items-start space-x-3">
-                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-                        <span class="text-white text-xs">
-                            ${activity.type === 'achievement' ? '🏆' : 
-                              activity.type === 'habit' ? '🔥' : '⚡'}
-                        </span>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-white text-sm">
-                            <span class="font-semibold">${activity.user}</span> ${activity.action}
-                        </p>
-                        <p class="text-white/60 text-xs">${activity.time}</p>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
+        `;
+    }).join('');
 }
 
-function loadSocialLeaderboards() {
+async function loadSocialLeaderboards() {
     const leaderboardContainer = document.getElementById('social-leaderboard-container');
     const userStatsContainer = document.getElementById('social-user-stats');
     
-    if (leaderboardContainer) {
-        const leaderboardData = generateLeaderboardData();
-        displaySocialLeaderboard(leaderboardData.weekly);
+    try {
+        // Load leaderboard from API
+        const response = await fetch('/api/leaderboards?type=weekly', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displaySocialLeaderboard(data.leaderboard || [], leaderboardContainer);
+            displayUserStats(data.currentUser, userStatsContainer);
+        } else {
+            console.error('Failed to load leaderboards');
+            if (leaderboardContainer) {
+                leaderboardContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-white/60">Unable to load leaderboard</p>
+                        <button onclick="loadSocialLeaderboards()" class="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Load leaderboards error:', error);
+        if (leaderboardContainer) {
+            leaderboardContainer.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-white/60">Unable to load leaderboard</p>
+                    <button onclick="loadSocialLeaderboards()" class="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded">
+                        🔄 Retry
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+function displayUserStats(user, container) {
+    if (!container || !user) return;
+    
+    container.innerHTML = `
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+            <div class="text-xl font-bold text-blue-400">${user.points || 0}</div>
+            <div class="text-white/60 text-sm">Total Points</div>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+            <div class="text-xl font-bold text-green-400">${user.achievements || 0}</div>
+            <div class="text-white/60 text-sm">Achievements</div>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+            <div class="text-xl font-bold text-orange-400">${user.weekly_points || 0}</div>
+            <div class="text-white/60 text-sm">This Week</div>
+        </div>
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+            <div class="text-xl font-bold text-purple-400">#${user.rank || 'N/A'}</div>
+            <div class="text-white/60 text-sm">Rank</div>
+        </div>
+    `;
+}
+
+function displaySocialLeaderboard(entries, container) {
+    if (!container) return;
+    
+    if (!entries || entries.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-white/60">No leaderboard data</p>
+                <p class="text-white/40 text-sm mt-2">Add friends to compete!</p>
+            </div>
+        `;
+        return;
     }
     
-    if (userStatsContainer) {
-        userStatsContainer.innerHTML = `
-            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
-                <div class="text-xl font-bold text-blue-400">1,250</div>
-                <div class="text-white/60 text-sm">Total Points</div>
+    container.innerHTML = entries.map((entry, index) => {
+        const avatar = entry.email.charAt(0).toUpperCase();
+        const rank = index + 1;
+        const rankColor = rank === 1 ? 'text-yellow-400' : rank === 2 ? 'text-gray-300' : rank === 3 ? 'text-orange-400' : 'text-white';
+        const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+        
+        return `
+            <div class="leaderboard-entry bg-white/5 rounded-lg p-4 border border-white/10 flex items-center justify-between mb-3">
+                <div class="flex items-center space-x-3">
+                    <div class="${rankColor} text-lg font-bold w-8 text-center">${rankIcon}</div>
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold">${avatar}</span>
+                    </div>
+                    <div>
+                        <div class="text-white font-semibold">${entry.email.split('@')[0]}</div>
+                        <div class="text-white/60 text-sm">${entry.achievements || 0} achievements</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-white font-bold">${entry.weekly_points || entry.points || 0}</div>
+                    <div class="text-white/60 text-xs">points</div>
+                </div>
             </div>
-            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
-                <div class="text-xl font-bold text-green-400">12</div>
-                <div class="text-white/60 text-sm">Achievements</div>
-            </div>
-            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
-                <div class="text-xl font-bold text-orange-400">5</div>
-                <div class="text-white/60 text-sm">Day Streak</div>
-            </div>
-            <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
-                <div class="text-xl font-bold text-purple-400">#25</div>
-                <div class="text-white/60 text-sm">Global Rank</div>
+        `;
+    }).join('');
+}
+
+async function loadSocialChallenges() {
+    await Promise.all([
+        loadActiveChallenges(),
+        loadChallengeInvitations()
+    ]);
+}
+
+async function loadActiveChallenges() {
+    const container = document.getElementById('social-active-challenges');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/api/challenges?type=active', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.challenges && data.challenges.length > 0) {
+                container.innerHTML = data.challenges.map(challenge => createChallengeCard(challenge)).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-white/60">No active challenges</p>
+                        <p class="text-white/40 text-sm mt-2">Create challenges with friends!</p>
+                        <button onclick="showCreateChallengeModal()" class="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors">
+                            🏆 Create Challenge
+                        </button>
+                    </div>
+                `;
+            }
+        } else {
+            throw new Error('Failed to load challenges');
+        }
+    } catch (error) {
+        console.error('Load active challenges error:', error);
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-white/60">Error loading challenges</p>
+                <button onclick="loadActiveChallenges()" class="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded">
+                    Try Again
+                </button>
             </div>
         `;
     }
 }
 
-function displaySocialLeaderboard(entries) {
-    const container = document.getElementById('social-leaderboard-container');
+async function loadChallengeInvitations() {
+    const container = document.getElementById('social-challenge-invites');
     if (!container) return;
     
-    container.innerHTML = entries.map(entry => createLeaderboardEntry(entry, 'weekly')).join('');
+    try {
+        const response = await fetch('/api/challenges/invitations', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.invitations && data.invitations.length > 0) {
+                container.innerHTML = data.invitations.map(invitation => createChallengeInvitationCard(invitation)).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-white/60">No challenge invites</p>
+                        <p class="text-white/40 text-sm mt-2">Challenge invitations will appear here</p>
+                    </div>
+                `;
+            }
+        } else {
+            throw new Error('Failed to load invitations');
+        }
+    } catch (error) {
+        console.error('Load challenge invitations error:', error);
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-white/60">Error loading invitations</p>
+                <button onclick="loadChallengeInvitations()" class="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
 }
 
-function loadSocialChallenges() {
-    const activeChallenges = document.getElementById('social-active-challenges');
-    const challengeInvites = document.getElementById('social-challenge-invites');
+// Social Hub Helper Functions
+function showAddFriendModal() {
+    const email = prompt('Enter your friend\'s email address:');
+    if (email && email.trim()) {
+        addFriend(email.trim());
+    }
+}
+
+async function addFriend(email) {
+    try {
+        const response = await fetch('/api/friends', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ email })
+        });
+        
+        if (response.ok) {
+            showNotification('Friend request sent!', 'success');
+            loadSocialFriends();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to send friend request', 'error');
+        }
+    } catch (error) {
+        console.error('Add friend error:', error);
+        showNotification('Failed to send friend request', 'error');
+    }
+}
+
+async function removeFriend(friendId) {
+    showConfirmationModal('Are you sure you want to remove this friend?', async function() {
+        try {
+            const response = await fetch(`/api/friends/${friendId}`, {
+                method: 'DELETE',
+                headers: { 'x-session-id': sessionId }
+            });
+            
+            if (response.ok) {
+                showNotification('Friend removed successfully', 'success');
+                loadSocialFriends();
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Failed to remove friend', 'error');
+            }
+        } catch (error) {
+            console.error('Remove friend error:', error);
+            showNotification('Failed to remove friend', 'error');
+        }
+    });
+}
+
+function showCreateChallengeModal() {
+    // Clear previous form data
+    const form = document.getElementById('challenge-form');
+    if (form) form.reset();
     
-    if (activeChallenges) {
-        activeChallenges.innerHTML = `
-            <div class="challenge-card">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-white font-semibold">🏃‍♂️ 7-Day Running Streak</h4>
-                    <span class="text-green-400 text-sm">3/7 days</span>
+    // Clear invited friends list
+    const invitedList = document.getElementById('invited-friends-list');
+    if (invitedList) invitedList.innerHTML = '';
+    
+    invitedFriends.length = 0; // Clear the array
+    
+    // Show modal
+    showModal('create-challenge-modal');
+}
+
+// Array to store invited friends for challenge
+let invitedFriends = [];
+
+function addFriendToInvite() {
+    const emailInput = document.getElementById('invite-friend-email');
+    const email = emailInput.value.trim();
+    
+    if (!email) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    if (invitedFriends.includes(email)) {
+        showNotification('Friend already invited', 'error');
+        return;
+    }
+    
+    invitedFriends.push(email);
+    emailInput.value = '';
+    
+    updateInvitedFriendsList();
+}
+
+function removeInvitedFriend(email) {
+    const index = invitedFriends.indexOf(email);
+    if (index > -1) {
+        invitedFriends.splice(index, 1);
+        updateInvitedFriendsList();
+    }
+}
+
+function updateInvitedFriendsList() {
+    const container = document.getElementById('invited-friends-list');
+    if (!container) return;
+    
+    container.innerHTML = invitedFriends.map(email => `
+        <div class="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+            <span class="text-white/80 text-sm">${email}</span>
+            <button onclick="removeInvitedFriend('${email}')" class="text-red-400 hover:text-red-300 text-sm">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+async function createChallenge(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const challengeData = {
+        title: formData.get('title'),
+        description: formData.get('description'),
+        type: formData.get('type'),
+        category: formData.get('category'),
+        target_value: parseInt(formData.get('target_value')),
+        target_unit: formData.get('target_unit'),
+        duration_days: parseInt(formData.get('duration_days')),
+        max_participants: parseInt(formData.get('max_participants')),
+        reward_points: parseInt(formData.get('reward_points')),
+        privacy: formData.get('privacy'),
+        invitees: invitedFriends
+    };
+    
+    try {
+        const response = await fetch('/api/challenges', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify(challengeData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            showNotification(`Challenge "${challengeData.title}" created successfully! 🏆`, 'success');
+            closeModal('create-challenge-modal');
+            
+            // Reload challenges to show the new one
+            loadSocialChallenges();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to create challenge', 'error');
+        }
+    } catch (error) {
+        console.error('Create challenge error:', error);
+        showNotification('Failed to create challenge', 'error');
+    }
+}
+
+function createChallengeCard(challenge) {
+    const categoryIcons = {
+        fitness: '💪',
+        nutrition: '🍎',
+        habits: '🔥',
+        steps: '👟',
+        mindfulness: '🧘',
+        other: '⭐'
+    };
+    
+    const typeColors = {
+        group: 'bg-blue-500/20 border-blue-400',
+        versus: 'bg-red-500/20 border-red-400',
+        individual: 'bg-green-500/20 border-green-400'
+    };
+    
+    const isCreator = challenge.creator_id === (currentUser ? currentUser.id : null);
+    const isParticipating = challenge.participation_status === 'accepted';
+    const progressPercentage = challenge.progress_percentage || 0;
+    
+    return `
+        <div class="challenge-card ${typeColors[challenge.type] || 'bg-purple-500/20 border-purple-400'}">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">${categoryIcons[challenge.category] || '⭐'}</div>
+                    <div>
+                        <h4 class="font-bold text-white">${challenge.title}</h4>
+                        <div class="text-white/60 text-sm">by ${challenge.creator_username || challenge.creator_email}</div>
+                    </div>
                 </div>
-                <p class="text-white/70 text-sm mb-3">Run at least 1 mile every day for 7 days</p>
-                <div class="flex items-center justify-between">
-                    <div class="text-yellow-400 text-sm">+100 pts reward</div>
-                    <button class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg">
-                        Log Run
-                    </button>
+                <div class="text-right">
+                    <div class="text-yellow-400 font-bold">+${challenge.reward_points}</div>
+                    <div class="text-white/60 text-xs">points</div>
                 </div>
             </div>
             
-            <div class="challenge-card">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-white font-semibold">💪 Strength Challenge</h4>
-                    <span class="text-blue-400 text-sm">5/10 workouts</span>
+            <p class="text-white/80 text-sm mb-3">${challenge.description || 'No description'}</p>
+            
+            <div class="flex items-center justify-between text-sm mb-3">
+                <div class="text-white/60">
+                    Target: ${challenge.target_value} ${challenge.target_unit}
                 </div>
-                <p class="text-white/70 text-sm mb-3">Complete 10 strength training sessions this month</p>
-                <div class="flex items-center justify-between">
-                    <div class="text-yellow-400 text-sm">+200 pts reward</div>
-                    <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-lg">
-                        Log Workout
-                    </button>
+                <div class="text-white/60">
+                    ${challenge.participant_count}/${challenge.max_participants} participants
                 </div>
             </div>
-        `;
-    }
+            
+            ${isParticipating ? `
+                <div class="mb-3">
+                    <div class="flex items-center justify-between text-sm mb-1">
+                        <span class="text-white/70">Your Progress</span>
+                        <span class="text-white">${progressPercentage.toFixed(0)}%</span>
+                    </div>
+                    <div class="bg-white/10 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" 
+                             style="width: ${progressPercentage}%"></div>
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="flex space-x-2">
+                ${!isParticipating && !isCreator ? `
+                    <button onclick="joinChallenge('${challenge.id}')" 
+                            class="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors">
+                        🚀 Join Challenge
+                    </button>
+                ` : ''}
+                
+                ${isParticipating ? `
+                    <button onclick="updateChallengeProgress('${challenge.id}')" 
+                            class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+                        📈 Update Progress
+                    </button>
+                ` : ''}
+                
+                <button onclick="viewChallenge('${challenge.id}')" 
+                        class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors">
+                    👁️ View
+                </button>
+                
+                ${isCreator ? `
+                    <button onclick="deleteChallenge('${challenge.id}')" 
+                            class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors">
+                        🗑️
+                    </button>
+                ` : ''}
+            </div>
+            
+            <div class="flex items-center justify-between text-xs text-white/50 mt-2">
+                <span>Ends: ${new Date(challenge.end_date).toLocaleDateString()}</span>
+                <span class="capitalize">${challenge.type} • ${challenge.category}</span>
+            </div>
+        </div>
+    `;
+}
+
+function createChallengeInvitationCard(invitation) {
+    const categoryIcons = {
+        fitness: '💪',
+        nutrition: '🍎',
+        habits: '🔥',
+        steps: '👟',
+        mindfulness: '🧘',
+        other: '⭐'
+    };
     
-    if (challengeInvites) {
-        challengeInvites.innerHTML = `
-            <div class="challenge-card border-l-4 border-purple-500">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-white font-semibold">Alex Thunder invited you</h4>
-                    <span class="text-purple-400 text-sm">New</span>
+    return `
+        <div class="challenge-card bg-yellow-500/20 border-yellow-400">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">${categoryIcons[invitation.challenge_category] || '⭐'}</div>
+                    <div>
+                        <h4 class="font-bold text-white">${invitation.challenge_title}</h4>
+                        <div class="text-white/60 text-sm">Invited by ${invitation.inviter_username}</div>
+                    </div>
                 </div>
-                <p class="text-white/70 text-sm mb-3">30-Day Habit Building Challenge</p>
-                <div class="flex space-x-2">
-                    <button class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg">
-                        Accept
-                    </button>
-                    <button class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg">
-                        Decline
-                    </button>
+                <div class="text-right">
+                    <div class="text-yellow-400 font-bold">+${invitation.reward_points}</div>
+                    <div class="text-white/60 text-xs">points</div>
                 </div>
             </div>
-        `;
+            
+            <p class="text-white/80 text-sm mb-3">${invitation.challenge_description || 'No description'}</p>
+            
+            <div class="flex items-center justify-between text-sm mb-3">
+                <div class="text-white/60">
+                    Target: ${invitation.target_value} ${invitation.target_unit}
+                </div>
+                <div class="text-white/60">
+                    Duration: ${invitation.duration_days} days
+                </div>
+            </div>
+            
+            <div class="flex space-x-2">
+                <button onclick="respondToChallenge('${invitation.id}', 'accept')" 
+                        class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors">
+                    ✅ Accept
+                </button>
+                <button onclick="respondToChallenge('${invitation.id}', 'decline')" 
+                        class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors">
+                    ❌ Decline
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-between text-xs text-white/50 mt-2">
+                <span>Invited: ${new Date(invitation.created_at).toLocaleDateString()}</span>
+                <span class="capitalize">${invitation.challenge_type} • ${invitation.challenge_category}</span>
+            </div>
+        </div>
+    `;
+}
+
+async function joinChallenge(challengeId) {
+    try {
+        const response = await fetch(`/api/challenges/${challengeId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ action: 'join' })
+        });
+        
+        if (response.ok) {
+            showNotification('Successfully joined challenge! 🎉', 'success');
+            loadSocialChallenges();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to join challenge', 'error');
+        }
+    } catch (error) {
+        console.error('Join challenge error:', error);
+        showNotification('Failed to join challenge', 'error');
     }
+}
+
+async function updateChallengeProgress(challengeId) {
+    const progressValue = prompt('Enter your current progress value:');
+    if (!progressValue || isNaN(progressValue)) return;
+    
+    const progressNotes = prompt('Add notes about your progress (optional):') || '';
+    
+    try {
+        const response = await fetch(`/api/challenges/${challengeId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ 
+                action: 'update_progress', 
+                progress_value: parseInt(progressValue),
+                progress_notes: progressNotes
+            })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            showNotification(`Progress updated to ${result.progress_percentage.toFixed(0)}%! 📈`, 'success');
+            loadSocialChallenges();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Failed to update progress', 'error');
+        }
+    } catch (error) {
+        console.error('Update progress error:', error);
+        showNotification('Failed to update progress', 'error');
+    }
+}
+
+async function respondToChallenge(invitationId, response) {
+    try {
+        const apiResponse = await fetch('/api/challenges/invitations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ 
+                invitation_id: invitationId, 
+                response: response 
+            })
+        });
+        
+        if (apiResponse.ok) {
+            const message = response === 'accept' ? 'Challenge accepted! 🎉' : 'Challenge declined';
+            showNotification(message, 'success');
+            loadSocialChallenges();
+        } else {
+            const error = await apiResponse.json();
+            showNotification(error.error || 'Failed to respond to challenge', 'error');
+        }
+    } catch (error) {
+        console.error('Respond to challenge error:', error);
+        showNotification('Failed to respond to challenge', 'error');
+    }
+}
+
+function viewChallenge(challengeId) {
+    showNotification('Challenge details view coming soon! 👁️', 'info');
+}
+
+async function deleteChallenge(challengeId) {
+    showConfirmationModal('Are you sure you want to delete this challenge? This action cannot be undone.', async function() {
+        try {
+            const response = await fetch(`/api/challenges/${challengeId}`, {
+                method: 'DELETE',
+                headers: { 'x-session-id': sessionId }
+            });
+            
+            if (response.ok) {
+                showNotification('Challenge deleted successfully', 'success');
+                loadSocialChallenges();
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Failed to delete challenge', 'error');
+            }
+        } catch (error) {
+            console.error('Delete challenge error:', error);
+            showNotification('Failed to delete challenge', 'error');
+        }
+    });
 }
 
 function loadCommunityFeed() {
     const communityFeed = document.getElementById('community-feed');
     
     if (communityFeed) {
-        const feedItems = [
-            { type: 'achievement', user: 'Top Performer', content: '🏆 Sarah Storm just unlocked "Marathon Master" - completed 26.2 miles!', time: '1 hour ago' },
-            { type: 'milestone', user: 'Community', content: '🎉 StriveTrack community just hit 1,000 active members this week!', time: '3 hours ago' },
-            { type: 'challenge', user: 'Weekly Challenge', content: '⚡ New weekly challenge: "Hydration Hero" - drink 8 glasses of water daily', time: '1 day ago' },
-            { type: 'success', user: 'Success Story', content: '💪 Mike Blaze shares: "Lost 20 pounds in 3 months thanks to consistent habit tracking!"', time: '2 days ago' }
-        ];
+        // Generate some sample community activity
+        const activities = generateCommunityActivities();
         
-        communityFeed.innerHTML = feedItems.map(item => `
-            <div class="activity-item border-l-4 border-blue-500">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <span class="text-blue-400 font-semibold text-sm">${item.user}</span>
-                            <span class="text-white/40 text-xs">${item.time}</span>
-                        </div>
-                        <p class="text-white/80 text-sm">${item.content}</p>
-                    </div>
+        if (activities.length > 0) {
+            communityFeed.innerHTML = activities.map(activity => createCommunityActivityCard(activity)).join('');
+        } else {
+            communityFeed.innerHTML = `
+                <div class="text-center py-8">
+                    <p class="text-white/60">Community feed</p>
+                    <p class="text-white/40 text-sm mt-2">Community updates coming soon!</p>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }
     }
+}
+
+function generateCommunityActivities() {
+    const activityTypes = [
+        { type: 'challenge_complete', icon: '🏆', color: 'text-yellow-400' },
+        { type: 'habit_streak', icon: '🔥', color: 'text-orange-400' },
+        { type: 'goal_achieved', icon: '🎯', color: 'text-green-400' },
+        { type: 'level_up', icon: '🎆', color: 'text-purple-400' },
+        { type: 'challenge_created', icon: '✨', color: 'text-blue-400' }
+    ];
+    
+    const users = ['FitnessPro', 'HealthyHero', 'WorkoutWarrior', 'NutritionNinja', 'StriveSeeker'];
+    const achievements = [
+        'completed a 30-day push-up challenge',
+        'achieved a 15-day workout streak',
+        'reached their weight loss goal',
+        'leveled up to Fitness Master',
+        'created a new community challenge',
+        'completed 10,000 steps for 7 days straight',
+        'achieved their first 5K run',
+        'unlocked the "Consistency Champion" badge'
+    ];
+    
+    return Array.from({ length: 6 }, (_, i) => {
+        const activityType = activityTypes[Math.floor(Math.random() * activityTypes.length)];
+        const user = users[Math.floor(Math.random() * users.length)];
+        const achievement = achievements[Math.floor(Math.random() * achievements.length)];
+        const timeAgo = [`${Math.floor(Math.random() * 12) + 1}h ago`, `${Math.floor(Math.random() * 7) + 1}d ago`][Math.floor(Math.random() * 2)];
+        
+        return {
+            id: `activity_${i}`,
+            user,
+            achievement,
+            timeAgo,
+            ...activityType
+        };
+    });
+}
+
+function createCommunityActivityCard(activity) {
+    return `
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 mb-3 hover:bg-white/8 transition-colors">
+            <div class="flex items-start space-x-3">
+                <div class="text-2xl ${activity.color}">${activity.icon}</div>
+                <div class="flex-1">
+                    <div class="text-white font-medium">${activity.user}</div>
+                    <div class="text-white/70 text-sm mt-1">${activity.achievement}</div>
+                    <div class="text-white/50 text-xs mt-2">${activity.timeAgo}</div>
+                </div>
+                <button class="text-white/60 hover:text-white transition-colors">
+                    <i class="fas fa-thumbs-up text-sm"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function loadSocialUserStats() {
+    const container = document.getElementById('social-user-stats');
+    if (!container) return;
+    
+    // Generate user performance stats
+    const stats = [
+        { label: 'Weekly Points', value: Math.floor(Math.random() * 500) + 200, icon: '⭐', color: 'text-yellow-400' },
+        { label: 'Current Streak', value: Math.floor(Math.random() * 30) + 5, icon: '🔥', color: 'text-orange-400' },
+        { label: 'Challenges Won', value: Math.floor(Math.random() * 15) + 2, icon: '🏆', color: 'text-green-400' },
+        { label: 'Community Rank', value: `#${Math.floor(Math.random() * 50) + 10}`, icon: '📊', color: 'text-blue-400' }
+    ];
+    
+    container.innerHTML = stats.map(stat => `
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+            <div class="text-2xl mb-2 ${stat.color}">${stat.icon}</div>
+            <div class="text-xl font-bold text-white">${stat.value}</div>
+            <div class="text-white/60 text-sm">${stat.label}</div>
+        </div>
+    `).join('');
 }
 
 function showCreateChallengeModal() {
@@ -4268,55 +5685,55 @@ function generateEnhancedDailyChallenges() {
         0: [ // Sunday - 5 challenges
             { 
                 id: 'sunday_1', 
-                type: 'recovery', 
-                title: 'Rest Day Reflection', 
-                description: 'Complete a 10-minute meditation or stretching session', 
-                points: 15, 
-                icon: '🧘‍♂️',
-                color: 'purple',
+                type: 'planning', 
+                title: 'Week Ahead Goals', 
+                description: 'Create or update 3 specific goals for the upcoming week in StriveTrack', 
+                points: 30, 
+                icon: '🎯',
+                color: 'blue',
                 difficulty: 'Easy',
-                category: 'mindfulness'
+                category: 'goals'
             },
             { 
                 id: 'sunday_2', 
-                type: 'planning', 
-                title: 'Weekly Goal Setting', 
-                description: 'Set 3 fitness goals for the upcoming week', 
-                points: 20, 
-                icon: '📝',
-                color: 'blue',
+                type: 'progress', 
+                title: 'Weekly Progress Photo', 
+                description: 'Upload a progress photo to document this week in your StriveTrack journey', 
+                points: 35, 
+                icon: '📸',
+                color: 'green',
                 difficulty: 'Easy',
-                category: 'planning'
+                category: 'media'
             },
             { 
                 id: 'sunday_3', 
-                type: 'nutrition', 
-                title: 'Meal Prep Master', 
-                description: 'Prepare healthy meals or snacks for the next 3 days', 
+                type: 'habit', 
+                title: 'Habit Review & Setup', 
+                description: 'Review your habits and create or adjust one for better consistency', 
                 points: 25, 
-                icon: '🥗',
-                color: 'green',
-                difficulty: 'Medium',
-                category: 'nutrition'
+                icon: '✅',
+                color: 'purple',
+                difficulty: 'Easy',
+                category: 'habits'
             },
             { 
                 id: 'sunday_4', 
-                type: 'learning', 
-                title: 'Fitness Education', 
-                description: 'Read an article or watch a video about fitness/health', 
-                points: 15, 
-                icon: '📚',
+                type: 'reflection', 
+                title: 'Weekly Reflection', 
+                description: 'Complete at least 2 habits today and reflect on your week', 
+                points: 20, 
+                icon: '🤔',
                 color: 'indigo',
                 difficulty: 'Easy',
-                category: 'education'
+                category: 'mindfulness'
             },
             { 
                 id: 'sunday_5', 
                 type: 'social', 
                 title: 'Community Connect', 
-                description: 'Share your weekly fitness journey with friends or community', 
-                points: 20, 
-                icon: '🌟',
+                description: 'Add a friend or engage with community members in StriveTrack', 
+                points: 25, 
+                icon: '👥',
                 color: 'yellow',
                 difficulty: 'Easy',
                 category: 'social'
@@ -4325,104 +5742,104 @@ function generateEnhancedDailyChallenges() {
         1: [ // Monday - 5 challenges
             { 
                 id: 'monday_1', 
-                type: 'motivation', 
+                type: 'habit', 
                 title: 'Monday Momentum', 
-                description: 'Complete your morning workout or habit within 2 hours of waking', 
-                points: 25, 
+                description: 'Complete your most important habit within the first 2 hours of waking', 
+                points: 30, 
                 icon: '🚀',
                 color: 'orange',
                 difficulty: 'Medium',
-                category: 'workout'
+                category: 'habits'
             },
             { 
                 id: 'monday_2', 
-                type: 'hydration', 
-                title: 'Hydration Hero', 
-                description: 'Drink 8 glasses of water throughout the day', 
-                points: 15, 
-                icon: '💧',
+                type: 'progress', 
+                title: 'Fresh Start Photo', 
+                description: 'Take a "before workout" photo to capture Monday motivation', 
+                points: 25, 
+                icon: '📱',
                 color: 'blue',
                 difficulty: 'Easy',
-                category: 'health'
+                category: 'media'
             },
             { 
                 id: 'monday_3', 
-                type: 'steps', 
-                title: 'Step Champion', 
-                description: 'Take 10,000 steps or walk for 45 minutes', 
-                points: 30, 
-                icon: '👟',
-                color: 'green',
+                type: 'workout', 
+                title: 'Week Starter Workout', 
+                description: 'Complete a 20+ minute workout to start the week strong', 
+                points: 40, 
+                icon: '💪',
+                color: 'red',
                 difficulty: 'Medium',
-                category: 'cardio'
+                category: 'fitness'
             },
             { 
                 id: 'monday_4', 
-                type: 'energy', 
-                title: 'Energy Booster', 
-                description: 'Do 10 jumping jacks every hour for 4 hours', 
+                type: 'goals', 
+                title: 'Goal Progress Update', 
+                description: 'Update progress on at least one of your active goals in StriveTrack', 
                 points: 20, 
-                icon: '⚡',
-                color: 'yellow',
-                difficulty: 'Medium',
-                category: 'activity'
+                icon: '📊',
+                color: 'green',
+                difficulty: 'Easy',
+                category: 'goals'
             },
             { 
                 id: 'monday_5', 
-                type: 'mindset', 
-                title: 'Positive Monday', 
-                description: 'Write down 3 things you\'re excited about this week', 
-                points: 10, 
-                icon: '😊',
-                color: 'pink',
-                difficulty: 'Easy',
-                category: 'mindfulness'
+                type: 'achievement', 
+                title: 'Achievement Hunter', 
+                description: 'Work toward unlocking a new achievement today', 
+                points: 35, 
+                icon: '🏆',
+                color: 'gold',
+                difficulty: 'Medium',
+                category: 'achievement'
             }
         ],
         2: [ // Tuesday - 5 challenges
             { 
                 id: 'tuesday_1', 
-                type: 'strength', 
-                title: 'Strength Builder', 
-                description: 'Complete 25 push-ups (can be modified or spread throughout day)', 
-                points: 30, 
-                icon: '💪',
-                color: 'red',
-                difficulty: 'Medium',
-                category: 'strength'
-            },
-            { 
-                id: 'tuesday_2', 
-                type: 'nutrition', 
-                title: 'Protein Power', 
-                description: 'Include protein in every meal and snack today', 
-                points: 25, 
-                icon: '🍗',
-                color: 'orange',
-                difficulty: 'Medium',
-                category: 'nutrition'
-            },
-            { 
-                id: 'tuesday_3', 
                 type: 'habit', 
-                title: 'Consistency King', 
-                description: 'Complete 3 different healthy habits before noon', 
-                points: 35, 
+                title: 'Consistency Champion', 
+                description: 'Complete ALL your scheduled habits for today', 
+                points: 50, 
                 icon: '🔥',
-                color: 'purple',
+                color: 'red',
                 difficulty: 'Hard',
                 category: 'habits'
             },
             { 
-                id: 'tuesday_4', 
-                type: 'core', 
-                title: 'Core Crusher', 
-                description: 'Hold a plank for 2 minutes total (can be broken into sets)', 
-                points: 25, 
-                icon: '🎯',
-                color: 'blue',
+                id: 'tuesday_2', 
+                type: 'media', 
+                title: 'Workout Documentation', 
+                description: 'Upload a photo or video of your workout in action', 
+                points: 30, 
+                icon: '🎥',
+                color: 'purple',
+                difficulty: 'Easy',
+                category: 'media'
+            },
+            { 
+                id: 'tuesday_3', 
+                type: 'strength', 
+                title: 'Strength Builder', 
+                description: 'Focus on strength training for 25+ minutes', 
+                points: 35, 
+                icon: '🏋️‍♂️',
+                color: 'orange',
                 difficulty: 'Medium',
-                category: 'strength'
+                category: 'fitness'
+            },
+            { 
+                id: 'tuesday_4', 
+                type: 'challenge', 
+                title: 'Create Personal Challenge', 
+                description: 'Set up a custom challenge for yourself in StriveTrack', 
+                points: 25, 
+                icon: '⚡',
+                color: 'yellow',
+                difficulty: 'Easy',
+                category: 'challenge'
             },
             { 
                 id: 'tuesday_5', 
@@ -4439,89 +5856,89 @@ function generateEnhancedDailyChallenges() {
         3: [ // Wednesday - 5 challenges
             { 
                 id: 'wednesday_1', 
-                type: 'cardio', 
-                title: 'Cardio Crusher', 
-                description: 'Complete 30 minutes of cardio (any activity that raises heart rate)', 
-                points: 35, 
-                icon: '🏃‍♂️',
-                color: 'blue',
+                type: 'streak', 
+                title: 'Midweek Streak Power', 
+                description: 'Maintain your longest habit streak - complete key habits today', 
+                points: 40, 
+                icon: '🎯',
+                color: 'purple',
                 difficulty: 'Medium',
-                category: 'cardio'
+                category: 'habits'
             },
             { 
                 id: 'wednesday_2', 
-                type: 'mindfulness', 
-                title: 'Midweek Mindfulness', 
-                description: 'Practice 10 minutes of deep breathing or meditation', 
-                points: 15, 
-                icon: '🌸',
-                color: 'pink',
-                difficulty: 'Easy',
-                category: 'mindfulness'
+                type: 'transformation', 
+                title: 'Transformation Video', 
+                description: 'Create a short video showing your fitness progress or workout', 
+                points: 45, 
+                icon: '🎬',
+                color: 'red',
+                difficulty: 'Medium',
+                category: 'media'
             },
             { 
                 id: 'wednesday_3', 
-                type: 'social', 
-                title: 'Workout Buddy', 
-                description: 'Exercise with a friend or share your progress online', 
-                points: 25, 
-                icon: '👫',
-                color: 'green',
+                type: 'cardio', 
+                title: 'Cardio Crusher', 
+                description: 'Complete 30+ minutes of cardio activity', 
+                points: 35, 
+                icon: '❤️',
+                color: 'red',
                 difficulty: 'Medium',
-                category: 'social'
+                category: 'fitness'
             },
             { 
                 id: 'wednesday_4', 
-                type: 'flexibility', 
-                title: 'Flexibility Focus', 
-                description: 'Complete a 20-minute stretching routine or yoga session', 
-                points: 25, 
-                icon: '🤸‍♀️',
-                color: 'purple',
+                type: 'social', 
+                title: 'Motivate Others', 
+                description: 'Encourage friends or community members in their fitness journey', 
+                points: 20, 
+                icon: '💬',
+                color: 'blue',
                 difficulty: 'Easy',
-                category: 'flexibility'
+                category: 'social'
             },
             { 
                 id: 'wednesday_5', 
-                type: 'water', 
-                title: 'Hydration Plus', 
-                description: 'Drink water with every meal and add natural flavoring', 
-                points: 15, 
-                icon: '🥤',
-                color: 'cyan',
-                difficulty: 'Easy',
-                category: 'health'
+                type: 'goal', 
+                title: 'Milestone Marker', 
+                description: 'Work toward completing one of your goals this week', 
+                points: 30, 
+                icon: '🏁',
+                color: 'green',
+                difficulty: 'Medium',
+                category: 'goals'
             }
         ],
         4: [ // Thursday - 5 challenges
             { 
                 id: 'thursday_1', 
-                type: 'strength', 
-                title: 'Technique Thursday', 
-                description: 'Focus on perfect form - quality over quantity in your workout', 
+                type: 'quality', 
+                title: 'Perfect Form Focus', 
+                description: 'Focus on perfect form and technique in your workout', 
                 points: 30, 
                 icon: '⚖️',
                 color: 'orange',
                 difficulty: 'Medium',
-                category: 'strength'
+                category: 'fitness'
             },
             { 
                 id: 'thursday_2', 
                 type: 'nutrition', 
-                title: 'Rainbow Plate', 
-                description: 'Eat foods of 5 different colors throughout the day', 
+                title: 'Nutrition Champion', 
+                description: 'Plan and prepare a healthy meal, document with photo', 
                 points: 25, 
-                icon: '🌈',
-                color: 'rainbow',
-                difficulty: 'Medium',
+                icon: '🥗',
+                color: 'green',
+                difficulty: 'Easy',
                 category: 'nutrition'
             },
             { 
                 id: 'thursday_3', 
-                type: 'challenge', 
-                title: 'Personal Best', 
-                description: 'Try to beat a personal fitness record or achieve new goal', 
-                points: 40, 
+                type: 'achievement', 
+                title: 'Personal Best Attempt', 
+                description: 'Try to achieve a personal best or unlock a new achievement', 
+                points: 50, 
                 icon: '🏆',
                 color: 'gold',
                 difficulty: 'Hard',
@@ -4529,23 +5946,23 @@ function generateEnhancedDailyChallenges() {
             },
             { 
                 id: 'thursday_4', 
-                type: 'balance', 
-                title: 'Balance Challenge', 
-                description: 'Stand on one foot for 30 seconds, 3 times each leg', 
-                points: 20, 
-                icon: '⚖️',
-                color: 'teal',
-                difficulty: 'Easy',
-                category: 'balance'
+                type: 'habit', 
+                title: 'Habit Mastery', 
+                description: 'Complete your most challenging habit with extra focus', 
+                points: 35, 
+                icon: '🎓',
+                color: 'purple',
+                difficulty: 'Medium',
+                category: 'habits'
             },
             { 
                 id: 'thursday_5', 
-                type: 'social', 
-                title: 'Fitness Friend', 
-                description: 'Workout with a friend, join a class, or encourage someone else', 
+                type: 'inspiration', 
+                title: 'Inspire Others', 
+                description: 'Share your workout or progress to inspire others', 
                 points: 25, 
-                icon: '👥',
-                color: 'green',
+                icon: '✨',
+                color: 'yellow',
                 difficulty: 'Easy',
                 category: 'social'
             }
@@ -4553,115 +5970,115 @@ function generateEnhancedDailyChallenges() {
         5: [ // Friday - 5 challenges
             { 
                 id: 'friday_1', 
-                type: 'endurance', 
-                title: 'Friday Finisher', 
-                description: 'Complete your most challenging workout of the week', 
+                type: 'completion', 
+                title: 'Week Strong Finish', 
+                description: 'Complete all your planned habits and workouts for today', 
                 points: 45, 
-                icon: '🏆',
-                color: 'gold',
+                icon: '🏁',
+                color: 'red',
                 difficulty: 'Hard',
-                category: 'workout'
+                category: 'habits'
             },
             { 
                 id: 'friday_2', 
-                type: 'recovery', 
-                title: 'Recovery Prep', 
-                description: 'Spend 15 minutes on self-care: stretching, massage, or bath', 
-                points: 20, 
-                icon: '🛀',
-                color: 'blue',
+                type: 'celebration', 
+                title: 'Progress Celebration', 
+                description: 'Upload a photo celebrating this week\'s fitness wins', 
+                points: 30, 
+                icon: '🎉',
+                color: 'rainbow',
                 difficulty: 'Easy',
-                category: 'recovery'
+                category: 'media'
             },
             { 
                 id: 'friday_3', 
                 type: 'planning', 
                 title: 'Weekend Warrior Prep', 
-                description: 'Plan 2 active weekend activities or workouts', 
-                points: 20, 
+                description: 'Plan active weekend activities and set goals for next week', 
+                points: 25, 
                 icon: '📅',
-                color: 'green',
+                color: 'blue',
                 difficulty: 'Easy',
                 category: 'planning'
             },
             { 
                 id: 'friday_4', 
-                type: 'celebration', 
-                title: 'Week Winner', 
-                description: 'Celebrate your weekly achievements - treat yourself healthy!', 
-                points: 15, 
-                icon: '🎉',
-                color: 'rainbow',
+                type: 'reflection', 
+                title: 'Weekly Wins Review', 
+                description: 'Reflect on your achievements and progress this week', 
+                points: 20, 
+                icon: '📝',
+                color: 'purple',
                 difficulty: 'Easy',
-                category: 'mindset'
+                category: 'reflection'
             },
             { 
                 id: 'friday_5', 
-                type: 'energy', 
-                title: 'Power Hour', 
-                description: 'Do high-energy exercises for 1 minute every 15 minutes (4x total)', 
-                points: 30, 
-                icon: '⚡',
-                color: 'yellow',
+                type: 'goal', 
+                title: 'Goal Completion Push', 
+                description: 'Make significant progress toward completing a goal', 
+                points: 40, 
+                icon: '🎯',
+                color: 'green',
                 difficulty: 'Medium',
-                category: 'activity'
+                category: 'goals'
             }
         ],
         6: [ // Saturday - 5 challenges
             { 
                 id: 'saturday_1', 
                 type: 'adventure', 
-                title: 'Adventure Seeker', 
-                description: 'Try a completely new outdoor activity, sport, or fitness class', 
+                title: 'Weekend Adventure', 
+                description: 'Try a new workout style or outdoor activity', 
                 points: 40, 
                 icon: '🏔️',
                 color: 'green',
                 difficulty: 'Medium',
-                category: 'adventure'
+                category: 'fitness'
             },
             { 
                 id: 'saturday_2', 
-                type: 'strength', 
-                title: 'Weekend Warrior', 
-                description: 'Complete a full-body strength workout with extra intensity', 
-                points: 40, 
-                icon: '⚔️',
-                color: 'red',
-                difficulty: 'Hard',
-                category: 'strength'
+                type: 'media', 
+                title: 'Adventure Documentation', 
+                description: 'Capture your weekend fitness adventure with photos/videos', 
+                points: 35, 
+                icon: '📸',
+                color: 'blue',
+                difficulty: 'Easy',
+                category: 'media'
             },
             { 
                 id: 'saturday_3', 
-                type: 'fun', 
-                title: 'Active Fun', 
-                description: 'Play a sport, dance, or do active games with others for 30+ minutes', 
-                points: 35, 
-                icon: '🎮',
-                color: 'purple',
+                type: 'social', 
+                title: 'Fitness Friend Challenge', 
+                description: 'Workout with friends or invite someone to join your fitness journey', 
+                points: 30, 
+                icon: '👥',
+                color: 'yellow',
                 difficulty: 'Medium',
                 category: 'social'
             },
             { 
                 id: 'saturday_4', 
-                type: 'nature', 
-                title: 'Nature Therapy', 
-                description: 'Spend 45+ minutes exercising or relaxing in nature', 
-                points: 25, 
-                icon: '🌳',
-                color: 'green',
-                difficulty: 'Easy',
-                category: 'outdoor'
-            },
-            { 
-                id: 'saturday_5', 
-                type: 'creative', 
+                type: 'creativity', 
                 title: 'Creative Movement', 
-                description: 'Try dance, martial arts, or creative movement for 20+ minutes', 
+                description: 'Try dance, martial arts, or any creative physical activity', 
                 points: 30, 
                 icon: '💃',
                 color: 'pink',
                 difficulty: 'Medium',
                 category: 'creative'
+            },
+            { 
+                id: 'saturday_5', 
+                type: 'habit', 
+                title: 'Weekend Consistency', 
+                description: 'Maintain your habits even on weekend - complete 2+ habits', 
+                points: 25, 
+                icon: '⚔️',
+                color: 'orange',
+                difficulty: 'Medium',
+                category: 'habits'
             }
         ]
     };
@@ -5731,4 +7148,1193 @@ function createEnhancedAchievementCard(achievement) {
             </div>
         </div>
     `;
+}
+
+// Profile Management Functions
+let profileData = null;
+
+async function loadProfileData() {
+    try {
+        const response = await fetch('/api/profile', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            profileData = data.user;
+            
+            // Update profile form fields
+            document.getElementById('profile-username').value = profileData.username || '';
+            document.getElementById('profile-email').value = profileData.email || '';
+            
+            // Update profile picture
+            updateProfilePictureDisplay(profileData.profile_picture_url);
+            
+            // Update statistics
+            document.getElementById('stats-total-points').textContent = data.stats.total_points;
+            document.getElementById('stats-habits-count').textContent = data.stats.habits_count;
+            document.getElementById('stats-achievements-count').textContent = data.stats.achievements_count;
+            document.getElementById('stats-days-active').textContent = data.stats.days_active;
+            
+            // Update points display in header
+            document.getElementById('profile-points-display').textContent = `${data.stats.total_points} Points`;
+            
+        } else {
+            throw new Error('Failed to load profile');
+        }
+    } catch (error) {
+        console.error('Profile load error:', error);
+        showNotification('Failed to load profile data', 'error');
+    }
+}
+
+function updateProfilePictureDisplay(profilePictureUrl) {
+    const profilePicElement = document.getElementById('current-profile-pic');
+    const removeButton = document.getElementById('remove-profile-pic');
+    
+    if (profilePictureUrl) {
+        profilePicElement.innerHTML = `
+            <img src="${profilePictureUrl}" alt="Profile Picture" class="w-full h-full object-cover rounded-full">
+        `;
+        removeButton.classList.remove('hidden');
+    } else {
+        profilePicElement.innerHTML = `
+            <i class="fas fa-user text-white text-2xl"></i>
+        `;
+        removeButton.classList.add('hidden');
+    }
+}
+
+async function handleProfileUpdate(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('profile-username').value.trim();
+    const email = document.getElementById('profile-email').value.trim();
+    
+    if (!username || !email) {
+        showNotification('Username and email are required', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({ username, email })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Profile updated successfully! 🎉', 'success');
+            // Update current user data
+            if (currentUser) {
+                currentUser.username = username;
+                currentUser.email = email;
+                // Update header display
+                updateHeaderProfilePicture(currentUser.profile_picture_url, username);
+            }
+        } else {
+            showNotification(data.error || 'Failed to update profile', 'error');
+        }
+    } catch (error) {
+        console.error('Profile update error:', error);
+        showNotification('Failed to update profile', 'error');
+    }
+}
+
+async function handlePasswordChange(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-new-password').value;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showNotification('All password fields are required', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showNotification('New passwords do not match', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showNotification('Password must be at least 6 characters long', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/profile/password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword,
+                confirmPassword
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Password updated successfully! 🔒', 'success');
+            // Clear form fields
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-new-password').value = '';
+        } else {
+            showNotification(data.error || 'Failed to update password', 'error');
+        }
+    } catch (error) {
+        console.error('Password change error:', error);
+        showNotification('Failed to update password', 'error');
+    }
+}
+
+async function handleProfilePicture(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        showNotification('Invalid file type. Only JPEG, PNG, and WebP are allowed', 'error');
+        input.value = '';
+        return;
+    }
+    
+    // Validate file size (2MB)
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showNotification('File too large. Maximum size is 2MB', 'error');
+        input.value = '';
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('profilePicture', file);
+        
+        showNotification('Uploading profile picture...', 'info');
+        
+        const response = await fetch('/api/profile/picture', {
+            method: 'POST',
+            headers: {
+                'x-session-id': sessionId
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Profile picture updated successfully! 📷', 'success');
+            updateProfilePictureDisplay(data.profilePictureUrl);
+            if (profileData) {
+                profileData.profile_picture_url = data.profilePictureUrl;
+            }
+            // Update header profile picture
+            if (currentUser) {
+                currentUser.profile_picture_url = data.profilePictureUrl;
+                updateHeaderProfilePicture(data.profilePictureUrl, currentUser.username || currentUser.email.split('@')[0]);
+            }
+        } else {
+            showNotification(data.error || 'Failed to upload profile picture', 'error');
+        }
+    } catch (error) {
+        console.error('Profile picture upload error:', error);
+        showNotification('Failed to upload profile picture', 'error');
+    }
+    
+    // Clear the input
+    input.value = '';
+}
+
+async function removeProfilePicture() {
+    try {
+        const response = await fetch('/api/profile/picture', {
+            method: 'DELETE',
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Profile picture removed successfully! 🗑️', 'success');
+            updateProfilePictureDisplay(null);
+            if (profileData) {
+                profileData.profile_picture_url = null;
+            }
+            // Update header profile picture
+            if (currentUser) {
+                currentUser.profile_picture_url = null;
+                updateHeaderProfilePicture(null, currentUser.username || currentUser.email.split('@')[0]);
+            }
+        } else {
+            showNotification(data.error || 'Failed to remove profile picture', 'error');
+        }
+    } catch (error) {
+        console.error('Profile picture removal error:', error);
+        showNotification('Failed to remove profile picture', 'error');
+    }
+}
+
+function confirmDeleteAccount() {
+    if (confirm('⚠️ Are you sure you want to delete your account?\n\nThis action cannot be undone and will permanently delete:\n• All your habits and progress\n• Your achievements and points\n• Your uploaded media\n• All account data\n\nType "DELETE" to confirm:')) {
+        const confirmation = prompt('Type "DELETE" to confirm account deletion:');
+        if (confirmation === 'DELETE') {
+            deleteAccount();
+        } else {
+            showNotification('Account deletion cancelled', 'info');
+        }
+    }
+}
+
+async function deleteAccount() {
+    try {
+        const response = await fetch('/api/profile/delete', {
+            method: 'DELETE',
+            headers: {
+                'x-session-id': sessionId
+            }
+        });
+        
+        if (response.ok) {
+            showNotification('Account deleted successfully. Goodbye! 👋', 'success');
+            setTimeout(() => {
+                logout();
+            }, 2000);
+        } else {
+            const data = await response.json();
+            showNotification(data.error || 'Failed to delete account', 'error');
+        }
+    } catch (error) {
+        console.error('Account deletion error:', error);
+        showNotification('Failed to delete account', 'error');
+    }
+}
+
+// Header Profile Picture Management
+function updateHeaderProfilePicture(profilePictureUrl, username) {
+    const headerProfilePic = document.getElementById('header-profile-pic');
+    const welcomeText = document.getElementById('welcome-text');
+    
+    if (headerProfilePic) {
+        if (profilePictureUrl) {
+            headerProfilePic.innerHTML = `
+                <img src="${profilePictureUrl}" alt="Profile" class="w-full h-full object-cover rounded-full">
+            `;
+        } else {
+            headerProfilePic.innerHTML = `
+                <i class="fas fa-user text-white text-sm"></i>
+            `;
+        }
+    }
+    
+    // Update welcome text with username
+    if (welcomeText && username) {
+        welcomeText.textContent = `Welcome, ${username}`;
+    }
+}
+
+// Enhanced show app function to load user profile data
+function showApp() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('signup-screen').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    
+    // Update header with user data
+    if (currentUser) {
+        updateHeaderProfilePicture(currentUser.profile_picture_url, currentUser.username || currentUser.email.split('@')[0]);
+        document.getElementById('user-points').textContent = `⭐ ${currentUser.points || 0} pts`;
+    }
+}
+
+// Modern Admin Dashboard Functions
+let currentUsers = [];
+let selectedUser = null;
+let selectedAdminMedia = [];
+
+async function loadAdminData() {
+    try {
+        // Load users and stats
+        await Promise.all([
+            loadAdminUsers(),
+            loadAdminStats()
+        ]);
+    } catch (error) {
+        console.error('Error loading admin data:', error);
+        showNotification('Failed to load admin data', 'error');
+    }
+}
+
+async function loadAdminUsers() {
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            currentUsers = data.users || [];
+            renderUserGrid(currentUsers);
+            
+            // Setup admin search and filter event listeners after DOM is updated
+            setupAdminEventListeners();
+        } else {
+            throw new Error('Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading admin users:', error);
+        document.getElementById('admin-users-grid').innerHTML = `
+            <div class="col-span-full text-center py-8">
+                <p class="text-white/60">Failed to load users</p>
+                <button onclick="loadAdminUsers()" class="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+}
+
+async function loadAdminStats() {
+    try {
+        const [usersResponse, mediaResponse] = await Promise.all([
+            fetch('/api/admin/users', { headers: { 'x-session-id': sessionId } }),
+            fetch('/api/admin/media', { headers: { 'x-session-id': sessionId } })
+        ]);
+
+        if (usersResponse.ok) {
+            const userData = await usersResponse.json();
+            const totalUsers = userData.users?.length || 0;
+            const onlineUsers = userData.users?.filter(user => isUserOnline(user)).length || 0;
+            
+            document.getElementById('admin-total-users').textContent = totalUsers;
+            document.getElementById('admin-online-users').textContent = onlineUsers;
+        }
+
+        if (mediaResponse.ok) {
+            const mediaData = await mediaResponse.json();
+            const totalMedia = mediaData.media?.length || 0;
+            const flaggedMedia = mediaData.media?.filter(media => media.is_flagged).length || 0;
+            
+            document.getElementById('admin-total-media').textContent = totalMedia;
+            document.getElementById('admin-flagged-media').textContent = flaggedMedia;
+        }
+    } catch (error) {
+        console.error('Error loading admin stats:', error);
+    }
+}
+
+function renderUserGrid(users) {
+    const grid = document.getElementById('admin-users-grid');
+    
+    if (!users || users.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <i class="fas fa-users text-white/30 text-4xl mb-4"></i>
+                <p class="text-white/60">No users found</p>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = users.map(user => createUserCard(user)).join('');
+}
+
+function createUserCard(user) {
+    const isOnline = isUserOnline(user);
+    const statusColor = isOnline ? 'text-green-400' : 'text-gray-400';
+    const statusIcon = isOnline ? 'fas fa-circle' : 'far fa-circle';
+    const statusText = isOnline ? 'Online' : 'Offline';
+    
+    const displayName = user.username || user.email.split('@')[0];
+    const profilePic = user.profile_picture_url 
+        ? `<img src="${user.profile_picture_url}" alt="Profile" class="w-full h-full object-cover rounded-full">`
+        : `<i class="fas fa-user text-white text-lg"></i>`;
+
+    return `
+        <div class="glass-card p-4 cursor-pointer hover:bg-white/5 transition-all" onclick="openUserDetail('${user.id}')">
+            <div class="flex items-center space-x-3 mb-3">
+                <div class="relative">
+                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                        ${profilePic}
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-4 h-4 ${isOnline ? 'bg-green-500' : 'bg-gray-500'} rounded-full border-2 border-gray-900"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="text-white font-semibold truncate">${displayName}</h4>
+                    <p class="text-white/60 text-sm truncate">${user.email}</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between text-sm mb-2">
+                <span class="${statusColor}">
+                    <i class="${statusIcon} text-xs mr-1"></i>
+                    ${statusText}
+                </span>
+                <span class="text-white/70">
+                    ${user.points || 0} pts
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between mb-3">
+                <span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-purple-600 text-purple-100' : 'bg-blue-600 text-blue-100'} font-semibold">
+                    ${user.role === 'admin' ? '👑 ADMIN' : '👤 USER'}
+                </span>
+                <span class="text-xs text-white/50">
+                    ID: ${user.id}
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between text-xs text-white/50">
+                <span>${user.habits_count || 0} habits</span>
+                <span>${user.media_count || 0} files</span>
+            </div>
+        </div>
+    `;
+}
+
+function isUserOnline(user) {
+    // Simple online detection - you could enhance this with real-time data
+    // For now, consider users online if they've been active in the last 15 minutes
+    if (!user.updated_at) return false;
+    
+    const lastActivity = new Date(user.updated_at);
+    const now = new Date();
+    const diffMinutes = (now - lastActivity) / (1000 * 60);
+    
+    return diffMinutes < 15;
+}
+
+async function openUserDetail(userId) {
+    selectedUser = currentUsers.find(user => user.id === userId);
+    if (!selectedUser) return;
+
+    // Show modal
+    document.getElementById('user-detail-modal').classList.remove('hidden');
+    
+    // Populate user info
+    populateUserDetail(selectedUser);
+    
+    // Load user's media
+    await loadUserMedia(userId);
+}
+
+function populateUserDetail(user) {
+    const displayName = user.username || user.email.split('@')[0];
+    const isOnline = isUserOnline(user);
+    
+    // Update avatar
+    const avatar = document.getElementById('user-detail-avatar');
+    if (user.profile_picture_url) {
+        avatar.innerHTML = `<img src="${user.profile_picture_url}" alt="Profile" class="w-full h-full object-cover rounded-full">`;
+    } else {
+        avatar.innerHTML = `<i class="fas fa-user text-white text-2xl"></i>`;
+    }
+    
+    // Update info
+    document.getElementById('user-detail-name').textContent = displayName;
+    document.getElementById('user-detail-email').textContent = user.email;
+    document.getElementById('user-detail-points').textContent = user.points || 0;
+    document.getElementById('user-detail-habits').textContent = user.habits_count || 0;
+    document.getElementById('user-detail-media-count').textContent = user.media_count || 0;
+    
+    // Update status
+    const statusElement = document.getElementById('user-detail-status');
+    statusElement.innerHTML = `
+        <span class="px-2 py-1 ${isOnline ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'} text-xs rounded-full">
+            <i class="fas fa-circle mr-1"></i>${isOnline ? 'Online' : 'Offline'}
+        </span>
+    `;
+    
+    // Update joined date
+    if (user.created_at) {
+        const joinDate = new Date(user.created_at).toLocaleDateString();
+        document.getElementById('user-detail-joined').textContent = joinDate;
+    }
+    
+    // Update suspend/unsuspend button (handle missing column gracefully)
+    const toggleBtn = document.getElementById('toggle-user-btn');
+    if (toggleBtn) {
+        const isSuspended = user.is_suspended || false;
+        if (isSuspended) {
+            toggleBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Unsuspend Account';
+            toggleBtn.className = 'w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors';
+        } else {
+            toggleBtn.innerHTML = '<i class="fas fa-ban mr-2"></i>Suspend Account';
+            toggleBtn.className = 'w-full btn-secondary';
+        }
+    }
+    
+    // Load admin notes (handle missing column gracefully)
+    const notesTextarea = document.getElementById('user-admin-notes');
+    if (notesTextarea) {
+        notesTextarea.value = user.admin_notes || '';
+    }
+}
+
+async function loadUserMedia(userId) {
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/media`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            renderUserMedia(data.media || []);
+        } else {
+            throw new Error('Failed to load user media');
+        }
+    } catch (error) {
+        console.error('Error loading user media:', error);
+        document.getElementById('user-media-grid').innerHTML = `
+            <div class="col-span-full text-center py-8">
+                <p class="text-white/60">Failed to load media</p>
+            </div>
+        `;
+    }
+}
+
+function renderUserMedia(media) {
+    const grid = document.getElementById('user-media-grid');
+    const noMediaState = document.getElementById('no-media-state');
+    
+    // Store media data globally for the media viewer
+    window.currentMediaData = media;
+    
+    if (!media || media.length === 0) {
+        grid.classList.add('hidden');
+        noMediaState.classList.remove('hidden');
+        return;
+    }
+    
+    grid.classList.remove('hidden');
+    noMediaState.classList.add('hidden');
+    
+    grid.innerHTML = media.map(item => createMediaCard(item)).join('');
+}
+
+function createMediaCard(media) {
+    const isImage = media.media_type === 'image' || media.file_type?.startsWith('image/') || media.type === 'image';
+    const isVideo = media.media_type === 'video' || media.file_type?.startsWith('video/') || media.type === 'video';
+    const isFlagged = media.is_flagged;
+    const fileName = media.display_name || media.original_name || media.filename || 'Unknown file';
+    const fileSize = media.size_display || '';
+    
+    // Debug log to see what data we're getting
+    console.log('Creating media card for:', { 
+        id: media.id, 
+        fileName, 
+        mediaType: media.media_type, 
+        fileType: media.file_type,
+        url: media.url,
+        preview_url: media.preview_url 
+    });
+    
+    // Use preview_url if available, otherwise try url, otherwise show placeholder
+    const mediaUrl = media.preview_url || media.url;
+    
+    return `
+        <div class="relative group">
+            <div class="aspect-square bg-gray-800 rounded-lg overflow-hidden ${isFlagged ? 'ring-2 ring-red-500' : ''}">
+                ${isImage ? 
+                    mediaUrl ?
+                        `<img src="${mediaUrl}" alt="${fileName}" class="w-full h-full object-cover" 
+                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" 
+                              onload="console.log('✅ Image loaded:', '${fileName}');"
+                              title="${fileName} (${fileSize})">
+                         <div class="w-full h-full flex flex-col items-center justify-center text-center p-2" style="display:none;">
+                            <i class="fas fa-image text-white/50 text-2xl mb-2"></i>
+                            <span class="text-white/70 text-xs">${fileName}</span>
+                            <span class="text-gray-400 text-xs mt-1">${fileSize}</span>
+                            <span class="text-red-400 text-xs mt-1">Image load failed</span>
+                         </div>`
+                    :
+                        `<div class="w-full h-full flex flex-col items-center justify-center text-center p-2">
+                            <i class="fas fa-image text-white/50 text-2xl mb-2"></i>
+                            <span class="text-white/70 text-xs">${fileName}</span>
+                            <span class="text-gray-400 text-xs mt-1">${fileSize}</span>
+                            <span class="text-yellow-400 text-xs mt-1">No preview available</span>
+                         </div>`
+                 : isVideo ?
+                    `<div class="w-full h-full flex flex-col items-center justify-center text-center p-2">
+                        <i class="fas fa-play-circle text-white/50 text-3xl mb-2"></i>
+                        <span class="text-white/70 text-xs">${fileName}</span>
+                        <span class="text-gray-400 text-xs mt-1">${fileSize}</span>
+                        <span class="text-blue-400 text-xs mt-1">Video File</span>
+                     </div>`
+                 :
+                    `<div class="w-full h-full flex flex-col items-center justify-center text-center p-2">
+                        <i class="fas fa-file text-white/50 text-2xl mb-2"></i>
+                        <span class="text-white/70 text-xs">${fileName}</span>
+                        <span class="text-gray-400 text-xs mt-1">${fileSize}</span>
+                        <span class="text-gray-400 text-xs mt-1">${media.media_type || 'File'}</span>
+                    </div>`
+                }
+                
+                <!-- Overlay -->
+                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div class="flex space-x-2">
+                        <button onclick="viewMedia('${media.id}')" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full" title="View">
+                            <i class="fas fa-eye text-sm"></i>
+                        </button>
+                        <button onclick="toggleMediaFlag('${media.id}')" class="p-2 ${isFlagged ? 'bg-red-600 hover:bg-red-700' : 'bg-yellow-600 hover:bg-yellow-700'} text-white rounded-full" title="${isFlagged ? 'Unflag' : 'Flag'}">
+                            <i class="fas fa-flag text-sm"></i>
+                        </button>
+                        <button onclick="downloadMedia('${media.id}')" class="p-2 bg-green-600 hover:bg-green-700 text-white rounded-full" title="Download">
+                            <i class="fas fa-download text-sm"></i>
+                        </button>
+                        <button onclick="deleteMedia('${media.id}')" class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-full" title="Delete">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Selection checkbox -->
+                <div class="absolute top-2 left-2">
+                    <input type="checkbox" class="media-select" data-media-id="${media.id}" onchange="toggleMediaSelection('${media.id}')">
+                </div>
+                
+                ${isFlagged ? '<div class="absolute top-2 right-2 text-red-500"><i class="fas fa-flag text-sm"></i></div>' : ''}
+            </div>
+            
+            <div class="mt-2 text-xs text-white/70">
+                <div class="truncate" title="${fileName}">${fileName}</div>
+                <div class="text-white/50 mt-1">${media.media_type || 'progress'} • ${fileSize}</div>
+                <div class="text-white/40 text-xs">Uploaded: ${new Date(media.uploaded_at).toLocaleDateString()}</div>
+            </div>
+        </div>
+    `;
+}
+
+function closeUserDetailModal() {
+    document.getElementById('user-detail-modal').classList.add('hidden');
+    selectedUser = null;
+    selectedAdminMedia = [];
+}
+
+function refreshAdminData() {
+    showNotification('Refreshing admin data...', 'info');
+    loadAdminData();
+}
+
+// Media management functions
+async function viewMedia(mediaId) {
+    try {
+        showNotification('Opening media viewer...', 'info');
+        
+        // Find the media item in the current loaded data for metadata
+        let mediaItem = null;
+        if (window.currentMediaData) {
+            mediaItem = window.currentMediaData.find(item => item.id === mediaId);
+        }
+        
+        console.log('📸 Creating media viewer for:', mediaId, mediaItem);
+        
+        // Fetch the image with proper authentication headers and create blob URL
+        let mediaUrl = '';
+        try {
+            const response = await fetch(`/api/media/file/${mediaId}`, {
+                headers: { 'x-session-id': sessionId }
+            });
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                mediaUrl = URL.createObjectURL(blob);
+                console.log('📸 Created blob URL for image:', mediaUrl);
+            } else {
+                throw new Error(`Failed to load image: ${response.status}`);
+            }
+        } catch (fetchError) {
+            console.error('📸 Error fetching image:', fetchError);
+            mediaUrl = `/api/media/file/${mediaId}`; // Fallback to direct URL
+        }
+        
+        // Create media viewer modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 flex items-center justify-center';
+        modal.style.cssText = 'background: rgba(0, 0, 0, 0.9); z-index: 9999;';
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                // Clean up blob URL to prevent memory leaks
+                if (mediaUrl && mediaUrl.startsWith('blob:')) {
+                    URL.revokeObjectURL(mediaUrl);
+                }
+                document.body.removeChild(modal);
+            }
+        };
+        
+        modal.innerHTML = `
+            <div class="relative mx-4" style="max-width: 90vw; max-height: 90vh;">
+                <!-- Close button -->
+                <button onclick="
+                    const modal = this.closest('[data-modal]');
+                    const img = modal.querySelector('img');
+                    if (img && img.src.startsWith('blob:')) {
+                        URL.revokeObjectURL(img.src);
+                    }
+                    modal.remove();
+                " 
+                        class="absolute top-4 right-4 text-white rounded-full p-2"
+                        style="z-index: 10000; background: rgba(0, 0, 0, 0.7);">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                
+                <!-- Media content -->
+                <div class="bg-gray-800 rounded-lg overflow-hidden">
+                    <div class="flex items-center justify-center" style="min-height: 400px;">
+                        <img src="${mediaUrl}" 
+                             alt="${mediaItem?.display_name || 'Media'}" 
+                             class="object-contain"
+                             style="max-width: 100%; max-height: 70vh;"
+                             onerror="console.error('📸 Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                             onload="console.log('📸 Image loaded successfully in modal');">
+                        <div class="flex flex-col items-center justify-center p-8" style="display:none;">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>
+                            <p class="text-white text-lg">Failed to load media</p>
+                            <p class="text-gray-400">${mediaItem?.display_name || 'Unknown file'}</p>
+                            <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Reload Page</button>
+                        </div>
+                    </div>
+                    
+                    ${mediaItem ? `
+                        <div class="p-4 bg-gray-700">
+                            <h3 class="text-white font-semibold text-lg mb-2">${mediaItem.display_name}</h3>
+                            <div class="grid grid-cols-2 gap-4 text-sm text-gray-300">
+                                <div><strong>Type:</strong> ${mediaItem.media_type || 'Unknown'}</div>
+                                <div><strong>Size:</strong> ${mediaItem.size_display || 'Unknown'}</div>
+                                <div><strong>Uploaded:</strong> ${new Date(mediaItem.uploaded_at).toLocaleDateString()}</div>
+                                <div><strong>User:</strong> ${mediaItem.email || 'Unknown'}</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        // Add data attribute for easy identification and removal
+        modal.setAttribute('data-modal', 'media-viewer');
+        
+        // Add debugging
+        console.log('📸 Creating media viewer modal for:', mediaId);
+        console.log('📸 Media URL:', mediaUrl);
+        console.log('📸 Media Item:', mediaItem);
+        
+        document.body.appendChild(modal);
+        
+        // Add session ID header for authenticated image requests
+        if (sessionId) {
+            const img = modal.querySelector('img');
+            if (img) {
+                // For authenticated requests, we might need to handle this differently
+                console.log('📸 Image element created, session ID available:', !!sessionId);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error opening media viewer:', error);
+        showNotification('Failed to open media viewer', 'error');
+    }
+}
+
+async function toggleMediaFlag(mediaId) {
+    try {
+        const response = await fetch(`/api/admin/media/${mediaId}/flag`, {
+            method: 'POST',
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            showNotification('Media flag status updated', 'success');
+            // Reload user media
+            if (selectedUser) {
+                await loadUserMedia(selectedUser.id);
+            }
+        } else {
+            throw new Error('Failed to update flag status');
+        }
+    } catch (error) {
+        console.error('Error toggling media flag:', error);
+        showNotification('Failed to update flag status', 'error');
+    }
+}
+
+async function downloadMedia(mediaId) {
+    try {
+        const response = await fetch(`/api/admin/media/${mediaId}/download`, {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `media-${mediaId}`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } else {
+            throw new Error('Failed to download media');
+        }
+    } catch (error) {
+        console.error('Error downloading media:', error);
+        showNotification('Failed to download media', 'error');
+    }
+}
+
+async function deleteMedia(mediaId) {
+    if (!confirm('Are you sure you want to delete this media? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/media/${mediaId}`, {
+            method: 'DELETE',
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            showNotification('Media deleted successfully', 'success');
+            // Reload user media
+            if (selectedUser) {
+                await loadUserMedia(selectedUser.id);
+            }
+        } else {
+            throw new Error('Failed to delete media');
+        }
+    } catch (error) {
+        console.error('Error deleting media:', error);
+        showNotification('Failed to delete media', 'error');
+    }
+}
+
+function toggleMediaSelection(mediaId) {
+    const index = selectedAdminMedia.indexOf(mediaId);
+    if (index > -1) {
+        selectedAdminMedia.splice(index, 1);
+    } else {
+        selectedAdminMedia.push(mediaId);
+    }
+}
+
+function selectAllMedia() {
+    const checkboxes = document.querySelectorAll('.media-select');
+    const allSelected = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !allSelected;
+        const mediaId = checkbox.dataset.mediaId;
+        if (!allSelected && !selectedAdminMedia.includes(mediaId)) {
+            selectedAdminMedia.push(mediaId);
+        } else if (allSelected) {
+            const index = selectedAdminMedia.indexOf(mediaId);
+            if (index > -1) selectedAdminMedia.splice(index, 1);
+        }
+    });
+}
+
+// Missing Admin User Management Functions
+async function viewUserProfile() {
+    if (!selectedUser) {
+        showNotification('No user selected', 'error');
+        return;
+    }
+    
+    // Create a detailed profile view modal or redirect
+    showNotification(`Viewing full profile for ${selectedUser.username || selectedUser.email}`, 'info');
+    
+    // For now, we'll show detailed user info in a simple alert
+    // In a full implementation, this would open a comprehensive user profile view
+    const profileInfo = `
+        User Profile Details:
+        Name: ${selectedUser.username || 'Not Set'}
+        Email: ${selectedUser.email}
+        Status: ${selectedUser.is_suspended ? 'Suspended' : 'Active'}
+        Created: ${selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleString() : 'Unknown'}
+        Last Login: ${selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString() : 'Never'}
+        Total Points: ${selectedUser.total_points || 0}
+        Habit Count: ${selectedUser.habit_count || 0}
+        Media Count: ${selectedUser.media_count || 0}
+        Admin Notes: ${selectedUser.admin_notes || 'None'}
+    `;
+    
+    // Show in a better modal later, for now use alert
+    alert(profileInfo);
+}
+
+async function sendUserMessage() {
+    if (!selectedUser) {
+        showNotification('No user selected', 'error');
+        return;
+    }
+    
+    const message = prompt(`Send message to ${selectedUser.username || selectedUser.email}:`);
+    if (!message || message.trim() === '') {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/users/message', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId 
+            },
+            body: JSON.stringify({
+                userId: selectedUser.id,
+                message: message.trim()
+            })
+        });
+        
+        if (response.ok) {
+            showNotification('Message sent successfully', 'success');
+        } else {
+            throw new Error('Failed to send message');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showNotification('Failed to send message - feature not implemented yet', 'error');
+    }
+}
+
+async function resetUserPassword() {
+    if (!selectedUser) {
+        showNotification('No user selected', 'error');
+        return;
+    }
+    
+    if (!confirm(`Reset password for ${selectedUser.username || selectedUser.email}? They will receive an email with reset instructions.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/users/reset-password', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId 
+            },
+            body: JSON.stringify({
+                userId: selectedUser.id
+            })
+        });
+        
+        if (response.ok) {
+            showNotification('Password reset email sent', 'success');
+        } else {
+            throw new Error('Failed to reset password');
+        }
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        showNotification('Failed to reset password - feature not implemented yet', 'error');
+    }
+}
+
+async function toggleUserStatus() {
+    if (!selectedUser) {
+        showNotification('No user selected', 'error');
+        return;
+    }
+    
+    const action = selectedUser.is_suspended ? 'unsuspend' : 'suspend';
+    const confirmMsg = `${action.charAt(0).toUpperCase() + action.slice(1)} user ${selectedUser.username || selectedUser.email}?`;
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/users/${selectedUser.id}/toggle-status`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId 
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            selectedUser.is_suspended = data.suspended;
+            
+            // Update the button text
+            const toggleBtn = document.getElementById('toggle-user-btn');
+            if (toggleBtn) {
+                if (selectedUser.is_suspended) {
+                    toggleBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Unsuspend Account';
+                    toggleBtn.className = 'w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors';
+                } else {
+                    toggleBtn.innerHTML = '<i class="fas fa-ban mr-2"></i>Suspend Account';
+                    toggleBtn.className = 'w-full btn-secondary';
+                }
+            }
+            
+            // Update status display
+            populateUserDetail(selectedUser);
+            
+            showNotification(`User ${action}ed successfully`, 'success');
+            
+            // Refresh user grid
+            loadAdminUsers();
+        } else if (response.status === 501) {
+            // Feature not available due to missing database columns
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Feature requires database migration', 'error');
+        } else {
+            throw new Error(`Failed to ${action} user`);
+        }
+    } catch (error) {
+        console.error(`Error ${action}ing user:`, error);
+        showNotification(`Failed to ${action} user`, 'error');
+    }
+}
+
+async function confirmDeleteUser() {
+    if (!selectedUser) {
+        showNotification('No user selected', 'error');
+        return;
+    }
+    
+    const userName = selectedUser.username || selectedUser.email;
+    const confirmText = `DELETE ${userName.toUpperCase()}`;
+    const userInput = prompt(`⚠️ DANGER: This will permanently delete ALL user data including:\n\n• Profile and account\n• All habits and progress\n• All uploaded media\n• All achievement data\n• All social connections\n\nType "${confirmText}" to confirm deletion:`);
+    
+    if (userInput !== confirmText) {
+        showNotification('User deletion cancelled', 'info');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+            method: 'DELETE',
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            showNotification('User deleted successfully', 'success');
+            closeUserDetailModal();
+            loadAdminUsers();
+        } else {
+            const errorData = await response.json();
+            console.error('Delete user error:', errorData);
+            showNotification(errorData.error || 'Failed to delete user', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        showNotification('Failed to delete user', 'error');
+    }
+}
+
+async function saveUserNotes() {
+    if (!selectedUser) {
+        showNotification('No user selected', 'error');
+        return;
+    }
+    
+    const notesTextarea = document.getElementById('user-admin-notes');
+    const notes = notesTextarea.value.trim();
+    
+    try {
+        const response = await fetch(`/api/admin/users/${selectedUser.id}/notes`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId 
+            },
+            body: JSON.stringify({ notes })
+        });
+        
+        if (response.ok) {
+            selectedUser.admin_notes = notes;
+            showNotification('Admin notes saved successfully', 'success');
+        } else if (response.status === 501) {
+            // Feature not available due to missing database columns
+            const errorData = await response.json();
+            showNotification(errorData.error || 'Feature requires database migration', 'error');
+        } else {
+            throw new Error('Failed to save notes');
+        }
+    } catch (error) {
+        console.error('Error saving admin notes:', error);
+        showNotification('Failed to save notes - feature not implemented yet', 'error');
+    }
+}
+
+async function bulkDeleteMedia() {
+    if (selectedAdminMedia.length === 0) {
+        showNotification('No media selected', 'error');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete ${selectedAdminMedia.length} selected media files? This action cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        const deletePromises = selectedAdminMedia.map(mediaId => 
+            fetch(`/api/admin/media/${mediaId}`, {
+                method: 'DELETE',
+                headers: { 'x-session-id': sessionId }
+            })
+        );
+        
+        await Promise.all(deletePromises);
+        showNotification(`${selectedAdminMedia.length} media files deleted successfully`, 'success');
+        
+        selectedAdminMedia = [];
+        if (selectedUser) {
+            await loadUserMedia(selectedUser.id);
+        }
+    } catch (error) {
+        console.error('Error bulk deleting media:', error);
+        showNotification('Failed to delete some media files', 'error');
+    }
+}
+
+// Search and filter functions - Event listeners will be attached when admin section loads
+function setupAdminEventListeners() {
+    const searchInput = document.getElementById('admin-search-users');
+    const filterSelect = document.getElementById('admin-filter-users');
+    
+    if (searchInput) {
+        // Remove any existing listeners to prevent duplicates
+        searchInput.removeEventListener('input', filterUsers);
+        searchInput.addEventListener('input', filterUsers);
+    }
+    
+    if (filterSelect) {
+        // Remove any existing listeners to prevent duplicates
+        filterSelect.removeEventListener('change', filterUsers);
+        filterSelect.addEventListener('change', filterUsers);
+    }
+}
+
+function filterUsers() {
+    const searchTerm = document.getElementById('admin-search-users')?.value.toLowerCase() || '';
+    const filterType = document.getElementById('admin-filter-users')?.value || 'all';
+    
+    let filteredUsers = currentUsers.filter(user => {
+        const matchesSearch = !searchTerm || 
+            user.username?.toLowerCase().includes(searchTerm) ||
+            user.email.toLowerCase().includes(searchTerm);
+            
+        const matchesFilter = filterType === 'all' ||
+            (filterType === 'online' && isUserOnline(user)) ||
+            (filterType === 'offline' && !isUserOnline(user)) ||
+            (filterType === 'flagged' && user.is_flagged);
+            
+        return matchesSearch && matchesFilter;
+    });
+    
+    renderUserGrid(filteredUsers);
 }

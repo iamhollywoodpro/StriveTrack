@@ -23,6 +23,22 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('StriveTrack app initializing...');
     console.log('Initial sessionId from localStorage:', sessionId);
     
+    // CHECK FOR LOCAL TEST MODE
+    const urlParams = new URLSearchParams(window.location.search);
+    const localTestMode = localStorage.getItem('localTestMode') === 'true' || urlParams.has('localTest');
+    
+    if (localTestMode) {
+        console.log('🧪 LOCAL TEST MODE ACTIVATED');
+        const localTestUser = JSON.parse(localStorage.getItem('localTestUser') || '{}');
+        if (localTestUser.email) {
+            currentUser = localTestUser;
+            sessionId = 'local-test-session';
+            showDashboard();
+            setupEventListeners();
+            return;
+        }
+    }
+    
     // CRITICAL FIX: Always show login screen first, then validate session
     showLoginScreen();
     
@@ -337,6 +353,13 @@ async function validateSession() {
         if (response.ok) {
             const data = await response.json();
             currentUser = data.user;
+            
+            // CRITICAL FIX: Ensure points are properly loaded from server
+            if (currentUser && typeof currentUser.points !== 'number') {
+                currentUser.points = 0; // Initialize if missing
+            }
+            console.log('Session validated - User points:', currentUser.points);
+            
             showDashboard();
         } else {
             localStorage.removeItem('sessionId');
@@ -622,10 +645,42 @@ async function loadDashboardData() {
         loadMedia(),
         loadAchievements(),
         loadDailyChallenges(),
-        loadAdminData()
+        loadAdminData(),
+        syncUserPointsFromServer() // CRITICAL FIX: Sync points from server
     ]);
     
     updateDashboardStats();
+}
+
+// CRITICAL FIX: Function to sync user points from server
+async function syncUserPointsFromServer() {
+    try {
+        const response = await fetch('/api/user/profile', {
+            headers: { 'x-session-id': sessionId }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.user && typeof data.user.points === 'number') {
+                const serverPoints = data.user.points;
+                const currentPoints = currentUser.points || 0;
+                
+                // Update currentUser points from server
+                currentUser.points = serverPoints;
+                
+                // Update header display
+                const userPointsDisplay = document.getElementById('user-points');
+                if (userPointsDisplay) {
+                    userPointsDisplay.textContent = `⭐ ${serverPoints} pts`;
+                }
+                
+                console.log(`Points synced: ${currentPoints} -> ${serverPoints}`);
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to sync points from server:', error);
+        // Don't show error to user - this is not critical
+    }
 }
 
 // Habits functions
@@ -1326,13 +1381,33 @@ async function submitMediaUpload(event) {
                 const data = JSON.parse(xhr.responseText);
                 const mediaTypeText = isVideo ? '🎥 Video' : '📸 Image';
                 const mediaType = data.media_type || 'progress';
-                const pointsText = data.total_points ? `+${data.total_points} pts` : `+${data.points || 10} pts`;
+                const totalPointsEarned = data.total_points || data.points || 10;
+                const pointsText = `+${totalPointsEarned} pts`;
                 showNotification(`${mediaTypeText} (${mediaType.toUpperCase()}) uploaded successfully! (${pointsText})`, 'success');
+                
+                // CRITICAL FIX: Update currentUser points immediately
+                if (currentUser && totalPointsEarned > 0) {
+                    currentUser.points = (currentUser.points || 0) + totalPointsEarned;
+                    // Update header points display immediately
+                    const userPointsDisplay = document.getElementById('user-points');
+                    if (userPointsDisplay) {
+                        userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
+                    }
+                    console.log('Points updated after media upload:', currentUser.points);
+                }
                 
                 // Show pair bonus notification if applicable
                 if (data.pair_bonus && data.pair_bonus > 0) {
                     setTimeout(() => {
                         showNotification(`🎉 Before/After pair completed! Bonus +${data.pair_bonus} pts!`, 'success');
+                        // Update points for pair bonus too
+                        if (currentUser) {
+                            currentUser.points = (currentUser.points || 0) + data.pair_bonus;
+                            const userPointsDisplay = document.getElementById('user-points');
+                            if (userPointsDisplay) {
+                                userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
+                            }
+                        }
                     }, 1500);
                 }
                 
@@ -5610,55 +5685,55 @@ function generateEnhancedDailyChallenges() {
         0: [ // Sunday - 5 challenges
             { 
                 id: 'sunday_1', 
-                type: 'recovery', 
-                title: 'Rest Day Reflection', 
-                description: 'Complete a 10-minute meditation or stretching session', 
-                points: 15, 
-                icon: '🧘‍♂️',
-                color: 'purple',
+                type: 'planning', 
+                title: 'Week Ahead Goals', 
+                description: 'Create or update 3 specific goals for the upcoming week in StriveTrack', 
+                points: 30, 
+                icon: '🎯',
+                color: 'blue',
                 difficulty: 'Easy',
-                category: 'mindfulness'
+                category: 'goals'
             },
             { 
                 id: 'sunday_2', 
-                type: 'planning', 
-                title: 'Weekly Goal Setting', 
-                description: 'Set 3 fitness goals for the upcoming week', 
-                points: 20, 
-                icon: '📝',
-                color: 'blue',
+                type: 'progress', 
+                title: 'Weekly Progress Photo', 
+                description: 'Upload a progress photo to document this week in your StriveTrack journey', 
+                points: 35, 
+                icon: '📸',
+                color: 'green',
                 difficulty: 'Easy',
-                category: 'planning'
+                category: 'media'
             },
             { 
                 id: 'sunday_3', 
-                type: 'nutrition', 
-                title: 'Meal Prep Master', 
-                description: 'Prepare healthy meals or snacks for the next 3 days', 
+                type: 'habit', 
+                title: 'Habit Review & Setup', 
+                description: 'Review your habits and create or adjust one for better consistency', 
                 points: 25, 
-                icon: '🥗',
-                color: 'green',
-                difficulty: 'Medium',
-                category: 'nutrition'
+                icon: '✅',
+                color: 'purple',
+                difficulty: 'Easy',
+                category: 'habits'
             },
             { 
                 id: 'sunday_4', 
-                type: 'learning', 
-                title: 'Fitness Education', 
-                description: 'Read an article or watch a video about fitness/health', 
-                points: 15, 
-                icon: '📚',
+                type: 'reflection', 
+                title: 'Weekly Reflection', 
+                description: 'Complete at least 2 habits today and reflect on your week', 
+                points: 20, 
+                icon: '🤔',
                 color: 'indigo',
                 difficulty: 'Easy',
-                category: 'education'
+                category: 'mindfulness'
             },
             { 
                 id: 'sunday_5', 
                 type: 'social', 
                 title: 'Community Connect', 
-                description: 'Share your weekly fitness journey with friends or community', 
-                points: 20, 
-                icon: '🌟',
+                description: 'Add a friend or engage with community members in StriveTrack', 
+                points: 25, 
+                icon: '👥',
                 color: 'yellow',
                 difficulty: 'Easy',
                 category: 'social'
@@ -5667,104 +5742,104 @@ function generateEnhancedDailyChallenges() {
         1: [ // Monday - 5 challenges
             { 
                 id: 'monday_1', 
-                type: 'motivation', 
+                type: 'habit', 
                 title: 'Monday Momentum', 
-                description: 'Complete your morning workout or habit within 2 hours of waking', 
-                points: 25, 
+                description: 'Complete your most important habit within the first 2 hours of waking', 
+                points: 30, 
                 icon: '🚀',
                 color: 'orange',
                 difficulty: 'Medium',
-                category: 'workout'
+                category: 'habits'
             },
             { 
                 id: 'monday_2', 
-                type: 'hydration', 
-                title: 'Hydration Hero', 
-                description: 'Drink 8 glasses of water throughout the day', 
-                points: 15, 
-                icon: '💧',
+                type: 'progress', 
+                title: 'Fresh Start Photo', 
+                description: 'Take a "before workout" photo to capture Monday motivation', 
+                points: 25, 
+                icon: '📱',
                 color: 'blue',
                 difficulty: 'Easy',
-                category: 'health'
+                category: 'media'
             },
             { 
                 id: 'monday_3', 
-                type: 'steps', 
-                title: 'Step Champion', 
-                description: 'Take 10,000 steps or walk for 45 minutes', 
-                points: 30, 
-                icon: '👟',
-                color: 'green',
+                type: 'workout', 
+                title: 'Week Starter Workout', 
+                description: 'Complete a 20+ minute workout to start the week strong', 
+                points: 40, 
+                icon: '💪',
+                color: 'red',
                 difficulty: 'Medium',
-                category: 'cardio'
+                category: 'fitness'
             },
             { 
                 id: 'monday_4', 
-                type: 'energy', 
-                title: 'Energy Booster', 
-                description: 'Do 10 jumping jacks every hour for 4 hours', 
+                type: 'goals', 
+                title: 'Goal Progress Update', 
+                description: 'Update progress on at least one of your active goals in StriveTrack', 
                 points: 20, 
-                icon: '⚡',
-                color: 'yellow',
-                difficulty: 'Medium',
-                category: 'activity'
+                icon: '📊',
+                color: 'green',
+                difficulty: 'Easy',
+                category: 'goals'
             },
             { 
                 id: 'monday_5', 
-                type: 'mindset', 
-                title: 'Positive Monday', 
-                description: 'Write down 3 things you\'re excited about this week', 
-                points: 10, 
-                icon: '😊',
-                color: 'pink',
-                difficulty: 'Easy',
-                category: 'mindfulness'
+                type: 'achievement', 
+                title: 'Achievement Hunter', 
+                description: 'Work toward unlocking a new achievement today', 
+                points: 35, 
+                icon: '🏆',
+                color: 'gold',
+                difficulty: 'Medium',
+                category: 'achievement'
             }
         ],
         2: [ // Tuesday - 5 challenges
             { 
                 id: 'tuesday_1', 
-                type: 'strength', 
-                title: 'Strength Builder', 
-                description: 'Complete 25 push-ups (can be modified or spread throughout day)', 
-                points: 30, 
-                icon: '💪',
-                color: 'red',
-                difficulty: 'Medium',
-                category: 'strength'
-            },
-            { 
-                id: 'tuesday_2', 
-                type: 'nutrition', 
-                title: 'Protein Power', 
-                description: 'Include protein in every meal and snack today', 
-                points: 25, 
-                icon: '🍗',
-                color: 'orange',
-                difficulty: 'Medium',
-                category: 'nutrition'
-            },
-            { 
-                id: 'tuesday_3', 
                 type: 'habit', 
-                title: 'Consistency King', 
-                description: 'Complete 3 different healthy habits before noon', 
-                points: 35, 
+                title: 'Consistency Champion', 
+                description: 'Complete ALL your scheduled habits for today', 
+                points: 50, 
                 icon: '🔥',
-                color: 'purple',
+                color: 'red',
                 difficulty: 'Hard',
                 category: 'habits'
             },
             { 
-                id: 'tuesday_4', 
-                type: 'core', 
-                title: 'Core Crusher', 
-                description: 'Hold a plank for 2 minutes total (can be broken into sets)', 
-                points: 25, 
-                icon: '🎯',
-                color: 'blue',
+                id: 'tuesday_2', 
+                type: 'media', 
+                title: 'Workout Documentation', 
+                description: 'Upload a photo or video of your workout in action', 
+                points: 30, 
+                icon: '🎥',
+                color: 'purple',
+                difficulty: 'Easy',
+                category: 'media'
+            },
+            { 
+                id: 'tuesday_3', 
+                type: 'strength', 
+                title: 'Strength Builder', 
+                description: 'Focus on strength training for 25+ minutes', 
+                points: 35, 
+                icon: '🏋️‍♂️',
+                color: 'orange',
                 difficulty: 'Medium',
-                category: 'strength'
+                category: 'fitness'
+            },
+            { 
+                id: 'tuesday_4', 
+                type: 'challenge', 
+                title: 'Create Personal Challenge', 
+                description: 'Set up a custom challenge for yourself in StriveTrack', 
+                points: 25, 
+                icon: '⚡',
+                color: 'yellow',
+                difficulty: 'Easy',
+                category: 'challenge'
             },
             { 
                 id: 'tuesday_5', 
@@ -5781,89 +5856,89 @@ function generateEnhancedDailyChallenges() {
         3: [ // Wednesday - 5 challenges
             { 
                 id: 'wednesday_1', 
-                type: 'cardio', 
-                title: 'Cardio Crusher', 
-                description: 'Complete 30 minutes of cardio (any activity that raises heart rate)', 
-                points: 35, 
-                icon: '🏃‍♂️',
-                color: 'blue',
+                type: 'streak', 
+                title: 'Midweek Streak Power', 
+                description: 'Maintain your longest habit streak - complete key habits today', 
+                points: 40, 
+                icon: '🎯',
+                color: 'purple',
                 difficulty: 'Medium',
-                category: 'cardio'
+                category: 'habits'
             },
             { 
                 id: 'wednesday_2', 
-                type: 'mindfulness', 
-                title: 'Midweek Mindfulness', 
-                description: 'Practice 10 minutes of deep breathing or meditation', 
-                points: 15, 
-                icon: '🌸',
-                color: 'pink',
-                difficulty: 'Easy',
-                category: 'mindfulness'
+                type: 'transformation', 
+                title: 'Transformation Video', 
+                description: 'Create a short video showing your fitness progress or workout', 
+                points: 45, 
+                icon: '🎬',
+                color: 'red',
+                difficulty: 'Medium',
+                category: 'media'
             },
             { 
                 id: 'wednesday_3', 
-                type: 'social', 
-                title: 'Workout Buddy', 
-                description: 'Exercise with a friend or share your progress online', 
-                points: 25, 
-                icon: '👫',
-                color: 'green',
+                type: 'cardio', 
+                title: 'Cardio Crusher', 
+                description: 'Complete 30+ minutes of cardio activity', 
+                points: 35, 
+                icon: '❤️',
+                color: 'red',
                 difficulty: 'Medium',
-                category: 'social'
+                category: 'fitness'
             },
             { 
                 id: 'wednesday_4', 
-                type: 'flexibility', 
-                title: 'Flexibility Focus', 
-                description: 'Complete a 20-minute stretching routine or yoga session', 
-                points: 25, 
-                icon: '🤸‍♀️',
-                color: 'purple',
+                type: 'social', 
+                title: 'Motivate Others', 
+                description: 'Encourage friends or community members in their fitness journey', 
+                points: 20, 
+                icon: '💬',
+                color: 'blue',
                 difficulty: 'Easy',
-                category: 'flexibility'
+                category: 'social'
             },
             { 
                 id: 'wednesday_5', 
-                type: 'water', 
-                title: 'Hydration Plus', 
-                description: 'Drink water with every meal and add natural flavoring', 
-                points: 15, 
-                icon: '🥤',
-                color: 'cyan',
-                difficulty: 'Easy',
-                category: 'health'
+                type: 'goal', 
+                title: 'Milestone Marker', 
+                description: 'Work toward completing one of your goals this week', 
+                points: 30, 
+                icon: '🏁',
+                color: 'green',
+                difficulty: 'Medium',
+                category: 'goals'
             }
         ],
         4: [ // Thursday - 5 challenges
             { 
                 id: 'thursday_1', 
-                type: 'strength', 
-                title: 'Technique Thursday', 
-                description: 'Focus on perfect form - quality over quantity in your workout', 
+                type: 'quality', 
+                title: 'Perfect Form Focus', 
+                description: 'Focus on perfect form and technique in your workout', 
                 points: 30, 
                 icon: '⚖️',
                 color: 'orange',
                 difficulty: 'Medium',
-                category: 'strength'
+                category: 'fitness'
             },
             { 
                 id: 'thursday_2', 
                 type: 'nutrition', 
-                title: 'Rainbow Plate', 
-                description: 'Eat foods of 5 different colors throughout the day', 
+                title: 'Nutrition Champion', 
+                description: 'Plan and prepare a healthy meal, document with photo', 
                 points: 25, 
-                icon: '🌈',
-                color: 'rainbow',
-                difficulty: 'Medium',
+                icon: '🥗',
+                color: 'green',
+                difficulty: 'Easy',
                 category: 'nutrition'
             },
             { 
                 id: 'thursday_3', 
-                type: 'challenge', 
-                title: 'Personal Best', 
-                description: 'Try to beat a personal fitness record or achieve new goal', 
-                points: 40, 
+                type: 'achievement', 
+                title: 'Personal Best Attempt', 
+                description: 'Try to achieve a personal best or unlock a new achievement', 
+                points: 50, 
                 icon: '🏆',
                 color: 'gold',
                 difficulty: 'Hard',
@@ -5871,23 +5946,23 @@ function generateEnhancedDailyChallenges() {
             },
             { 
                 id: 'thursday_4', 
-                type: 'balance', 
-                title: 'Balance Challenge', 
-                description: 'Stand on one foot for 30 seconds, 3 times each leg', 
-                points: 20, 
-                icon: '⚖️',
-                color: 'teal',
-                difficulty: 'Easy',
-                category: 'balance'
+                type: 'habit', 
+                title: 'Habit Mastery', 
+                description: 'Complete your most challenging habit with extra focus', 
+                points: 35, 
+                icon: '🎓',
+                color: 'purple',
+                difficulty: 'Medium',
+                category: 'habits'
             },
             { 
                 id: 'thursday_5', 
-                type: 'social', 
-                title: 'Fitness Friend', 
-                description: 'Workout with a friend, join a class, or encourage someone else', 
+                type: 'inspiration', 
+                title: 'Inspire Others', 
+                description: 'Share your workout or progress to inspire others', 
                 points: 25, 
-                icon: '👥',
-                color: 'green',
+                icon: '✨',
+                color: 'yellow',
                 difficulty: 'Easy',
                 category: 'social'
             }
@@ -5895,115 +5970,115 @@ function generateEnhancedDailyChallenges() {
         5: [ // Friday - 5 challenges
             { 
                 id: 'friday_1', 
-                type: 'endurance', 
-                title: 'Friday Finisher', 
-                description: 'Complete your most challenging workout of the week', 
+                type: 'completion', 
+                title: 'Week Strong Finish', 
+                description: 'Complete all your planned habits and workouts for today', 
                 points: 45, 
-                icon: '🏆',
-                color: 'gold',
+                icon: '🏁',
+                color: 'red',
                 difficulty: 'Hard',
-                category: 'workout'
+                category: 'habits'
             },
             { 
                 id: 'friday_2', 
-                type: 'recovery', 
-                title: 'Recovery Prep', 
-                description: 'Spend 15 minutes on self-care: stretching, massage, or bath', 
-                points: 20, 
-                icon: '🛀',
-                color: 'blue',
+                type: 'celebration', 
+                title: 'Progress Celebration', 
+                description: 'Upload a photo celebrating this week\'s fitness wins', 
+                points: 30, 
+                icon: '🎉',
+                color: 'rainbow',
                 difficulty: 'Easy',
-                category: 'recovery'
+                category: 'media'
             },
             { 
                 id: 'friday_3', 
                 type: 'planning', 
                 title: 'Weekend Warrior Prep', 
-                description: 'Plan 2 active weekend activities or workouts', 
-                points: 20, 
+                description: 'Plan active weekend activities and set goals for next week', 
+                points: 25, 
                 icon: '📅',
-                color: 'green',
+                color: 'blue',
                 difficulty: 'Easy',
                 category: 'planning'
             },
             { 
                 id: 'friday_4', 
-                type: 'celebration', 
-                title: 'Week Winner', 
-                description: 'Celebrate your weekly achievements - treat yourself healthy!', 
-                points: 15, 
-                icon: '🎉',
-                color: 'rainbow',
+                type: 'reflection', 
+                title: 'Weekly Wins Review', 
+                description: 'Reflect on your achievements and progress this week', 
+                points: 20, 
+                icon: '📝',
+                color: 'purple',
                 difficulty: 'Easy',
-                category: 'mindset'
+                category: 'reflection'
             },
             { 
                 id: 'friday_5', 
-                type: 'energy', 
-                title: 'Power Hour', 
-                description: 'Do high-energy exercises for 1 minute every 15 minutes (4x total)', 
-                points: 30, 
-                icon: '⚡',
-                color: 'yellow',
+                type: 'goal', 
+                title: 'Goal Completion Push', 
+                description: 'Make significant progress toward completing a goal', 
+                points: 40, 
+                icon: '🎯',
+                color: 'green',
                 difficulty: 'Medium',
-                category: 'activity'
+                category: 'goals'
             }
         ],
         6: [ // Saturday - 5 challenges
             { 
                 id: 'saturday_1', 
                 type: 'adventure', 
-                title: 'Adventure Seeker', 
-                description: 'Try a completely new outdoor activity, sport, or fitness class', 
+                title: 'Weekend Adventure', 
+                description: 'Try a new workout style or outdoor activity', 
                 points: 40, 
                 icon: '🏔️',
                 color: 'green',
                 difficulty: 'Medium',
-                category: 'adventure'
+                category: 'fitness'
             },
             { 
                 id: 'saturday_2', 
-                type: 'strength', 
-                title: 'Weekend Warrior', 
-                description: 'Complete a full-body strength workout with extra intensity', 
-                points: 40, 
-                icon: '⚔️',
-                color: 'red',
-                difficulty: 'Hard',
-                category: 'strength'
+                type: 'media', 
+                title: 'Adventure Documentation', 
+                description: 'Capture your weekend fitness adventure with photos/videos', 
+                points: 35, 
+                icon: '📸',
+                color: 'blue',
+                difficulty: 'Easy',
+                category: 'media'
             },
             { 
                 id: 'saturday_3', 
-                type: 'fun', 
-                title: 'Active Fun', 
-                description: 'Play a sport, dance, or do active games with others for 30+ minutes', 
-                points: 35, 
-                icon: '🎮',
-                color: 'purple',
+                type: 'social', 
+                title: 'Fitness Friend Challenge', 
+                description: 'Workout with friends or invite someone to join your fitness journey', 
+                points: 30, 
+                icon: '👥',
+                color: 'yellow',
                 difficulty: 'Medium',
                 category: 'social'
             },
             { 
                 id: 'saturday_4', 
-                type: 'nature', 
-                title: 'Nature Therapy', 
-                description: 'Spend 45+ minutes exercising or relaxing in nature', 
-                points: 25, 
-                icon: '🌳',
-                color: 'green',
-                difficulty: 'Easy',
-                category: 'outdoor'
-            },
-            { 
-                id: 'saturday_5', 
-                type: 'creative', 
+                type: 'creativity', 
                 title: 'Creative Movement', 
-                description: 'Try dance, martial arts, or creative movement for 20+ minutes', 
+                description: 'Try dance, martial arts, or any creative physical activity', 
                 points: 30, 
                 icon: '💃',
                 color: 'pink',
                 difficulty: 'Medium',
                 category: 'creative'
+            },
+            { 
+                id: 'saturday_5', 
+                type: 'habit', 
+                title: 'Weekend Consistency', 
+                description: 'Maintain your habits even on weekend - complete 2+ habits', 
+                points: 25, 
+                icon: '⚔️',
+                color: 'orange',
+                difficulty: 'Medium',
+                category: 'habits'
             }
         ]
     };
@@ -7503,7 +7578,7 @@ function createUserCard(user) {
                 </div>
             </div>
             
-            <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center justify-between text-sm mb-2">
                 <span class="${statusColor}">
                     <i class="${statusIcon} text-xs mr-1"></i>
                     ${statusText}
@@ -7513,7 +7588,16 @@ function createUserCard(user) {
                 </span>
             </div>
             
-            <div class="mt-3 flex items-center justify-between text-xs text-white/50">
+            <div class="flex items-center justify-between mb-3">
+                <span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-purple-600 text-purple-100' : 'bg-blue-600 text-blue-100'} font-semibold">
+                    ${user.role === 'admin' ? '👑 ADMIN' : '👤 USER'}
+                </span>
+                <span class="text-xs text-white/50">
+                    ID: ${user.id}
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between text-xs text-white/50">
                 <span>${user.habits_count || 0} habits</span>
                 <span>${user.media_count || 0} files</span>
             </div>

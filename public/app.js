@@ -13,6 +13,223 @@ window.testDeleteHabit = function() {
 let sessionId = localStorage.getItem('sessionId');
 let currentUser = null;
 
+// ===== LOCALSTORAGE-BASED SYSTEM FOR STATIC DEPLOYMENT =====
+// This replaces all API calls with localStorage operations for static hosting
+
+// Initialize localStorage data structures
+function initializeLocalStorage() {
+    if (!localStorage.getItem('strivetrack_habits')) {
+        localStorage.setItem('strivetrack_habits', JSON.stringify([]));
+    }
+    if (!localStorage.getItem('strivetrack_completions')) {
+        localStorage.setItem('strivetrack_completions', JSON.stringify({}));
+    }
+    if (!localStorage.getItem('strivetrack_achievements')) {
+        localStorage.setItem('strivetrack_achievements', JSON.stringify([]));
+    }
+    if (!localStorage.getItem('strivetrack_media')) {
+        localStorage.setItem('strivetrack_media', JSON.stringify([]));
+    }
+}
+
+// Habit Management Functions
+function getLocalHabits() {
+    return JSON.parse(localStorage.getItem('strivetrack_habits') || '[]');
+}
+
+function saveLocalHabits(habits) {
+    localStorage.setItem('strivetrack_habits', JSON.stringify(habits));
+}
+
+function getLocalCompletions() {
+    return JSON.parse(localStorage.getItem('strivetrack_completions') || '{}');
+}
+
+function saveLocalCompletions(completions) {
+    localStorage.setItem('strivetrack_completions', JSON.stringify(completions));
+}
+
+function createLocalHabit(habitData) {
+    const habits = getLocalHabits();
+    const newHabit = {
+        id: Date.now().toString(),
+        name: habitData.name,
+        description: habitData.description,
+        category: habitData.category || 'general',
+        weekly_target: habitData.weekly_target || 7,
+        created_at: new Date().toISOString(),
+        current_streak: 0,
+        total_completions: 0,
+        completed_days: []
+    };
+    
+    habits.push(newHabit);
+    saveLocalHabits(habits);
+    return newHabit;
+}
+
+function deleteLocalHabit(habitId) {
+    const habits = getLocalHabits();
+    const updatedHabits = habits.filter(h => h.id !== habitId);
+    saveLocalHabits(updatedHabits);
+    
+    // Also remove completions for this habit
+    const completions = getLocalCompletions();
+    delete completions[habitId];
+    saveLocalCompletions(completions);
+}
+
+function toggleLocalHabitCompletion(habitId, date, dayOfWeek) {
+    const habits = getLocalHabits();
+    const completions = getLocalCompletions();
+    
+    if (!completions[habitId]) {
+        completions[habitId] = {};
+    }
+    
+    const wasCompleted = completions[habitId][date] || false;
+    const isNowCompleted = !wasCompleted;
+    
+    if (isNowCompleted) {
+        completions[habitId][date] = true;
+    } else {
+        delete completions[habitId][date];
+    }
+    
+    // Update habit stats
+    const habit = habits.find(h => h.id === habitId);
+    if (habit) {
+        // Recalculate total completions
+        habit.total_completions = Object.keys(completions[habitId] || {}).length;
+        
+        // Calculate current streak
+        habit.current_streak = calculateStreak(completions[habitId] || {});
+        
+        // Update points
+        const pointsAwarded = isNowCompleted ? 10 : -10;
+        if (!currentUser.points) currentUser.points = 0;
+        currentUser.points = Math.max(0, currentUser.points + pointsAwarded);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
+    
+    saveLocalHabits(habits);
+    saveLocalCompletions(completions);
+    
+    return {
+        completed: isNowCompleted,
+        points: isNowCompleted ? 10 : -10,
+        habit: habit
+    };
+}
+
+function calculateStreak(habitCompletions) {
+    const dates = Object.keys(habitCompletions).sort().reverse();
+    if (dates.length === 0) return 0;
+    
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < dates.length; i++) {
+        const date = new Date(dates[i]);
+        date.setHours(0, 0, 0, 0);
+        
+        const daysDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff === i) {
+            streak++;
+        } else {
+            break;
+        }
+    }
+    
+    return streak;
+}
+
+function getLocalHabitsWithCompletions() {
+    const habits = getLocalHabits();
+    const completions = getLocalCompletions();
+    
+    return habits.map(habit => {
+        const habitCompletions = completions[habit.id] || {};
+        
+        // Calculate this week's completions
+        const today = new Date();
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        
+        const weeklyCompletedDays = {};
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            if (habitCompletions[dateStr]) {
+                weeklyCompletedDays[dateStr] = true;
+            }
+        }
+        
+        return {
+            ...habit,
+            completed_days: weeklyCompletedDays,
+            completedDays: weeklyCompletedDays
+        };
+    });
+}
+
+// Achievement System
+function checkLocalAchievements(type, data = {}) {
+    const achievements = JSON.parse(localStorage.getItem('strivetrack_achievements') || '[]');
+    const habits = getLocalHabits();
+    const completions = getLocalCompletions();
+    
+    const newAchievements = [];
+    
+    // First habit achievement
+    if (type === 'habit_creation' && habits.length === 1) {
+        const achievement = {
+            id: Date.now().toString(),
+            title: '🎯 First Step',
+            description: 'Created your first habit!',
+            points: 50,
+            earned_at: new Date().toISOString()
+        };
+        achievements.push(achievement);
+        newAchievements.push(achievement);
+        currentUser.points = (currentUser.points || 0) + achievement.points;
+    }
+    
+    // Streak achievements
+    if (type === 'habit_completion') {
+        const totalCompletions = Object.values(completions).reduce((acc, habit) => 
+            acc + Object.keys(habit).length, 0);
+        
+        if (totalCompletions === 7 && !achievements.find(a => a.title.includes('Week Warrior'))) {
+            const achievement = {
+                id: Date.now().toString(),
+                title: '🔥 Week Warrior',
+                description: 'Completed 7 habit days!',
+                points: 100,
+                earned_at: new Date().toISOString()
+            };
+            achievements.push(achievement);
+            newAchievements.push(achievement);
+            currentUser.points = (currentUser.points || 0) + achievement.points;
+        }
+    }
+    
+    localStorage.setItem('strivetrack_achievements', JSON.stringify(achievements));
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    // Show achievement notifications
+    newAchievements.forEach(achievement => {
+        setTimeout(() => {
+            showNotification(`🏆 Achievement Unlocked: ${achievement.title}! +${achievement.points} pts`, 'success');
+        }, 500);
+    });
+    
+    return newAchievements;
+}
+
 // Compare mode functionality
 let compareMode = false;
 let selectedMedia = [];
@@ -396,7 +613,7 @@ async function handleLogin(event) {
             
             // Check for achievements on login (onboarding, daily login, etc.)
             setTimeout(() => {
-                checkAndAwardAchievements('login');
+                checkLocalAchievements('login');
             }, 1000);
         } else {
             showNotification(data.error || 'Login failed', 'error');
@@ -562,6 +779,9 @@ function showDashboard() {
         }
     }
     
+    // Initialize localStorage system for static deployment
+    initializeLocalStorage();
+    
     // Load initial data
     console.log('Loading dashboard data...');
     loadDashboardData();
@@ -572,14 +792,15 @@ function showDashboard() {
 
 async function loadDashboardWeeklyProgress() {
     try {
-        const response = await fetch('/api/habits/weekly', {
-            headers: { 'x-session-id': sessionId }
-        });
+        console.log('📊 Loading dashboard weekly progress from localStorage...');
         
-        if (response.ok) {
-            const data = await response.json();
-            displayDashboardWeeklyProgress(data.habits);
-        }
+        // Initialize localStorage if needed
+        initializeLocalStorage();
+        
+        // Get habits with their completion data
+        const habits = getLocalHabitsWithCompletions();
+        displayDashboardWeeklyProgress(habits);
+        
     } catch (error) {
         console.error('Load dashboard weekly progress error:', error);
     }
@@ -685,37 +906,21 @@ async function syncUserPointsFromServer() {
 
 // Habits functions
 async function loadHabits() {
-    console.log('🔄 Loading habits with sessionId:', sessionId);
-    
-    if (!sessionId) {
-        console.log('❌ No sessionId available, cannot load habits');
-        return;
-    }
+    console.log('📚 Loading habits from localStorage...');
     
     try {
-        console.log('📡 Fetching from /api/habits/weekly...');
-        const response = await fetch('/api/habits/weekly', {
-            headers: { 'x-session-id': sessionId }
-        });
+        // Initialize localStorage if needed
+        initializeLocalStorage();
         
-        console.log('📡 Response status:', response.status);
+        // Get habits with their completion data
+        const habits = getLocalHabitsWithCompletions();
+        console.log('🎯 Loaded habits:', habits.length, 'habits');
         
-        if (response.ok) {
-            const data = await response.json();
-            console.log('📊 Raw API response:', data);
-            
-            const habits = data.habits || [];
-            console.log('🎯 Extracted habits:', habits.length, 'habits');
-            
-            if (habits.length > 0) {
-                console.log('📋 First habit sample:', habits[0]);
-            }
-            
-            displayHabits(habits);
-        } else {
-            const errorText = await response.text();
-            console.error('❌ Habits API failed:', response.status, errorText);
+        if (habits.length > 0) {
+            console.log('📋 First habit sample:', habits[0]);
         }
+        
+        displayHabits(habits);
     } catch (error) {
         console.error('💥 Load habits error:', error);
     }
@@ -1075,56 +1280,38 @@ function createSimpleHabitElement(habit) {
 
 async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
     try {
-        const response = await fetch('/api/habits/weekly', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId 
-            },
-            body: JSON.stringify({ habitId, date, dayOfWeek })
-        });
+        console.log('🔄 Toggling habit completion locally:', { habitId, date, dayOfWeek });
         
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Update localStorage points based on server response
-            if (data.points) {
-                // CRITICAL FIX: Use currentUser instead of undefined userProgress
-                if (!currentUser.points) currentUser.points = 0;
-                currentUser.points += data.points;
-                
-                // Save to localStorage for persistence
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                // Update header display immediately
-                const userPointsDisplay = document.getElementById('user-points');
-                if (userPointsDisplay) {
-                    userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
-                }
-            }
-            
-            // Show appropriate notification with points feedback
-            if (data.completed) {
-                showNotification(`Day completed! +${data.points} pts`, 'success');
-            } else {
-                showNotification(`Day unmarked! ${data.points} pts`, 'error');
-            }
-            
-            // Update points display immediately
-            updatePointsDisplay();
-            
-            loadHabits(); // Refresh the habits view (now uses weekly calendar)
-            loadDashboardWeeklyProgress(); // Refresh dashboard progress
-            updateDashboardStats();
-            
-            // Check for achievements after habit completion
-            if (data.completed) {
-                checkAndAwardAchievements('habit_completion');
-            }
-        } else {
-            const errorData = await response.json();
-            showNotification(errorData.error || 'Failed to toggle completion', 'error');
+        // Use localStorage-based toggle
+        const result = toggleLocalHabitCompletion(habitId, date, dayOfWeek);
+        
+        // Update header points display immediately
+        const userPointsDisplay = document.getElementById('user-points');
+        if (userPointsDisplay) {
+            userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
         }
+        
+        // Show appropriate notification with points feedback
+        const pointsText = result.points > 0 ? `+${result.points}` : result.points;
+        if (result.completed) {
+            showNotification(`Day completed! ${pointsText} pts`, 'success');
+        } else {
+            showNotification(`Day unmarked! ${pointsText} pts`, 'error');
+        }
+        
+        // Update points display immediately
+        updatePointsDisplay();
+        
+        // Refresh the views
+        loadHabits(); 
+        loadDashboardWeeklyProgress(); 
+        updateDashboardStats();
+        
+        // Check for achievements after habit completion
+        if (result.completed) {
+            checkLocalAchievements('habit_completion', { habitId, habit: result.habit });
+        }
+        
     } catch (error) {
         console.error('Toggle weekly habit error:', error);
         showNotification('Failed to toggle completion', 'error');
@@ -1151,7 +1338,7 @@ async function toggleHabitCompletion(habitId) {
                 document.getElementById('user-points').textContent = `⭐ ${currentUser.points} pts`;
                 
                 // Check for achievements after habit completion
-                checkAndAwardAchievements('habit_completion');
+                checkLocalAchievements('habit_completion');
             } else {
                 showNotification('Habit uncompleted', 'info');
             }
@@ -1269,34 +1456,27 @@ async function createHabit(event) {
     const displayName = `${emoji} ${name}`;
     
     try {
-        const response = await fetch('/api/habits', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId
-            },
-            body: JSON.stringify({ 
-                name: displayName, 
-                description: description || `${category} habit - ${difficulty} difficulty`,
-                weekly_target: weeklyTarget
-            })
+        console.log('🎯 Creating habit locally:', displayName);
+        
+        // Create habit using localStorage
+        const newHabit = createLocalHabit({
+            name: displayName, 
+            description: description || `${category} habit - ${difficulty} difficulty`,
+            category: category,
+            weekly_target: weeklyTarget
         });
         
-        if (response.ok) {
-            showNotification('Habit created successfully! 🎯', 'success');
-            closeModal('create-habit-modal');
-            document.getElementById('create-habit-form').reset();
-            updateEmojiPreview(); // Reset preview
-            loadHabits();
-            loadDashboardWeeklyProgress(); // Refresh dashboard progress bars
-            updateDashboardStats();
-            
-            // Check for achievements after habit creation
-            checkAndAwardAchievements('habit_creation');
-        } else {
-            const data = await response.json();
-            showNotification(data.error || 'Failed to create habit', 'error');
-        }
+        showNotification('Habit created successfully! 🎯', 'success');
+        closeModal('create-habit-modal');
+        document.getElementById('create-habit-form').reset();
+        updateEmojiPreview(); // Reset preview
+        loadHabits();
+        loadDashboardWeeklyProgress(); 
+        updateDashboardStats();
+        
+        // Check for achievements after habit creation
+        checkLocalAchievements('habit_creation', { habit: newHabit });
+        
     } catch (error) {
         console.error('Create habit error:', error);
         showNotification('Failed to create habit', 'error');
@@ -1306,20 +1486,16 @@ async function createHabit(event) {
 async function deleteHabit(habitId) {
     showConfirmationModal('Are you sure you want to delete this habit? This action cannot be undone.', async function() {
         try {
-            const response = await fetch(`/api/habits/${habitId}`, {
-                method: 'DELETE',
-                headers: { 'x-session-id': sessionId }
-            });
+            console.log('🗑️ Deleting habit locally:', habitId);
             
-            if (response.ok) {
-                showNotification('Habit deleted successfully', 'success');
-                loadHabits();
-                loadDashboardWeeklyProgress();
-                updateDashboardStats();
-            } else {
-                const data = await response.json();
-                showNotification(data.error || 'Failed to delete habit', 'error');
-            }
+            // Delete habit using localStorage
+            deleteLocalHabit(habitId);
+            
+            showNotification('Habit deleted successfully', 'success');
+            loadHabits();
+            loadDashboardWeeklyProgress();
+            updateDashboardStats();
+            
         } catch (error) {
             console.error('Delete habit error:', error);
             showNotification('Failed to delete habit', 'error');
@@ -6527,25 +6703,26 @@ function closeAchievementModal() {
 }
 
 function updatePointsDisplay() {
-    loadUserProgress();
+    // Ensure currentUser has points
+    if (!currentUser.points) currentUser.points = 0;
     
     // Update main points display in achievements section
     const totalPointsDisplay = document.getElementById('total-points-display');
     if (totalPointsDisplay) {
-        totalPointsDisplay.textContent = userProgress.points.toLocaleString();
+        totalPointsDisplay.textContent = currentUser.points.toLocaleString();
         totalPointsDisplay.classList.add('points-display');
     }
     
     // CRITICAL FIX: Update header points display
     const headerPointsDisplay = document.getElementById('user-points');
     if (headerPointsDisplay) {
-        headerPointsDisplay.textContent = `⭐ ${userProgress.points.toLocaleString()} pts`;
+        headerPointsDisplay.textContent = `⭐ ${currentUser.points.toLocaleString()} pts`;
     }
     
     // Update other points displays
     const pointsElements = document.querySelectorAll('.points-display, [data-points]');
     pointsElements.forEach(el => {
-        el.textContent = `${userProgress.points.toLocaleString()} pts`;
+        el.textContent = `${currentUser.points.toLocaleString()} pts`;
     });
     
     // Update welcome text with username
@@ -6556,7 +6733,7 @@ function updatePointsDisplay() {
     }
     
     // Debug logging
-    console.log('Points updated:', userProgress.points, 'for user:', currentUser?.email);
+    console.log('Points updated:', currentUser.points, 'for user:', currentUser?.email);
 }
 
 // Weekly Challenges
@@ -7335,30 +7512,30 @@ async function handleProfilePicture(input) {
         
         showNotification('Uploading profile picture...', 'info');
         
-        const response = await fetch('/api/profile/picture', {
-            method: 'POST',
-            headers: {
-                'x-session-id': sessionId
-            },
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification('Profile picture updated successfully! 📷', 'success');
-            updateProfilePictureDisplay(data.profilePictureUrl);
-            if (profileData) {
-                profileData.profile_picture_url = data.profilePictureUrl;
-            }
-            // Update header profile picture
+        // Convert image to base64 for localStorage storage
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Image = e.target.result;
+            
+            // Save to localStorage and update currentUser
             if (currentUser) {
-                currentUser.profile_picture_url = data.profilePictureUrl;
-                updateHeaderProfilePicture(data.profilePictureUrl, currentUser.username || currentUser.email.split('@')[0]);
+                currentUser.profile_picture_url = base64Image;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                showNotification('Profile picture updated successfully! 📷', 'success');
+                updateProfilePictureDisplay(base64Image);
+                
+                // Update header profile picture
+                const username = currentUser.username || currentUser.email.split('@')[0];
+                updateHeaderProfilePicture(base64Image, username);
             }
-        } else {
-            showNotification(data.error || 'Failed to upload profile picture', 'error');
-        }
+        };
+        
+        reader.onerror = function() {
+            showNotification('Failed to process profile picture', 'error');
+        };
+        
+        reader.readAsDataURL(file);
     } catch (error) {
         console.error('Profile picture upload error:', error);
         showNotification('Failed to upload profile picture', 'error');

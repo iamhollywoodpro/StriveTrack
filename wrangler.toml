@@ -13,7 +13,7 @@ bucket_name = "strivetrack-media"
 
 [vars]
 ADMIN_EMAIL = "iamhollywoodpro@protonmail.com"
-ADMIN_PASSWORD = "password123"
+ADMIN_PASSWORD = "iampassword@1981"
 ENVIRONMENT = "production"
 
 [env.preview]
@@ -29,7 +29,7 @@ bucket_name = "strivetrack-media"
 
 [env.preview.vars]
 ADMIN_EMAIL = "iamhollywoodpro@protonmail.com"
-ADMIN_PASSWORD = "password123"
+ADMIN_PASSWORD = "iampassword@1981"
 ENVIRONMENT = "preview"
 
 [env.production]
@@ -45,5 +45,5 @@ bucket_name = "strivetrack-media"
 
 [env.production.vars]
 ADMIN_EMAIL = "iamhollywoodpro@protonmail.com"
-ADMIN_PASSWORD = "password123"
+ADMIN_PASSWORD = "iampassword@1981"
 ENVIRONMENT = "production"

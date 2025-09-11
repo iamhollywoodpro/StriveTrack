@@ -61,25 +61,29 @@ async function syncUserPointsFromServer() {
         
         if (response.ok) {
             const data = await response.json();
-            if (data.user && currentUser) {
+            const serverUser = data.user || data; // Handle different response structures
+            
+            if (serverUser && currentUser) {
                 // Update points from server (authoritative)
-                if (data.user.points !== undefined) {
-                    currentUser.points = data.user.points;
+                if (serverUser.points !== undefined) {
+                    currentUser.points = serverUser.points;
                 }
                 
                 // Update profile info
-                if (data.user.username) {
-                    currentUser.username = data.user.username;
+                if (serverUser.username) {
+                    currentUser.username = serverUser.username;
                 }
                 
-                if (data.user.profile_picture_url) {
-                    currentUser.profile_picture_url = data.user.profile_picture_url;
+                if (serverUser.profile_picture_url) {
+                    currentUser.profile_picture_url = serverUser.profile_picture_url;
                 }
                 
                 // Save updated user data
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                console.log('✅ User data synced from server');
+                console.log('✅ User data synced from server:', serverUser.points, 'points');
             }
+        } else {
+            console.log('❌ Profile API response not OK:', response.status);
         }
     } catch (error) {
         console.log('❌ Failed to sync user data from server:', error);

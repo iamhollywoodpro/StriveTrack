@@ -1089,8 +1089,18 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
             
             // Update localStorage points based on server response
             if (data.points) {
-                userProgress.points += data.points;
-                saveUserProgress();
+                // CRITICAL FIX: Use currentUser instead of undefined userProgress
+                if (!currentUser.points) currentUser.points = 0;
+                currentUser.points += data.points;
+                
+                // Save to localStorage for persistence
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update header display immediately
+                const userPointsDisplay = document.getElementById('user-points');
+                if (userPointsDisplay) {
+                    userPointsDisplay.textContent = `⭐ ${currentUser.points} pts`;
+                }
             }
             
             // Show appropriate notification with points feedback
@@ -7424,27 +7434,82 @@ async function deleteAccount() {
     }
 }
 
-// Header Profile Picture Management
+// CRITICAL FIX: Enhanced Header Profile Picture Management with error handling
 function updateHeaderProfilePicture(profilePictureUrl, username) {
-    const headerProfilePic = document.getElementById('header-profile-pic');
-    const welcomeText = document.getElementById('welcome-text');
+    console.log('🖼️ Updating header profile picture:', profilePictureUrl);
     
-    if (headerProfilePic) {
-        if (profilePictureUrl) {
-            headerProfilePic.innerHTML = `
-                <img src="${profilePictureUrl}" alt="Profile" class="w-full h-full object-cover rounded-full">
-            `;
+    const profilePictureElement = document.getElementById('header-profile-pic');
+    const usernameElement = document.getElementById('welcome-text');
+    
+    // Update username display
+    if (usernameElement) {
+        usernameElement.textContent = `Welcome, ${username || 'User'}`;
+    }
+    
+    // Handle profile picture
+    if (profilePictureElement) {
+        if (profilePictureUrl && profilePictureUrl.trim()) {
+            // Create a new image to test loading
+            const testImg = new Image();
+            
+            testImg.onload = function() {
+                // Image loaded successfully
+                profilePictureElement.innerHTML = `
+                    <img src="${profilePictureUrl}" alt="Profile" class="w-full h-full object-cover rounded-full">
+                `;
+                console.log('✅ Profile picture loaded successfully');
+            };
+            
+            testImg.onerror = function() {
+                // Image failed to load - use attractive fallback
+                console.log('❌ Profile picture failed to load, using fallback');
+                setProfilePictureFallback(profilePictureElement, username);
+            };
+            
+            // Start loading the image
+            testImg.src = profilePictureUrl;
         } else {
-            headerProfilePic.innerHTML = `
-                <i class="fas fa-user text-white text-sm"></i>
-            `;
+            // No URL provided - use attractive fallback
+            console.log('📷 No profile picture URL, using fallback');
+            setProfilePictureFallback(profilePictureElement, username);
         }
     }
+}
+
+// Helper function for attractive profile picture fallback
+function setProfilePictureFallback(element, username) {
+    // Create attractive gradient avatar with initials
+    const initials = username ? username.charAt(0).toUpperCase() : 'U';
+    const colors = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4'];
+    const colorIndex = (username || 'U').charCodeAt(0) % colors.length;
+    const bgColor = colors[colorIndex];
     
-    // Update welcome text with username
-    if (welcomeText && username) {
-        welcomeText.textContent = `Welcome, ${username}`;
-    }
+    // Create canvas for gradient avatar
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    
+    // Create gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 100, 100);
+    gradient.addColorStop(0, bgColor);
+    gradient.addColorStop(1, bgColor + '80');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 100, 100);
+    
+    // Add initials
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 40px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, 50, 50);
+    
+    // Convert to data URL and set as image source
+    const dataUrl = canvas.toDataURL();
+    element.innerHTML = `
+        <img src="${dataUrl}" alt="Profile" class="w-full h-full object-cover rounded-full">
+    `;
 }
 
 // Enhanced show app function to load user profile data

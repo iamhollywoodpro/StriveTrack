@@ -1,6 +1,0 @@
-2025-09-07 22:30:29,131 INFO RPC interface 'supervisor' initialized
-2025-09-07 22:30:29,131 CRIT Server 'unix_http_server' running without any HTTP authentication checking
-2025-09-07 22:30:29,134 INFO daemonizing the supervisord process
-2025-09-07 22:30:29,135 INFO supervisord started with pid 422041
-2025-09-07 22:30:30,139 INFO spawned: 'strivetrack-dev' with pid 422043
-2025-09-07 22:30:31,140 INFO success: strivetrack-dev entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)

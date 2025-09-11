@@ -72,11 +72,38 @@ export async function onRequestPost(context) {
             });
         }
         
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
+        // Validate file type - Expanded support for mobile device formats
+        const allowedTypes = [
+            // Image formats
+            'image/jpeg',
+            'image/jpg', 
+            'image/png',
+            'image/gif',
+            'image/webp',           // Modern web format, widely supported
+            'image/heic',           // iOS/Apple devices native format
+            'image/heif',           // iOS/Apple devices native format
+            'image/bmp',            // Basic bitmap format
+            'image/tiff',           // High quality format
+            'image/svg+xml',        // Vector graphics
+            // Video formats
+            'video/mp4',
+            'video/quicktime',      // .mov files
+            'video/avi',            // Windows default
+            'video/x-msvideo',      // Alternative AVI MIME type
+            'video/wmv',            // Windows Media Video
+            'video/x-ms-wmv',       // Alternative WMV MIME type
+            'video/webm',           // Modern web video format
+            'video/ogg',            // Open source video format
+            'video/3gpp',           // 3GP format (mobile)
+            'video/3gpp2',          // 3G2 format (mobile)
+            'video/x-flv',          // Flash Video
+            'video/mkv',            // Matroska Video
+            'video/x-matroska'      // Alternative MKV MIME type
+        ];
+        
         if (!allowedTypes.includes(file.type)) {
             return new Response(JSON.stringify({ 
-                error: 'Invalid file type. Only images and videos are allowed.' 
+                error: `Invalid file type: ${file.type}. Supported formats: Images (JPEG, PNG, GIF, WEBP, HEIC, BMP, TIFF, SVG) and Videos (MP4, MOV, AVI, WMV, WEBM, OGG, 3GP, FLV, MKV)` 
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }

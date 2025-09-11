@@ -110,14 +110,19 @@ export async function onRequestPost(context) {
         `).bind(habitId, date).first();
         
         if (existing) {
-            // Remove completion (toggle off)
+            // Remove completion (toggle off) and deduct points
             await env.DB.prepare(`
                 DELETE FROM weekly_habit_completions WHERE id = ?
             `).bind(existing.id).run();
             
+            // Deduct points for removing completion (anti-cheat penalty)
+            await env.DB.prepare('UPDATE users SET points = points - 5 WHERE id = ?')
+                .bind(user.id).run();
+            
             return new Response(JSON.stringify({
                 message: 'Completion removed',
-                completed: false
+                completed: false,
+                points: -5
             }), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' }
@@ -134,13 +139,13 @@ export async function onRequestPost(context) {
             `).bind(completionId, habitId, user.id, date, dayOfWeek, weekStart).run();
             
             // Award points for completion
-            await env.DB.prepare('UPDATE users SET points = points + 5 WHERE id = ?')
+            await env.DB.prepare('UPDATE users SET points = points + 10 WHERE id = ?')
                 .bind(user.id).run();
             
             return new Response(JSON.stringify({
                 message: 'Completion added',
                 completed: true,
-                points: 5
+                points: 10
             }), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' }

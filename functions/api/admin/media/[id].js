@@ -24,10 +24,11 @@ function isAdmin(user, env) {
     return user && user.role === 'admin' && user.email === 'iamhollywoodpro@protonmail.com';
 }
 
-// GET - List all user media (admin only)
-export async function onRequestGet(context) {
-    const { request, env } = context;
+// DELETE - Delete media file (admin only)
+export async function onRequestDelete(context) {
+    const { request, env, params } = context;
     const sessionId = request.headers.get('x-session-id');
+    const mediaId = params.id;
     
     try {
         const user = await getUserFromSession(sessionId, env);
@@ -39,33 +40,38 @@ export async function onRequestGet(context) {
             });
         }
 
-        try {
-            const media = await env.DB.prepare(`
-                SELECT 
-                    m.*,
-                    u.email as userEmail,
-                    u.username
-                FROM media_uploads m
-                JOIN users u ON m.user_id = u.id
-                ORDER BY m.uploaded_at DESC
-            `).all();
-            
-            return new Response(JSON.stringify({ media: media.results || [] }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (dbError) {
-            // If media_uploads table doesn't exist, return empty array
-            console.log('Media table query error:', dbError);
-            return new Response(JSON.stringify({ media: [] }), {
+        // Check if media exists
+        const media = await env.DB.prepare(
+            "SELECT * FROM media_uploads WHERE id = ?"
+        ).bind(mediaId).first();
+
+        if (!media) {
+            return new Response(JSON.stringify({ error: 'Media not found' }), {
+                status: 404,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
+        // Delete from R2 storage if exists
+        try {
+            if (env.MEDIA_BUCKET && media.file_key) {
+                await env.MEDIA_BUCKET.delete(media.file_key);
+            }
+        } catch (r2Error) {
+            console.error('R2 deletion error:', r2Error);
+            // Continue with database deletion even if R2 fails
+        }
 
+        // Delete from database
+        await env.DB.prepare("DELETE FROM media_uploads WHERE id = ?").bind(mediaId).run();
+
+        return new Response(JSON.stringify({ message: 'Media deleted successfully' }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
 
     } catch (error) {
-        console.error('Admin get media error:', error);
-        return new Response(JSON.stringify({ error: 'Failed to fetch media' }), {
+        console.error('Admin delete media error:', error);
+        return new Response(JSON.stringify({ error: 'Failed to delete media' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });

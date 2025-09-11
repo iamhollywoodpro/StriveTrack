@@ -1,5 +1,5 @@
 // Registration endpoint for StriveTrack
-import { getUserByEmail, createUser } from '../../utils/database.js';
+import { getUserByEmail, getUserByUsername, createUser } from '../../utils/database.js';
 import { createSession } from '../../utils/auth.js';
 
 export async function onRequestPost(context) {
@@ -7,11 +7,29 @@ export async function onRequestPost(context) {
     
     try {
         const body = await request.json();
-        const { email, password } = body;
+        const { username, email, password, confirmPassword } = body;
         
         if (!email || !password) {
             return new Response(JSON.stringify({ 
                 error: 'Email and password are required' 
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (username && username.trim().length < 3) {
+            return new Response(JSON.stringify({ 
+                error: 'Username must be at least 3 characters long' 
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (confirmPassword && password !== confirmPassword) {
+            return new Response(JSON.stringify({ 
+                error: 'Passwords do not match' 
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
@@ -39,7 +57,7 @@ export async function onRequestPost(context) {
             });
         }
         
-        // Check if user already exists
+        // Check if email already exists
         const existingUser = await getUserByEmail(email, env);
         if (existingUser) {
             return new Response(JSON.stringify({ 
@@ -49,9 +67,26 @@ export async function onRequestPost(context) {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
+
+        // Check if username already exists (if provided)
+        if (username && username.trim()) {
+            const existingUsername = await getUserByUsername(username.trim(), env);
+            if (existingUsername) {
+                return new Response(JSON.stringify({ 
+                    error: 'Username already taken' 
+                }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+        }
         
         // Create new user
-        const user = await createUser({ email, password }, env);
+        const userData = { email, password };
+        if (username && username.trim()) {
+            userData.username = username.trim();
+        }
+        const user = await createUser(userData, env);
         
         // Create session for automatic login
         const sessionId = await createSession(user.id, env);
@@ -62,7 +97,9 @@ export async function onRequestPost(context) {
             sessionId,
             user: {
                 id: user.id,
+                username: user.username,
                 email: user.email,
+                profile_picture_url: user.profile_picture_url,
                 role: user.role,
                 points: user.points
             }

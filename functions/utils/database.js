@@ -5,6 +5,11 @@ export async function getUserByEmail(email, env) {
         .bind(email).first();
 }
 
+export async function getUserByUsername(username, env) {
+    return await env.DB.prepare('SELECT * FROM users WHERE username = ?')
+        .bind(username).first();
+}
+
 export async function getUserById(id, env) {
     return await env.DB.prepare('SELECT * FROM users WHERE id = ?')
         .bind(id).first();
@@ -21,9 +26,9 @@ export async function createUser(userData, env) {
     const role = userData.email === env.ADMIN_EMAIL ? 'admin' : 'user';
     
     await env.DB.prepare(`
-        INSERT INTO users (id, email, password_hash, role, points)
-        VALUES (?, ?, ?, ?, 0)
-    `).bind(userId, userData.email, hashedPassword, role).run();
+        INSERT INTO users (id, username, email, password_hash, role, points)
+        VALUES (?, ?, ?, ?, ?, 0)
+    `).bind(userId, userData.username || null, userData.email, hashedPassword, role).run();
     
     return await getUserById(userId, env);
 }

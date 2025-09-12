@@ -1059,39 +1059,36 @@ function createMediaCard(item) {
     console.log('📸 Creating media card for:', item.name, 'URL exists:', !!item.url, 'Is image:', isImage);
     
     return `
-        <div class="media-item" data-media-id="${item.id}" data-media-type="${item.type}">
-            <!-- Action buttons at top of media item -->
-            <div class="media-actions-top flex justify-end gap-1 p-2 absolute top-0 right-0 z-10">
-                <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-600/90 hover:bg-blue-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="View Fullscreen">
-                    <i class="fas fa-expand text-sm"></i>
-                </button>
-                ${isInCompareMode ? `
-                    <button onclick="event.stopPropagation(); selectForComparison('${item.id}')" class="bg-purple-600/90 hover:bg-purple-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="Select for Comparison">
-                        <i class="fas fa-check text-sm"></i>
-                    </button>
-                ` : `
-                    <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-600/90 hover:bg-purple-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="Compare Photos">
-                        <i class="fas fa-plus text-sm"></i>
-                    </button>
-                `}
-                <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-600/90 hover:bg-red-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="Delete Media">
-                    <i class="fas fa-trash text-sm"></i>
-                </button>
-            </div>
-            
-            <div class="media-preview relative" style="height: 200px; ${isImage ? 'cursor: zoom-in;' : ''}" onclick="handleMediaClick('${item.id}', event)">
-                ${item.url && isImage ? 
-                    `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover rounded-t-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                     <div class="w-full h-full flex items-center justify-center text-white/40 text-4xl" style="display: none;">🖼️</div>` :
-                    `<div class="w-full h-full flex items-center justify-center text-white/40 text-4xl bg-white/5 rounded-t-lg">${isImage ? '🖼️' : '🎥'}</div>`
-                }
-                
-                <div class="media-type-badge ${item.type} absolute bottom-2 left-2">
+        <div class="media-item relative bg-white/5 border border-white/10 rounded-lg overflow-hidden" data-media-id="${item.id}" data-media-type="${item.type}">
+            <!-- Action buttons bar at top -->
+            <div class="media-actions-bar flex justify-between items-center p-2 bg-black/20 backdrop-blur-sm">
+                <div class="media-type-badge-small ${typeColors[item.type]}">
                     ${typeIcons[item.type]} ${item.type.toUpperCase()}
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded-md transition-all duration-200" title="View Fullscreen">
+                        <i class="fas fa-expand text-xs"></i>
+                    </button>
+                    <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-500 hover:bg-purple-600 text-white p-1.5 rounded-md transition-all duration-200" title="Compare Photos">
+                        <i class="fas fa-plus text-xs"></i>
+                    </button>
+                    <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-md transition-all duration-200" title="Delete Media">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
                 </div>
             </div>
             
-            <div class="media-info p-3">
+            <!-- Media preview area -->
+            <div class="media-preview relative" style="height: 180px; cursor: zoom-in;" onclick="handleMediaClick('${item.id}', event)">
+                ${item.url && isImage ? 
+                    `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     <div class="w-full h-full flex items-center justify-center text-white/40 text-4xl bg-white/5" style="display: none;">🖼️</div>` :
+                    `<div class="w-full h-full flex items-center justify-center text-white/40 text-4xl bg-white/5">${isImage ? '🖼️' : '🎥'}</div>`
+                }
+            </div>
+            
+            <!-- Media info -->
+            <div class="media-info p-3 bg-white/5">
                 <div class="media-date text-xs text-white/60 mb-1">${uploadDate}</div>
                 <div class="media-description text-sm text-white font-medium truncate">
                     ${item.name}
@@ -1107,7 +1104,7 @@ function createMediaCard(item) {
 // **HANDLE MEDIA CLICK**
 function handleMediaClick(mediaId, event) {
     // If not clicking on action buttons, show fullscreen
-    if (!event.target.closest('.media-actions-top')) {
+    if (!event.target.closest('.media-actions-bar') && !event.target.closest('button')) {
         showFullscreenImage(mediaId);
     }
 }

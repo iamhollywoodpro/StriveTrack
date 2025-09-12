@@ -3019,7 +3019,7 @@ function updateGoalStats(goals) {
 function showCreateGoalModal() {
     console.log('🎯 Opening create goal modal');
     
-    // Use the existing HTML modal instead of creating a new one
+    // Use the existing HTML modal
     const modal = document.getElementById('create-goal-modal');
     if (modal) {
         modal.classList.remove('hidden');
@@ -3034,88 +3034,9 @@ function showCreateGoalModal() {
         }
         
         console.log('✅ Goal modal opened using existing HTML modal');
-        return;
-    }
-    
-    // Fallback: Create goal creation modal
-    const modal = document.createElement('div');
-    modal.id = 'create-goal-modal';
-    modal.className = 'modal';
-    modal.innerHTML = `
-        <div class="modal-content max-w-lg mx-auto">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-white">🎯 Create New Goal</h2>
-                <button onclick="closeModal('create-goal-modal')" class="text-white/70 hover:text-white">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
-            <form id="goal-form" class="space-y-4">
-                <div>
-                    <label class="block text-white/90 text-sm font-medium mb-2">Goal Name</label>
-                    <input type="text" id="goal-name" class="input-field" placeholder="e.g., Lose 15 pounds" required>
-                </div>
-                
-                <div>
-                    <label class="block text-white/90 text-sm font-medium mb-2">Description</label>
-                    <textarea id="goal-description" class="input-field" rows="3" placeholder="Describe your goal and how you plan to achieve it"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-white/90 text-sm font-medium mb-2">Category</label>
-                    <select id="goal-category" class="input-field">
-                        <option value="fitness">Fitness</option>
-                        <option value="weight">Weight</option>
-                        <option value="strength">Strength</option>
-                        <option value="endurance">Endurance</option>
-                        <option value="habit">Habit</option>
-                    </select>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-white/90 text-sm font-medium mb-2">Target Value</label>
-                        <input type="number" id="goal-target" class="input-field" placeholder="15" required>
-                    </div>
-                    <div>
-                        <label class="block text-white/90 text-sm font-medium mb-2">Unit</label>
-                        <input type="text" id="goal-unit" class="input-field" placeholder="lbs" required>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-white/90 text-sm font-medium mb-2">Target Date</label>
-                    <input type="date" id="goal-due-date" class="input-field">
-                </div>
-                
-                <div class="flex gap-3 mt-6">
-                    <button type="submit" class="btn-primary flex-1">
-                        <i class="fas fa-plus mr-2"></i>
-                        Create Goal
-                    </button>
-                    <button type="button" onclick="closeModal('create-goal-modal')" class="btn-secondary">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    modal.classList.remove('hidden');
-    
-    // Set up form handler
-    const form = document.getElementById('goal-form');
-    if (form) {
-        form.addEventListener('submit', handleGoalForm);
-    }
-    
-    // Set default date to 3 months from now
-    const dueDateInput = document.getElementById('goal-due-date');
-    if (dueDateInput) {
-        const futureDate = new Date();
-        futureDate.setMonth(futureDate.getMonth() + 3);
-        dueDateInput.value = futureDate.toISOString().split('T')[0];
+    } else {
+        console.log('❌ Goal modal not found in HTML');
+        showNotification('Error: Goal modal not found', 'error');
     }
 }
 
@@ -3327,7 +3248,7 @@ function calculateNutritionTotals(entries) {
 function showNutritionModal() {
     console.log('🍎 Opening nutrition modal');
     
-    // Use the existing HTML modal instead of creating a new one
+    // Use the existing HTML modal
     const modal = document.getElementById('nutrition-modal');
     if (modal) {
         modal.classList.remove('hidden');
@@ -3351,10 +3272,10 @@ function showNutritionModal() {
         }
         
         console.log('✅ Nutrition modal opened using existing HTML modal');
-        return;
+    } else {
+        console.log('❌ Nutrition modal not found in HTML');
+        showNotification('Error: Nutrition modal not found', 'error');
     }
-    
-    // Fallback: Create nutrition entry modal
     const modal = document.createElement('div');
     modal.id = 'nutrition-modal';
     modal.className = 'modal';

@@ -487,12 +487,18 @@ function handleMediaUpload() {
 // **UTILITY FUNCTIONS**
 
 // Simple navigation
-function showTab(tabId) {
-    console.log('🔄 Switching to tab:', tabId);
+function showTab(sectionName) {
+    console.log('🔄 Switching to section:', sectionName);
     
     // Hide all content sections
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.add('hidden');
+    const sections = ['dashboard-section', 'habits-section', 'progress-section', 'nutrition-section', 
+                     'goals-section', 'achievements-section', 'social-section', 'coming-soon-section', 'admin-section'];
+    
+    sections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.classList.add('hidden');
+        }
     });
     
     // Remove active class from all nav tabs
@@ -500,28 +506,55 @@ function showTab(tabId) {
         tab.classList.remove('active');
     });
     
-    // Show target section
-    const targetSection = document.getElementById(tabId);
+    // Show target section (add -section suffix)
+    const targetSectionId = sectionName + '-section';
+    const targetSection = document.getElementById(targetSectionId);
     if (targetSection) {
         targetSection.classList.remove('hidden');
+        console.log('✅ Showing section:', targetSectionId);
+    } else {
+        console.log('❌ Section not found:', targetSectionId);
     }
     
     // Add active class to clicked tab
-    const activeTab = document.querySelector(`[onclick*="${tabId}"]`);
+    const activeTab = document.querySelector(`[data-section="${sectionName}"]`);
     if (activeTab) {
         activeTab.classList.add('active');
     }
     
-    // Load content based on tab
-    switch(tabId) {
+    // Show admin tab if admin user
+    if (currentUser && currentUser.role === 'admin') {
+        const adminTab = document.getElementById('admin-tab');
+        if (adminTab) {
+            adminTab.classList.remove('hidden');
+        }
+    }
+    
+    // Load content based on section
+    switch(sectionName) {
         case 'dashboard':
             loadDashboard();
             break;
         case 'habits':
             loadHabits();
             break;
-        case 'progress-gallery':
+        case 'progress':
             loadProgressGallery();
+            break;
+        case 'achievements':
+            loadAchievements();
+            break;
+        case 'admin':
+            loadAdminDashboard();
+            break;
+        case 'goals':
+            loadGoals();
+            break;
+        case 'nutrition':
+            loadNutrition();
+            break;
+        case 'social':
+            loadSocialHub();
             break;
     }
 }
@@ -700,6 +733,15 @@ function showDashboard() {
         welcomeText.textContent = `Welcome back, ${currentUser.name}!`;
     }
     
+    // Show admin tab if admin
+    if (currentUser && currentUser.role === 'admin') {
+        const adminTab = document.getElementById('admin-tab');
+        if (adminTab) {
+            adminTab.classList.remove('hidden');
+            console.log('✅ Admin tab shown for:', currentUser.email);
+        }
+    }
+    
     // Load dashboard content
     showTab('dashboard');
 }
@@ -739,6 +781,15 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Register form connected');
     }
     
+    // CONNECT NAVIGATION TABS
+    document.querySelectorAll('.nav-tab[data-section]').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const section = this.getAttribute('data-section');
+            showTab(section);
+        });
+    });
+    console.log('✅ Navigation tabs connected');
+    
     // Check if user is logged in
     if (currentUser && sessionId) {
         console.log('✅ User session found:', currentUser.name);
@@ -756,6 +807,60 @@ window.showTab = showTab;
 window.toggleHabitCompletion = toggleHabitCompletion;
 window.deleteHabit = deleteHabit;
 window.createSampleHabits = createSampleHabits;
+// Missing load functions
+function loadAchievements() {
+    console.log('🏆 Loading achievements...');
+    // Show placeholder content
+    const container = document.getElementById('achievements-container');
+    if (container) {
+        container.innerHTML = '<div class="text-center text-white p-8">🏆 Achievements feature coming soon!</div>';
+    }
+}
+
+function loadAdminDashboard() {
+    console.log('⚡ Loading admin dashboard...');
+    if (currentUser && currentUser.role === 'admin') {
+        console.log('✅ Admin dashboard loaded for:', currentUser.email);
+        // Show admin-specific content
+        const adminContainer = document.getElementById('admin-container');
+        if (adminContainer) {
+            adminContainer.innerHTML = `
+                <div class="text-center text-white p-8">
+                    <h2 class="text-2xl mb-4">⚡ Admin Dashboard</h2>
+                    <p>Welcome, Admin ${currentUser.name}!</p>
+                    <p class="text-white/60 mt-2">Admin features are being developed.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function loadGoals() {
+    console.log('🎯 Loading goals...');
+    const container = document.getElementById('goals-container');
+    if (container) {
+        container.innerHTML = '<div class="text-center text-white p-8">🎯 Goals feature coming soon!</div>';
+    }
+}
+
+function loadNutrition() {
+    console.log('🍎 Loading nutrition...');
+    const container = document.getElementById('nutrition-container');
+    if (container) {
+        container.innerHTML = '<div class="text-center text-white p-8">🍎 Nutrition tracking coming soon!</div>';
+    }
+}
+
+function loadSocialHub() {
+    console.log('👥 Loading social hub...');
+    const container = document.getElementById('social-container');
+    if (container) {
+        container.innerHTML = '<div class="text-center text-white p-8">👥 Social features coming soon!</div>';
+    }
+}
+
+// Make functions globally accessible
+window.showTab = showTab;
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
 window.handleProfileUpdate = handleProfileUpdate;

@@ -1,8 +1,10 @@
-// StriveTrack Cloudflare Pages Middleware
+// StriveTrack Cloudflare Pages Middleware - SIMPLIFIED FOR DEBUGGING
 
 export async function onRequest(context) {
     const { request, env, next } = context;
     const url = new URL(request.url);
+
+    console.log('🔧 Middleware executing for:', url.pathname);
 
     // Add CORS headers for all responses
     const corsHeaders = {
@@ -20,15 +22,13 @@ export async function onRequest(context) {
         });
     }
 
-    // Initialize database if needed
-    try {
-        await initializeDatabase(env);
-    } catch (error) {
-        console.error('Database initialization error:', error);
-    }
+    // SIMPLIFIED: Skip database initialization for now to avoid import issues
+    console.log('⏭️ Skipping database initialization for debugging');
 
     // Get response from the function
     const response = await next();
+
+    console.log('📤 Response status:', response.status);
 
     // Add CORS headers to the response
     Object.entries(corsHeaders).forEach(([key, value]) => {

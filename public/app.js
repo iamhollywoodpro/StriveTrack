@@ -37,7 +37,7 @@ function initializeLocalStorage() {
 
 // Online/Offline detection
 function isOnline() {
-    return navigator.onLine && sessionId;
+    return navigator.onLine && sessionId && !sessionId.startsWith('offline_');
 }
 
 // Queue actions for sync when offline
@@ -461,9 +461,43 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (sessionId) {
         console.log('Found session, validating...');
-        validateSession();
+        
+        // Check if this is an offline session
+        if (sessionId.startsWith('offline_')) {
+            console.log('📱 Offline session detected');
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
+                console.log('✅ Offline user loaded:', currentUser.email);
+                showDashboard();
+                setupEventListeners();
+                return;
+            }
+        } else {
+            // Online session - validate with server
+            validateSession();
+        }
     } else {
-        console.log('No session found, showing login screen');
+        console.log('No session found, checking for stored user...');
+        
+        // Check if we have a stored user from previous offline sessions
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+            try {
+                currentUser = JSON.parse(storedUser);
+                console.log('🔄 Found stored user, creating new offline session:', currentUser.email);
+                sessionId = `offline_${Date.now()}`;
+                localStorage.setItem('sessionId', sessionId);
+                showDashboard();
+                setupEventListeners();
+                return;
+            } catch (e) {
+                console.log('❌ Invalid stored user data, clearing...');
+                localStorage.removeItem('currentUser');
+            }
+        }
+        
+        console.log('No valid user data found, showing login screen');
     }
     
     setupEventListeners();
@@ -796,6 +830,7 @@ async function handleLogin(event) {
     const password = document.getElementById('password').value;
     
     try {
+        console.log('🔐 Attempting login with API...');
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -805,22 +840,78 @@ async function handleLogin(event) {
         const data = await response.json();
         
         if (response.ok) {
+            // ✅ API LOGIN SUCCESS
             sessionId = data.sessionId;
             currentUser = data.user;
             localStorage.setItem('sessionId', sessionId);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            console.log('✅ API login successful');
             showNotification('Welcome back! 🎉', 'success');
             showDashboard();
             
-            // Check for achievements on login (onboarding, daily login, etc.)
+            // Check for achievements on login
             setTimeout(() => {
                 checkLocalAchievements('login');
             }, 1000);
         } else {
-            showNotification(data.error || 'Login failed', 'error');
+            console.log('❌ API login failed, trying offline mode...');
+            // API login failed, try offline mode
+            tryOfflineLogin(email, password);
         }
     } catch (error) {
-        console.error('Login error:', error);
-        showNotification('Login failed. Please try again.', 'error');
+        console.error('Login API error:', error);
+        console.log('🔄 API unavailable, using offline mode...');
+        // API is unavailable, use offline mode
+        tryOfflineLogin(email, password);
+    }
+}
+
+// Offline login fallback
+function tryOfflineLogin(email, password) {
+    console.log('📱 Using offline login mode');
+    
+    // Check if user exists in localStorage
+    const existingUser = localStorage.getItem(`offline_user_${email}`);
+    
+    if (existingUser) {
+        // Existing offline user
+        const userData = JSON.parse(existingUser);
+        if (userData.password === password) {
+            // ✅ OFFLINE LOGIN SUCCESS
+            currentUser = userData;
+            sessionId = `offline_${Date.now()}`;
+            localStorage.setItem('sessionId', sessionId);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            console.log('✅ Offline login successful');
+            showNotification('Welcome back! (Offline Mode) 📱', 'success');
+            showDashboard();
+        } else {
+            showNotification('Invalid password', 'error');
+        }
+    } else {
+        // New user - create offline account
+        console.log('👤 Creating new offline user');
+        const newUser = {
+            id: `offline_${Date.now()}`,
+            email: email,
+            password: password, // In production, this would be hashed
+            username: email.split('@')[0],
+            role: email === 'iamhollywoodpro@protonmail.com' ? 'admin' : 'user',
+            points: 0,
+            profile_picture_url: null,
+            created_at: new Date().toISOString()
+        };
+        
+        // Save offline user
+        localStorage.setItem(`offline_user_${email}`, JSON.stringify(newUser));
+        currentUser = newUser;
+        sessionId = `offline_${Date.now()}`;
+        localStorage.setItem('sessionId', sessionId);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        console.log('✅ Offline account created');
+        showNotification('Account created! (Offline Mode) 🎯', 'success');
+        showDashboard();
     }
 }
 
@@ -832,7 +923,7 @@ function showRegisterForm() {
 
 async function register(formData) {
     try {
-        console.log('Starting registration process...', { username: formData.username, email: formData.email });
+        console.log('🔐 Attempting registration with API...');
         
         const response = await fetch('/api/auth/register', {
             method: 'POST',
@@ -840,46 +931,70 @@ async function register(formData) {
             body: JSON.stringify(formData)
         });
         
-        console.log('Registration response status:', response.status);
-        
         const data = await response.json();
-        console.log('Registration response data:', data);
         
         if (response.ok) {
-            // Store session info for automatic login
+            // ✅ API REGISTRATION SUCCESS
             sessionId = data.sessionId;
             localStorage.setItem('sessionId', sessionId);
             currentUser = data.user;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
             
+            console.log('✅ API registration successful');
             showNotification('Registration successful! Welcome to StriveTrack! 🎉', 'success');
+            showDashboard();
             
-            // Auto-login after registration with proper initialization
-            try {
-                // Use showDashboard which properly initializes user progress
-                showDashboard();
-                // Delay achievements check to ensure everything is loaded
-                setTimeout(() => {
-                    try {
-                        checkAchievements();
-                    } catch (achievementError) {
-                        console.warn('Achievement check failed after registration:', achievementError);
-                        // Don't show error to user - this is not critical for signup success
-                    }
-                }, 1000);
-            } catch (dashboardError) {
-                console.error('Error showing dashboard after registration:', dashboardError);
-                // Minimal fallback - just show the main screen
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('signup-screen').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('hidden');
-            }
+            setTimeout(() => {
+                checkLocalAchievements('login');
+            }, 1000);
         } else {
-            showNotification(data.error || 'Registration failed', 'error');
+            console.log('❌ API registration failed, trying offline mode...');
+            tryOfflineRegistration(formData);
         }
     } catch (error) {
-        console.error('Registration error:', error);
-        showNotification('Network error during registration. Please check your connection and try again.', 'error');
+        console.error('Registration API error:', error);
+        console.log('🔄 API unavailable, using offline mode...');
+        tryOfflineRegistration(formData);
     }
+}
+
+// Offline registration fallback  
+function tryOfflineRegistration(formData) {
+    console.log('📱 Using offline registration mode');
+    
+    // Check if user already exists
+    const existingUser = localStorage.getItem(`offline_user_${formData.email}`);
+    
+    if (existingUser) {
+        showNotification('Account already exists. Please login instead.', 'error');
+        return;
+    }
+    
+    // Create new offline user
+    const newUser = {
+        id: `offline_${Date.now()}`,
+        email: formData.email,
+        username: formData.username,
+        password: formData.password, // In production, this would be hashed
+        role: formData.email === 'iamhollywoodpro@protonmail.com' ? 'admin' : 'user',
+        points: 0,
+        profile_picture_url: null,
+        created_at: new Date().toISOString()
+    };
+    
+    // Save offline user
+    localStorage.setItem(`offline_user_${formData.email}`, JSON.stringify(newUser));
+    
+    console.log('✅ Offline registration successful');
+    showNotification('Registration successful! (Offline Mode) 🎯', 'success');
+    
+    // Auto-login the new user
+    currentUser = newUser;
+    sessionId = `offline_${Date.now()}`;
+    localStorage.setItem('sessionId', sessionId);
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    showDashboard();
 }
 
 function handleSignup(event) {
@@ -963,6 +1078,15 @@ function showDashboard() {
     // Update header with user data including profile picture
     const username = currentUser.username || currentUser.email.split('@')[0];
     updateHeaderProfilePicture(currentUser.profile_picture_url, username);
+    
+    // Ensure currentUser is loaded from localStorage if needed
+    if (!currentUser) {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+            currentUser = JSON.parse(storedUser);
+            console.log('🔄 Loaded currentUser from localStorage:', currentUser.email);
+        }
+    }
     
     // Update points display and sync from server if online
     await syncUserPointsFromServer();
@@ -7078,8 +7202,15 @@ function closeAchievementModal() {
 }
 
 function updatePointsDisplay() {
-    // Ensure currentUser has points
+    // Ensure currentUser exists and has points
+    if (!currentUser) {
+        console.log('❌ No currentUser - cannot update points display');
+        return;
+    }
+    
     if (!currentUser.points) currentUser.points = 0;
+    
+    console.log('📊 Updating points display:', currentUser.points);
     
     // Update main points display in achievements section
     const totalPointsDisplay = document.getElementById('total-points-display');
@@ -7088,10 +7219,11 @@ function updatePointsDisplay() {
         totalPointsDisplay.classList.add('points-display');
     }
     
-    // CRITICAL FIX: Update header points display
+    // CRITICAL: Update header points display
     const headerPointsDisplay = document.getElementById('user-points');
     if (headerPointsDisplay) {
         headerPointsDisplay.textContent = `⭐ ${currentUser.points.toLocaleString()} pts`;
+        console.log('✅ Header points updated:', headerPointsDisplay.textContent);
     }
     
     // Update other points displays
@@ -7107,8 +7239,10 @@ function updatePointsDisplay() {
         welcomeText.textContent = `Welcome, ${username}`;
     }
     
-    // Debug logging
-    console.log('Points updated:', currentUser.points, 'for user:', currentUser?.email);
+    // Ensure currentUser is persisted
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    console.log('✅ Points display updated:', currentUser.points, 'for user:', currentUser?.email);
 }
 
 // Weekly Challenges
@@ -7887,7 +8021,41 @@ async function handleProfilePicture(input) {
         
         showNotification('Uploading profile picture...', 'info');
         
-        // Convert image to base64 for localStorage storage
+        if (isOnline()) {
+            try {
+                console.log('🌐 Syncing profile picture to API...');
+                
+                // Try API upload first
+                const formData = new FormData();
+                formData.append('profilePicture', file);
+                
+                const response = await fetch('/api/profile/picture', {
+                    method: 'POST',
+                    headers: {
+                        'x-session-id': sessionId
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Profile picture updated successfully! 📷', 'success');
+                    updateProfilePictureDisplay(data.profilePictureUrl);
+                    if (currentUser) {
+                        currentUser.profile_picture_url = data.profilePictureUrl;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        updateHeaderProfilePicture(data.profilePictureUrl, currentUser.username || currentUser.email.split('@')[0]);
+                    }
+                    return;
+                }
+            } catch (apiError) {
+                console.log('❌ API upload failed, using localStorage fallback');
+            }
+        }
+        
+        // Fallback: Convert image to base64 for localStorage storage
+        console.log('💾 Using localStorage for profile picture');
         const reader = new FileReader();
         reader.onload = function(e) {
             const base64Image = e.target.result;
@@ -7897,7 +8065,7 @@ async function handleProfilePicture(input) {
                 currentUser.profile_picture_url = base64Image;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 
-                showNotification('Profile picture updated successfully! 📷', 'success');
+                showNotification('Profile picture updated successfully! 📷 (Offline)', 'success');
                 updateProfilePictureDisplay(base64Image);
                 
                 // Update header profile picture

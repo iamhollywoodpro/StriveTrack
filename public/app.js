@@ -1559,11 +1559,6 @@ function displayHabits(habits) {
     });
     
     console.log('✅ Displayed', habits.length, 'habits successfully');
-        console.log('✅ Event handlers set up successfully');
-    } catch (error) {
-        console.error('❌ Failed to set up event handlers:', error);
-    }
-    
     console.log('🎯 ===== DISPLAY HABITS DEBUG END =====');
 }
 

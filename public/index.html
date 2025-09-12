@@ -2534,21 +2534,7 @@
                     <h2 class="text-2xl font-bold text-white mb-6">Weekly Progress Dashboard</h2>
                     <div class="text-white/70 mb-4">Quick reference to your weekly goals and habits</div>
                     
-                    <!-- TEST ON DASHBOARD -->
-                    <div class="habit-card mb-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="text-white font-semibold text-lg">🧪 DASHBOARD TEST HABIT</h3>
-                                <p class="text-white/60 text-sm">Can you see this on the main dashboard?</p>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <button class="px-4 py-2 rounded-lg font-medium bg-green-600 text-white">
-                                    ✓ Visible!
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- END TEST -->
+
                     
                     <div id="dashboard-weekly-progress">
                         <!-- Weekly progress bars will be loaded here -->
@@ -2557,7 +2543,7 @@
             </div>
             
             <!-- Habits Section -->
-            <div id="habits-section" class="section hidden">
+            <div id="habits-section" class="section">
                 <div class="glass-card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div>
@@ -2585,17 +2571,17 @@
                         </button>
                     </div>
                     
-                    <div id="habits-container">
-                        <!-- TEST: Simple HTML habit card -->
-                        <div class="habit-card">
+                    <div id="habits-container" style="display: block; visibility: visible; opacity: 1;">
+                        <!-- FIXED TEST: Simple HTML habit card with forced visibility -->
+                        <div class="habit-card" style="display: block; visibility: visible; background: rgba(255,255,255,0.1); border: 2px solid #10b981; padding: 20px; margin: 10px 0;">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h3 class="text-white font-semibold text-lg">TEST HABIT</h3>
-                                    <p class="text-white/60 text-sm">This is a test habit to see if CSS works</p>
+                                    <h3 class="text-white font-semibold text-lg" style="color: white;">✅ FIXED TEST HABIT</h3>
+                                    <p class="text-white/60 text-sm" style="color: rgba(255,255,255,0.7);">This should be visible now with forced CSS</p>
                                 </div>
                                 <div class="flex items-center space-x-3">
-                                    <button class="px-4 py-2 rounded-lg font-medium bg-white/20 text-white">
-                                        Test Button
+                                    <button class="px-4 py-2 rounded-lg font-medium bg-green-600 text-white" style="background: #10b981; color: white; padding: 8px 16px; border-radius: 8px;">
+                                        ✓ VISIBLE
                                     </button>
                                 </div>
                             </div>

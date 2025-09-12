@@ -2,6 +2,15 @@
 // Helps migrate data from localStorage to Supabase
 
 class MigrationHelper {
+    static getSupabaseClient() {
+        // Get or initialize the Supabase client
+        const client = SupabaseServices.initialize();
+        if (!client) {
+            throw new Error('Supabase client not available');
+        }
+        return client;
+    }
+
     static async migrateUserData(currentUser) {
         if (!currentUser || !currentUser.id) {
             console.log('No user to migrate');
@@ -11,10 +20,8 @@ class MigrationHelper {
         console.log('🔄 Starting migration for user:', currentUser.name);
         
         try {
-            // Initialize Supabase if not already done
-            if (!window.supabase) {
-                SupabaseServices.initialize();
-            }
+            // Ensure we have a working Supabase client
+            this.getSupabaseClient();
 
             // 1. Migrate user record
             await this.migrateUser(currentUser);
@@ -221,12 +228,14 @@ class MigrationHelper {
 
     static async testSupabaseConnection() {
         try {
-            if (!window.supabase) {
-                SupabaseServices.initialize();
+            // Get the initialized Supabase client
+            const client = SupabaseServices.initialize();
+            if (!client) {
+                throw new Error('Failed to initialize Supabase client');
             }
 
-            // Simple test query
-            const { data, error } = await window.supabase
+            // Simple test query using the client
+            const { data, error } = await client
                 .from('users')
                 .select('count', { count: 'exact', head: true });
 

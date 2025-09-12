@@ -9,9 +9,9 @@ function initializeSupabase() {
     const supabaseUrl = 'https://hilukaxsamucnqdbxlwd.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpbHVrYXhzYW11Y25xZGJ4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MTE4NzEsImV4cCI6MjA3MzI4Nzg3MX0.fayoHSkZjlqaOSUbbrarRdKGgNI2UReZXMZfgqPzYD4';
     
-    if (window.supabase) {
+    if (window.supabase && window.supabase.createClient) {
         supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        window.supabase = supabase; // Make it globally accessible
+        window.supabaseClient = supabase; // Store client separately from CDN library
         console.log('✅ Supabase client initialized');
         return supabase;
     } else {

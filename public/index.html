@@ -1894,6 +1894,39 @@
             }
         }
         
+        /* Content Moderation System Styles */
+        .moderation-content {
+            transition: opacity 0.3s ease;
+        }
+        
+        .moderation-content.hidden {
+            display: none;
+        }
+        
+        /* Moderation severity indicators */
+        .severity-low { 
+            background: rgba(234, 179, 8, 0.2); 
+            color: #fbbf24; 
+        }
+        .severity-medium { 
+            background: rgba(249, 115, 22, 0.2); 
+            color: #fb923c; 
+        }
+        .severity-high { 
+            background: rgba(239, 68, 68, 0.2); 
+            color: #f87171; 
+        }
+        
+        /* Moderation card hover effects */
+        .moderation-card {
+            transition: all 0.2s ease;
+        }
+        
+        .moderation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
         @media (max-width: 768px) {
             .media-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -3566,6 +3599,113 @@
                         <h3 class="text-lg font-bold text-white mb-4">User Engagement</h3>
                         <div class="relative h-64">
                             <canvas id="engagement-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Moderation System -->
+                <div class="glass-card p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Content Moderation Center</h3>
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm" id="pending-moderation-count">
+                                0 pending
+                            </span>
+                            <button onclick="refreshModerationQueue()" class="btn-secondary text-sm">
+                                <i class="fas fa-sync mr-2"></i>Refresh Queue
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Moderation Tabs -->
+                    <div class="flex flex-wrap gap-2 mb-6 border-b border-white/10">
+                        <button onclick="switchModerationTab('queue')" id="mod-tab-queue" 
+                                class="px-4 py-2 text-white/70 hover:text-white border-b-2 border-transparent hover:border-white/30 transition-colors">
+                            <i class="fas fa-flag mr-2"></i>Moderation Queue
+                        </button>
+                        <button onclick="switchModerationTab('flagged')" id="mod-tab-flagged"
+                                class="px-4 py-2 text-white/70 hover:text-white border-b-2 border-transparent hover:border-white/30 transition-colors">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Flagged Content
+                        </button>
+                        <button onclick="switchModerationTab('reports')" id="mod-tab-reports"
+                                class="px-4 py-2 text-white/70 hover:text-white border-b-2 border-transparent hover:border-white/30 transition-colors">
+                            <i class="fas fa-file-alt mr-2"></i>User Reports
+                        </button>
+                        <button onclick="switchModerationTab('rules')" id="mod-tab-rules"
+                                class="px-4 py-2 text-white/70 hover:text-white border-b-2 border-transparent hover:border-white/30 transition-colors">
+                            <i class="fas fa-shield-alt mr-2"></i>Moderation Rules
+                        </button>
+                    </div>
+                    
+                    <!-- Moderation Content Areas -->
+                    <div id="moderation-queue-content" class="moderation-content">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-4">
+                                <h4 class="text-lg font-semibold text-white">Content Awaiting Review</h4>
+                                <select id="queue-filter" class="input-field w-40" onchange="filterModerationQueue()">
+                                    <option value="all">All Content</option>
+                                    <option value="image">Images</option>
+                                    <option value="video">Videos</option>
+                                    <option value="text">Text Posts</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="approveAllVisible()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
+                                    <i class="fas fa-check-double mr-2"></i>Approve All Visible
+                                </button>
+                                <button onclick="rejectAllVisible()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">
+                                    <i class="fas fa-times-circle mr-2"></i>Reject All Visible
+                                </button>
+                            </div>
+                        </div>
+                        <div id="moderation-queue-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Moderation items will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div id="flagged-content-area" class="moderation-content hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-white">Flagged Content</h4>
+                            <div class="flex items-center gap-2">
+                                <select id="flagged-filter" class="input-field w-40" onchange="filterFlaggedContent()">
+                                    <option value="all">All Flagged</option>
+                                    <option value="spam">Spam</option>
+                                    <option value="inappropriate">Inappropriate</option>
+                                    <option value="harassment">Harassment</option>
+                                    <option value="copyright">Copyright</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="flagged-content-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Flagged content will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div id="user-reports-area" class="moderation-content hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-white">User Reports</h4>
+                            <div class="flex items-center gap-2">
+                                <select id="reports-filter" class="input-field w-40" onchange="filterUserReports()">
+                                    <option value="pending">Pending</option>
+                                    <option value="resolved">Resolved</option>
+                                    <option value="dismissed">Dismissed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="user-reports-list" class="space-y-4">
+                            <!-- User reports will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div id="moderation-rules-area" class="moderation-content hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-white">Automated Moderation Rules</h4>
+                            <button onclick="addModerationRule()" class="btn-primary text-sm">
+                                <i class="fas fa-plus mr-2"></i>Add New Rule
+                            </button>
+                        </div>
+                        <div id="moderation-rules-list" class="space-y-4">
+                            <!-- Moderation rules will be loaded here -->
                         </div>
                     </div>
                 </div>

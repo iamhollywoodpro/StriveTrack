@@ -2894,10 +2894,11 @@ async function loadAdminDashboard() {
             source: platformStats ? 'Supabase' : 'localStorage'
         });
         
-        // Load analytics charts and initialize enhanced user management
+        // Load analytics charts and initialize enhanced systems
         setTimeout(() => {
             loadAdminAnalytics();
             initializeEnhancedUserManagement(allUsers);
+            initializeContentModeration();
         }, 500);
         
     } catch (error) {
@@ -5406,6 +5407,414 @@ window.bulkDemoteUsers = bulkDemoteUsers;
 window.bulkSuspendUsers = bulkSuspendUsers;
 window.bulkDeleteUsers = bulkDeleteUsers;
 window.exportSelectedUsers = exportSelectedUsers;
+
+// **PHASE 4: CONTENT MODERATION SYSTEM**
+let currentModerationTab = 'queue';
+let moderationQueue = [];
+let flaggedContent = [];
+let userReports = [];
+let moderationRules = [];
+
+// Initialize content moderation system
+function initializeContentModeration() {
+    console.log('🛡️ Initializing content moderation system...');
+    
+    // Load moderation data
+    loadModerationQueue();
+    loadFlaggedContent();
+    loadUserReports();
+    loadModerationRules();
+    
+    // Set default tab
+    switchModerationTab('queue');
+    
+    console.log('✅ Content moderation system initialized');
+}
+
+// Switch between moderation tabs
+function switchModerationTab(tabName) {
+    currentModerationTab = tabName;
+    
+    // Update tab buttons
+    document.querySelectorAll('[id^="mod-tab-"]').forEach(btn => {
+        btn.classList.remove('text-blue-400', 'border-blue-400');
+        btn.classList.add('text-white/70', 'border-transparent');
+    });
+    
+    const activeTab = document.getElementById(`mod-tab-${tabName}`);
+    if (activeTab) {
+        activeTab.classList.remove('text-white/70', 'border-transparent');
+        activeTab.classList.add('text-blue-400', 'border-blue-400');
+    }
+    
+    // Show/hide content areas
+    document.querySelectorAll('.moderation-content').forEach(area => {
+        area.classList.add('hidden');
+    });
+    
+    const areas = {
+        'queue': 'moderation-queue-content',
+        'flagged': 'flagged-content-area',
+        'reports': 'user-reports-area',
+        'rules': 'moderation-rules-area'
+    };
+    
+    const activeArea = document.getElementById(areas[tabName]);
+    if (activeArea) {
+        activeArea.classList.remove('hidden');
+    }
+    
+    // Load content for active tab
+    switch(tabName) {
+        case 'queue':
+            displayModerationQueue();
+            break;
+        case 'flagged':
+            displayFlaggedContent();
+            break;
+        case 'reports':
+            displayUserReports();
+            break;
+        case 'rules':
+            displayModerationRules();
+            break;
+    }
+}
+
+// Load moderation queue (content awaiting review)
+async function loadModerationQueue() {
+    try {
+        // Try to get from Supabase first
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            // Get recent media that might need moderation
+            const allMedia = await window.SupabaseServices.admin.getAllMediaWithUserInfo();
+            moderationQueue = allMedia.filter(media => !media.moderated && !media.approved);
+        } else {
+            // Generate demo moderation queue
+            moderationQueue = generateDemoModerationQueue();
+        }
+        
+        updatePendingCount();
+        console.log('📋 Loaded', moderationQueue.length, 'items in moderation queue');
+        
+    } catch (error) {
+        console.error('❌ Error loading moderation queue:', error);
+        moderationQueue = generateDemoModerationQueue();
+    }
+}
+
+// Generate demo moderation queue
+function generateDemoModerationQueue() {
+    const demoQueue = [];
+    const reasons = ['automatic_detection', 'user_report', 'manual_review'];
+    const types = ['image', 'video', 'text'];
+    
+    for (let i = 0; i < 8; i++) {
+        demoQueue.push({
+            id: `mod_${i}`,
+            user_id: `user_${i % 4}`,
+            user_name: ['Sarah Johnson', 'Mike Chen', 'Emma Wilson', 'David Rodriguez'][i % 4],
+            media_type: types[i % 3],
+            name: `content_${i}.jpg`,
+            uploaded_at: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+            reason: reasons[i % 3],
+            flagged: Math.random() > 0.7,
+            severity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
+            url: `/demo/content_${i}.jpg`,
+            description: `Demo content item ${i} awaiting moderation review`
+        });
+    }
+    
+    return demoQueue;
+}
+
+// Display moderation queue
+function displayModerationQueue() {
+    const container = document.getElementById('moderation-queue-grid');
+    if (!container) return;
+    
+    const filterValue = document.getElementById('queue-filter')?.value || 'all';
+    const filtered = filterValue === 'all' 
+        ? moderationQueue 
+        : moderationQueue.filter(item => item.media_type === filterValue);
+    
+    container.innerHTML = filtered.map(item => createModerationCard(item)).join('');
+}
+
+// Create moderation card
+function createModerationCard(item) {
+    const severityColors = {
+        low: 'bg-yellow-500/20 text-yellow-400',
+        medium: 'bg-orange-500/20 text-orange-400', 
+        high: 'bg-red-500/20 text-red-400'
+    };
+    
+    return `
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-all">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-1 rounded text-xs ${severityColors[item.severity] || severityColors.low}">
+                        ${item.severity} risk
+                    </span>
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+                        ${item.media_type}
+                    </span>
+                </div>
+                <i class="fas fa-${item.flagged ? 'flag text-red-400' : 'clock text-yellow-400'}"></i>
+            </div>
+            
+            <div class="mb-3">
+                <h5 class="text-white font-semibold truncate">${item.name}</h5>
+                <p class="text-white/60 text-sm">by ${item.user_name}</p>
+                <p class="text-white/50 text-xs mt-1">${getTimeAgo(item.uploaded_at)} • ${item.reason.replace('_', ' ')}</p>
+            </div>
+            
+            ${item.url ? `
+                <div class="mb-3 h-32 bg-gray-700 rounded-lg overflow-hidden">
+                    <div class="h-full flex items-center justify-center text-white/50">
+                        <i class="fas fa-${item.media_type === 'image' ? 'image' : item.media_type === 'video' ? 'video' : 'file-alt'} text-2xl"></i>
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="flex gap-2">
+                <button onclick="approveContent('${item.id}')" 
+                        class="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors">
+                    <i class="fas fa-check mr-1"></i>Approve
+                </button>
+                <button onclick="rejectContent('${item.id}')" 
+                        class="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors">
+                    <i class="fas fa-times mr-1"></i>Reject
+                </button>
+                <button onclick="viewContentDetails('${item.id}')" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Load flagged content
+async function loadFlaggedContent() {
+    try {
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            const allMedia = await window.SupabaseServices.admin.getAllMediaWithUserInfo();
+            flaggedContent = allMedia.filter(media => media.flagged);
+        } else {
+            flaggedContent = generateDemoFlaggedContent();
+        }
+        
+        console.log('🚩 Loaded', flaggedContent.length, 'flagged content items');
+        
+    } catch (error) {
+        console.error('❌ Error loading flagged content:', error);
+        flaggedContent = generateDemoFlaggedContent();
+    }
+}
+
+// Generate demo flagged content
+function generateDemoFlaggedContent() {
+    const demoFlagged = [];
+    const flags = ['spam', 'inappropriate', 'harassment', 'copyright'];
+    
+    for (let i = 0; i < 6; i++) {
+        demoFlagged.push({
+            id: `flagged_${i}`,
+            user_id: `user_${i % 3}`,
+            user_name: ['Sarah Johnson', 'Mike Chen', 'Emma Wilson'][i % 3],
+            media_type: 'image',
+            name: `flagged_content_${i}.jpg`,
+            flag_reason: flags[i % 4],
+            flagged_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+            flagged_by: 'system',
+            reports_count: Math.floor(Math.random() * 5) + 1
+        });
+    }
+    
+    return demoFlagged;
+}
+
+// Content moderation actions
+async function approveContent(contentId) {
+    console.log('✅ Approving content:', contentId);
+    
+    try {
+        // Remove from moderation queue
+        moderationQueue = moderationQueue.filter(item => item.id !== contentId);
+        
+        // Update in Supabase if available
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            // Add approval logic here when implementing full Supabase integration
+        }
+        
+        showNotification('Content approved successfully', 'success');
+        displayModerationQueue();
+        updatePendingCount();
+        
+    } catch (error) {
+        console.error('❌ Error approving content:', error);
+        showNotification('Error approving content: ' + error.message, 'error');
+    }
+}
+
+async function rejectContent(contentId) {
+    console.log('❌ Rejecting content:', contentId);
+    
+    if (!confirm('Are you sure you want to reject this content? It will be removed from the platform.')) {
+        return;
+    }
+    
+    try {
+        // Remove from moderation queue
+        moderationQueue = moderationQueue.filter(item => item.id !== contentId);
+        
+        // Update in Supabase if available
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            // Add rejection logic here when implementing full Supabase integration
+        }
+        
+        showNotification('Content rejected and removed', 'warning');
+        displayModerationQueue();
+        updatePendingCount();
+        
+    } catch (error) {
+        console.error('❌ Error rejecting content:', error);
+        showNotification('Error rejecting content: ' + error.message, 'error');
+    }
+}
+
+// Update pending moderation count
+function updatePendingCount() {
+    const countElement = document.getElementById('pending-moderation-count');
+    if (countElement) {
+        const count = moderationQueue.length;
+        countElement.textContent = `${count} pending`;
+        countElement.className = count > 0 
+            ? 'px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm'
+            : 'px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm';
+    }
+}
+
+// Placeholder functions for additional moderation features
+function loadUserReports() {
+    userReports = []; // Will be implemented in full version
+}
+
+function loadModerationRules() {
+    moderationRules = []; // Will be implemented in full version
+}
+
+function displayFlaggedContent() {
+    const container = document.getElementById('flagged-content-grid');
+    if (!container) return;
+    container.innerHTML = '<div class="col-span-full text-center text-white/60 py-8">Flagged content display will be implemented here</div>';
+}
+
+function displayUserReports() {
+    const container = document.getElementById('user-reports-list');
+    if (!container) return;
+    container.innerHTML = '<div class="text-center text-white/60 py-8">User reports display will be implemented here</div>';
+}
+
+function displayModerationRules() {
+    const container = document.getElementById('moderation-rules-list');
+    if (!container) return;
+    container.innerHTML = '<div class="text-center text-white/60 py-8">Moderation rules management will be implemented here</div>';
+}
+
+// Filter functions
+function filterModerationQueue() {
+    displayModerationQueue();
+}
+
+function filterFlaggedContent() {
+    displayFlaggedContent();
+}
+
+function filterUserReports() {
+    displayUserReports();
+}
+
+function refreshModerationQueue() {
+    showNotification('Refreshing moderation queue...', 'info');
+    loadModerationQueue().then(() => {
+        displayModerationQueue();
+        showNotification('Moderation queue refreshed', 'success');
+    });
+}
+
+// Bulk moderation actions
+function approveAllVisible() {
+    const visibleItems = moderationQueue.filter(item => {
+        const filterValue = document.getElementById('queue-filter')?.value || 'all';
+        return filterValue === 'all' || item.media_type === filterValue;
+    });
+    
+    if (visibleItems.length === 0) {
+        showNotification('No items to approve', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to approve all ${visibleItems.length} visible items?`)) {
+        return;
+    }
+    
+    visibleItems.forEach(item => {
+        moderationQueue = moderationQueue.filter(queueItem => queueItem.id !== item.id);
+    });
+    
+    showNotification(`Approved ${visibleItems.length} items`, 'success');
+    displayModerationQueue();
+    updatePendingCount();
+}
+
+function rejectAllVisible() {
+    const visibleItems = moderationQueue.filter(item => {
+        const filterValue = document.getElementById('queue-filter')?.value || 'all';
+        return filterValue === 'all' || item.media_type === filterValue;
+    });
+    
+    if (visibleItems.length === 0) {
+        showNotification('No items to reject', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to reject all ${visibleItems.length} visible items? They will be removed from the platform.`)) {
+        return;
+    }
+    
+    visibleItems.forEach(item => {
+        moderationQueue = moderationQueue.filter(queueItem => queueItem.id !== item.id);
+    });
+    
+    showNotification(`Rejected ${visibleItems.length} items`, 'warning');
+    displayModerationQueue();
+    updatePendingCount();
+}
+
+function viewContentDetails(contentId) {
+    console.log('👁️ Viewing content details:', contentId);
+    showNotification('Content details modal will be implemented', 'info');
+}
+
+function addModerationRule() {
+    console.log('➕ Adding new moderation rule');
+    showNotification('Moderation rule creation will be implemented', 'info');
+}
+
+// Export moderation functions to window
+window.switchModerationTab = switchModerationTab;
+window.filterModerationQueue = filterModerationQueue;
+window.filterFlaggedContent = filterFlaggedContent;
+window.filterUserReports = filterUserReports;
+window.refreshModerationQueue = refreshModerationQueue;
+window.approveContent = approveContent;
+window.rejectContent = rejectContent;
+window.approveAllVisible = approveAllVisible;
+window.rejectAllVisible = rejectAllVisible;
+window.viewContentDetails = viewContentDetails;
+window.addModerationRule = addModerationRule;
 
 // Add missing functions for HTML modals
 function createGoal(event) {

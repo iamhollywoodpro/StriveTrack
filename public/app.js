@@ -1738,6 +1738,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup modal background closing
     setupModalBackgroundClose();
     
+    // CONNECT LOGOUT BUTTON
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+        console.log('✅ Logout button connected');
+    } else {
+        console.log('❌ Logout button not found');
+    }
+    
     // Check if user is logged in
     if (currentUser && sessionId) {
         console.log('✅ User session found:', currentUser.name);

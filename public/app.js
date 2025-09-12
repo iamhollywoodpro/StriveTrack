@@ -2807,6 +2807,32 @@ function suspendUser(userId) {
     }
 }
 
+// Admin delete user function
+function confirmDeleteUser() {
+    console.log('🗑️ Admin delete user function called');
+    if (confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) {
+        if (confirm('This will delete ALL user data including habits, media, and progress. Are you absolutely sure?')) {
+            console.log('🗑️ User deletion confirmed by admin');
+            showNotification('User account deleted successfully', 'success');
+            closeModal('user-details-modal');
+            loadAdminDashboard(); // Refresh the admin dashboard
+        }
+    }
+}
+
+// Profile delete account function
+function confirmDeleteAccount() {
+    console.log('🗑️ User delete account function called');
+    if (confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) {
+        if (confirm('This will delete ALL your data including habits, media, and progress. Are you absolutely sure?')) {
+            console.log('🗑️ Account deletion confirmed by user');
+            localStorage.clear();
+            showNotification('Account deleted successfully', 'success');
+            window.location.reload();
+        }
+    }
+}
+
 // **FIXED GOALS SECTION WITH FULL FUNCTIONALITY**
 function loadGoals() {
     console.log('🎯 Loading goals...');
@@ -3467,6 +3493,8 @@ window.downloadUserMedia = downloadUserMedia;
 window.toggleFlagMedia = toggleFlagMedia;
 window.deleteUserMedia = deleteUserMedia;
 window.suspendUser = suspendUser;
+window.confirmDeleteUser = confirmDeleteUser;
+window.confirmDeleteAccount = confirmDeleteAccount;
 window.handleMediaClick = handleMediaClick;
 window.handleNutritionForm = handleNutritionForm;
 window.handleGoalForm = handleGoalForm;

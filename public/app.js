@@ -1460,20 +1460,35 @@ function showModal(modalId) {
 }
 
 function closeModal(modalId) {
+    console.log('🔐 Closing modal:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
+        // Hide the modal
         modal.classList.add('hidden');
+        modal.style.display = 'none';
+        
+        // Reset forms in the modal
+        const forms = modal.querySelectorAll('form');
+        forms.forEach(form => {
+            if (form.reset) {
+                form.reset();
+                console.log('✅ Form reset in modal:', modalId);
+            }
+        });
         
         // For dynamically created modals, remove from DOM
-        if (modalId === 'media-upload-modal') {
+        if (modal.hasAttribute('data-dynamic') || modalId === 'media-upload-modal' || modalId === 'user-details-modal') {
             setTimeout(() => {
-                if (modal.parentElement) {
+                if (modal && modal.parentElement) {
                     modal.remove();
+                    console.log('✅ Dynamic modal removed from DOM:', modalId);
                 }
             }, 300);
         }
         
-        console.log('✅ Closed modal:', modalId);
+        console.log('✅ Modal closed:', modalId);
+    } else {
+        console.log('❌ Modal not found:', modalId);
     }
 }
 
@@ -1633,6 +1648,20 @@ function showDashboard() {
         welcomeText.textContent = `Welcome back, ${currentUser.name}!`;
     }
     
+    // SETUP LOGOUT BUTTON NOW THAT DASHBOARD IS VISIBLE
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        // Remove existing listeners to avoid duplicates
+        logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+        const newLogoutBtn = document.getElementById('logout-btn');
+        newLogoutBtn.addEventListener('click', function(e) {
+            console.log('🔴 LOGOUT BUTTON CLICKED FROM DASHBOARD!');
+            e.preventDefault();
+            logout();
+        });
+        console.log('✅ Logout button connected in dashboard');
+    }
+    
     // Show admin tab if admin
     if (currentUser && currentUser.role === 'admin') {
         const adminTab = document.getElementById('admin-tab');
@@ -1651,40 +1680,25 @@ function logout() {
     console.log('🚪 Current sessionId:', sessionId);
     console.log('🚪 Current currentUser:', currentUser);
     
-    // Clear all session data
-    localStorage.removeItem('sessionId');
-    localStorage.removeItem('currentUser');
-    console.log('🚪 LocalStorage cleared');
-    
-    // Reset global variables
-    sessionId = null;
-    currentUser = null;
-    console.log('🚪 Global variables reset');
-    
-    // Clear any form data
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        if (form.reset) form.reset();
-    });
-    
-    // Clear any input fields
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-        if (input.type !== 'submit' && input.type !== 'button') {
-            input.value = '';
-        }
-    });
-    
-    // Reset navigation to habits tab
-    showSection('habits');
-    
-    // Switch to login screen
-    showLoginScreen();
-    
-    // Show notification
-    showNotification('Logged out successfully!', 'info');
-    
-    console.log('✅ Logout completed - all data cleared');
+    try {
+        // Clear all session data
+        localStorage.clear();
+        console.log('🚪 LocalStorage completely cleared');
+        
+        // Reset global variables
+        sessionId = null;
+        currentUser = null;
+        console.log('🚪 Global variables reset');
+        
+        // Force page reload to reset everything
+        console.log('🚪 Forcing page reload...');
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('🚪 Error during logout:', error);
+        // Fallback - just reload
+        window.location.reload();
+    }
 }
 
 // Initialize app
@@ -3005,7 +3019,25 @@ function updateGoalStats(goals) {
 function showCreateGoalModal() {
     console.log('🎯 Opening create goal modal');
     
-    // Create goal creation modal
+    // Use the existing HTML modal instead of creating a new one
+    const modal = document.getElementById('create-goal-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        
+        // Set default date to 3 months from now
+        const dueDateInput = document.getElementById('goal-due-date');
+        if (dueDateInput && !dueDateInput.value) {
+            const futureDate = new Date();
+            futureDate.setMonth(futureDate.getMonth() + 3);
+            dueDateInput.value = futureDate.toISOString().split('T')[0];
+        }
+        
+        console.log('✅ Goal modal opened using existing HTML modal');
+        return;
+    }
+    
+    // Fallback: Create goal creation modal
     const modal = document.createElement('div');
     modal.id = 'create-goal-modal';
     modal.className = 'modal';
@@ -3295,7 +3327,34 @@ function calculateNutritionTotals(entries) {
 function showNutritionModal() {
     console.log('🍎 Opening nutrition modal');
     
-    // Create nutrition entry modal
+    // Use the existing HTML modal instead of creating a new one
+    const modal = document.getElementById('nutrition-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        
+        // Set up form handler for the existing form
+        const form = document.getElementById('nutrition-form');
+        if (form) {
+            // Remove existing listeners to avoid duplicates
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+            
+            // Add fresh event listener
+            const freshForm = document.getElementById('nutrition-form');
+            freshForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                handleNutritionForm(event);
+            });
+            
+            console.log('✅ Nutrition form handler attached to HTML modal');
+        }
+        
+        console.log('✅ Nutrition modal opened using existing HTML modal');
+        return;
+    }
+    
+    // Fallback: Create nutrition entry modal
     const modal = document.createElement('div');
     modal.id = 'nutrition-modal';
     modal.className = 'modal';
@@ -3495,6 +3554,57 @@ window.deleteUserMedia = deleteUserMedia;
 window.suspendUser = suspendUser;
 window.confirmDeleteUser = confirmDeleteUser;
 window.confirmDeleteAccount = confirmDeleteAccount;
+
+// Add missing functions for HTML modals
+function createGoal(event) {
+    console.log('🎯 createGoal function called from HTML modal');
+    event.preventDefault();
+    
+    const nameEl = document.getElementById('goal-name');
+    const descEl = document.getElementById('goal-description');
+    const categoryEl = document.getElementById('goal-category');
+    const targetEl = document.getElementById('goal-target');
+    const unitEl = document.getElementById('goal-unit');
+    const dateEl = document.getElementById('goal-due-date');
+    
+    if (!nameEl || !targetEl) {
+        console.log('❌ Required goal form elements not found');
+        showNotification('Error: Required form fields not found', 'error');
+        return;
+    }
+    
+    const goalData = {
+        id: 'goal_' + Date.now(),
+        name: nameEl.value,
+        description: descEl ? descEl.value : '',
+        category: categoryEl ? categoryEl.value : 'fitness',
+        current_value: 0,
+        target_value: parseFloat(targetEl.value),
+        unit: unitEl ? unitEl.value : 'units',
+        due_date: dateEl ? dateEl.value : '',
+        completed: false,
+        created_at: new Date().toISOString()
+    };
+    
+    console.log('🎯 Creating goal from HTML modal:', goalData);
+    
+    const goals = getLocalGoals();
+    goals.push(goalData);
+    saveLocalGoals(goals);
+    
+    closeModal('create-goal-modal');
+    loadGoals();
+    showNotification(`Goal "${goalData.name}" created successfully! 🎯`, 'success');
+}
+
+function closeCreateGoalModal() {
+    console.log('🔐 closeCreateGoalModal called');
+    closeModal('create-goal-modal');
+}
+
+// Expose new functions
+window.createGoal = createGoal;
+window.closeCreateGoalModal = closeCreateGoalModal;
 window.handleMediaClick = handleMediaClick;
 window.handleNutritionForm = handleNutritionForm;
 window.handleGoalForm = handleGoalForm;

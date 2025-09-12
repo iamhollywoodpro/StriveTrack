@@ -3856,7 +3856,12 @@
     <!-- Nutrition Log Modal -->
     <div id="nutrition-modal" class="modal hidden">
         <div class="modal-content">
-            <h3 class="text-2xl font-bold text-white mb-6">Log Food & Nutrition</h3>
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-white">🍽️ Log Food & Nutrition</h3>
+                <button onclick="closeModal('nutrition-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
             <form id="nutrition-form">
                 <div class="mb-4">
                     <label for="food-name" class="block text-white/90 text-sm font-medium mb-2">Food Name</label>
@@ -3936,7 +3941,12 @@
     <!-- Create Goal Modal -->
     <div id="create-goal-modal" class="modal hidden">
         <div class="modal-content max-w-md">
-            <h3 class="text-2xl font-bold text-white mb-6">🎯 Create New Goal</h3>
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-white">🎯 Create New Goal</h3>
+                <button onclick="closeCreateGoalModal()" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
             <form id="goal-form" onsubmit="createGoal(event)">
                 <div class="space-y-4">
                     <div>

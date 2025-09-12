@@ -4409,7 +4409,7 @@ async function initializeSupabaseIntegration() {
                 console.log('✅ Supabase cloud integration ready');
                 
                 // Check if user has local data that needs migration
-                if (currentUser && hasLocalData()) {
+                if (currentUser && hasLocalData() && !localStorage.getItem('migration_completed')) {
                     showMigrationPrompt();
                 }
             } else {

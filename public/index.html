@@ -3535,6 +3535,41 @@
                     </div>
                 </div>
 
+                <!-- Analytics Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- User Growth Chart -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-lg font-bold text-white mb-4">User Growth Trend</h3>
+                        <div class="relative h-64">
+                            <canvas id="user-growth-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- User Activity Chart -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-lg font-bold text-white mb-4">Daily Activity</h3>
+                        <div class="relative h-64">
+                            <canvas id="activity-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Distribution -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-lg font-bold text-white mb-4">Content Distribution</h3>
+                        <div class="relative h-64">
+                            <canvas id="content-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- User Engagement -->
+                    <div class="glass-card p-6">
+                        <h3 class="text-lg font-bold text-white mb-4">User Engagement</h3>
+                        <div class="relative h-64">
+                            <canvas id="engagement-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Users Grid -->
                 <div class="glass-card p-6">
                     <div class="flex items-center justify-between mb-6">
@@ -4221,6 +4256,9 @@
             </form>
         </div>
     </div>
+    
+    <!-- Chart.js for Admin Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
     
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

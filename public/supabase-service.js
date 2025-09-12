@@ -744,6 +744,64 @@ class SupabaseAdminService {
             throw error;
         }
     }
+    
+    // Get analytics data for charts
+    static async getAnalyticsData() {
+        try {
+            // Get user registrations by date (last 30 days)
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            
+            const { data: userGrowth, error: userGrowthError } = await supabase
+                .from('users')
+                .select('created_at')
+                .gte('created_at', thirtyDaysAgo)
+                .order('created_at');
+            
+            // Get daily active users (last 7 days)
+            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            
+            const { data: dailyActivity, error: activityError } = await supabase
+                .from('users')
+                .select('last_active')
+                .gte('last_active', sevenDaysAgo)
+                .order('last_active');
+            
+            // Get content stats
+            const { data: mediaStats, error: mediaError } = await supabase
+                .from('media')
+                .select('media_type, created_at')
+                .order('created_at');
+            
+            // Get user engagement stats (habits, goals, media per user)
+            const { data: engagementStats, error: engagementError } = await supabase
+                .from('users')
+                .select(`
+                    id,
+                    habits(count),
+                    goals(count),
+                    media(count)
+                `);
+            
+            if (userGrowthError || activityError || mediaError || engagementError) {
+                throw userGrowthError || activityError || mediaError || engagementError;
+            }
+            
+            return {
+                userGrowth: userGrowth || [],
+                dailyActivity: dailyActivity || [],
+                mediaStats: mediaStats || [],
+                engagementStats: engagementStats || []
+            };
+        } catch (error) {
+            console.error('❌ Error fetching analytics data:', error);
+            return {
+                userGrowth: [],
+                dailyActivity: [],
+                mediaStats: [],
+                engagementStats: []
+            };
+        }
+    }
 }
 
 // **POINTS CALCULATION**

@@ -2894,6 +2894,11 @@ async function loadAdminDashboard() {
             source: platformStats ? 'Supabase' : 'localStorage'
         });
         
+        // Load analytics charts after dashboard is rendered
+        setTimeout(() => {
+            loadAdminAnalytics();
+        }, 500);
+        
     } catch (error) {
         console.error('❌ Error loading admin dashboard:', error);
         if (adminSection) {
@@ -2913,6 +2918,312 @@ async function loadAdminDashboard() {
         }
         showNotification('Admin dashboard load failed. Please try again.', 'error');
     }
+}
+
+// **ADMIN ANALYTICS CHARTS - PHASE 2 ENHANCEMENT**
+let adminCharts = {};
+
+async function loadAdminAnalytics() {
+    try {
+        console.log('📊 Loading admin analytics charts...');
+        
+        // Get analytics data from Supabase or generate demo data
+        let analyticsData;
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            try {
+                analyticsData = await window.SupabaseServices.admin.getAnalyticsData();
+            } catch (error) {
+                console.warn('⚠️ Supabase analytics failed, using demo data:', error);
+                analyticsData = generateDemoAnalyticsData();
+            }
+        } else {
+            analyticsData = generateDemoAnalyticsData();
+        }
+        
+        // Create all charts
+        await Promise.all([
+            createUserGrowthChart(analyticsData.userGrowth),
+            createActivityChart(analyticsData.dailyActivity),
+            createContentChart(analyticsData.mediaStats),
+            createEngagementChart(analyticsData.engagementStats)
+        ]);
+        
+        console.log('✅ Admin analytics charts loaded successfully');
+        
+    } catch (error) {
+        console.error('❌ Error loading admin analytics:', error);
+    }
+}
+
+function generateDemoAnalyticsData() {
+    const now = new Date();
+    const demoData = {
+        userGrowth: [],
+        dailyActivity: [],
+        mediaStats: [],
+        engagementStats: []
+    };
+    
+    // Generate 30 days of user growth data
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const newUsers = Math.floor(Math.random() * 10) + 1;
+        for (let j = 0; j < newUsers; j++) {
+            demoData.userGrowth.push({ created_at: date.toISOString() });
+        }
+    }
+    
+    // Generate 7 days of activity data
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const activeUsers = Math.floor(Math.random() * 50) + 20;
+        for (let j = 0; j < activeUsers; j++) {
+            demoData.dailyActivity.push({ last_active: date.toISOString() });
+        }
+    }
+    
+    // Generate media stats
+    const mediaTypes = ['image', 'video', 'document'];
+    for (let i = 0; i < 100; i++) {
+        const date = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+        demoData.mediaStats.push({
+            media_type: mediaTypes[Math.floor(Math.random() * mediaTypes.length)],
+            created_at: date.toISOString()
+        });
+    }
+    
+    // Generate engagement stats
+    for (let i = 0; i < 25; i++) {
+        demoData.engagementStats.push({
+            id: `user_${i}`,
+            habits: [{ count: Math.floor(Math.random() * 10) + 1 }],
+            goals: [{ count: Math.floor(Math.random() * 5) + 1 }],
+            media: [{ count: Math.floor(Math.random() * 20) + 1 }]
+        });
+    }
+    
+    return demoData;
+}
+
+async function createUserGrowthChart(userData) {
+    const ctx = document.getElementById('user-growth-chart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (adminCharts.userGrowth) {
+        adminCharts.userGrowth.destroy();
+    }
+    
+    // Process data for last 30 days
+    const last30Days = [];
+    const now = new Date();
+    
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        const count = userData.filter(u => 
+            u.created_at && u.created_at.split('T')[0] === dateStr
+        ).length;
+        
+        last30Days.push({
+            date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            count: count
+        });
+    }
+    
+    adminCharts.userGrowth = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: last30Days.map(d => d.date),
+            datasets: [{
+                label: 'New Users',
+                data: last30Days.map(d => d.count),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            }
+        }
+    });
+}
+
+async function createActivityChart(activityData) {
+    const ctx = document.getElementById('activity-chart');
+    if (!ctx) return;
+    
+    if (adminCharts.activity) {
+        adminCharts.activity.destroy();
+    }
+    
+    // Process data for last 7 days
+    const last7Days = [];
+    const now = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        const count = activityData.filter(u => 
+            u.last_active && u.last_active.split('T')[0] === dateStr
+        ).length;
+        
+        last7Days.push({
+            date: date.toLocaleDateString('en-US', { weekday: 'short' }),
+            count: count
+        });
+    }
+    
+    adminCharts.activity = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: last7Days.map(d => d.date),
+            datasets: [{
+                label: 'Active Users',
+                data: last7Days.map(d => d.count),
+                backgroundColor: '#3b82f6',
+                borderColor: '#2563eb',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            }
+        }
+    });
+}
+
+async function createContentChart(mediaData) {
+    const ctx = document.getElementById('content-chart');
+    if (!ctx) return;
+    
+    if (adminCharts.content) {
+        adminCharts.content.destroy();
+    }
+    
+    // Count by media type
+    const typeCounts = {};
+    mediaData.forEach(media => {
+        const type = media.media_type || 'image';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    
+    const colors = {
+        image: '#10b981',
+        video: '#f59e0b',
+        document: '#8b5cf6'
+    };
+    
+    adminCharts.content = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(typeCounts),
+            datasets: [{
+                data: Object.values(typeCounts),
+                backgroundColor: Object.keys(typeCounts).map(type => colors[type] || '#64748b'),
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#ffffff' }
+                }
+            }
+        }
+    });
+}
+
+async function createEngagementChart(engagementData) {
+    const ctx = document.getElementById('engagement-chart');
+    if (!ctx) return;
+    
+    if (adminCharts.engagement) {
+        adminCharts.engagement.destroy();
+    }
+    
+    // Calculate averages
+    const avgHabits = engagementData.reduce((sum, user) => 
+        sum + (user.habits?.[0]?.count || 0), 0) / engagementData.length;
+    const avgGoals = engagementData.reduce((sum, user) => 
+        sum + (user.goals?.[0]?.count || 0), 0) / engagementData.length;
+    const avgMedia = engagementData.reduce((sum, user) => 
+        sum + (user.media?.[0]?.count || 0), 0) / engagementData.length;
+    
+    adminCharts.engagement = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Habits', 'Goals', 'Media Uploads', 'Engagement', 'Activity'],
+            datasets: [{
+                label: 'Average User Engagement',
+                data: [
+                    Math.round(avgHabits * 10) / 10,
+                    Math.round(avgGoals * 10) / 10, 
+                    Math.round(avgMedia * 10) / 10,
+                    Math.round((avgHabits + avgGoals) * 5) / 10,
+                    Math.round((avgMedia + avgHabits) * 5) / 10
+                ],
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                borderColor: '#8b5cf6',
+                pointBackgroundColor: '#8b5cf6',
+                pointBorderColor: '#ffffff',
+                pointHoverBackgroundColor: '#ffffff',
+                pointHoverBorderColor: '#8b5cf6'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                r: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    pointLabels: { color: '#ffffff' }
+                }
+            }
+        }
+    });
 }
 
 // **ENHANCED GET ALL USERS DATA - SUPABASE + LOCALSTORAGE HYBRID**

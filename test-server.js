@@ -27,7 +27,7 @@ const mimeTypes = {
 };
 
 const server = createServer((req, res) => {
-  let filePath = join(PUBLIC_DIR, req.url === '/' ? 'index-cloud.html' : req.url);
+  let filePath = join(PUBLIC_DIR, req.url === '/' ? 'index.html' : req.url);
   
   // Security check - prevent directory traversal
   if (!filePath.startsWith(PUBLIC_DIR)) {

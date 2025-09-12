@@ -1401,7 +1401,7 @@ function createMediaCard(item) {
                     <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded-md transition-all duration-200" title="View Fullscreen">
                         <i class="fas fa-expand text-xs"></i>
                     </button>
-                    <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-500 hover:bg-purple-600 text-white p-1.5 rounded-md transition-all duration-200" title="Compare Photos">
+                    <button onclick="event.stopPropagation(); handleCompareClick('${item.id}');" class="bg-purple-500 hover:bg-purple-600 text-white p-1.5 rounded-md transition-all duration-200" title="Compare Photos">
                         <i class="fas fa-plus text-xs"></i>
                     </button>
                     <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-md transition-all duration-200" title="Delete Media">
@@ -1520,6 +1520,22 @@ function showFullscreenImage(mediaId) {
 
 // **MEDIA COMPARISON SYSTEM**
 let compareSelection = [];
+
+// **IMPROVED COMPARE MODE LOGIC - NO WHITE FLASH**
+function handleCompareClick(mediaId) {
+    console.log('📸 Compare button clicked for:', mediaId);
+    
+    // Enter compare mode if not already in it (without reloading gallery)
+    if (!document.body.classList.contains('compare-mode')) {
+        document.body.classList.add('compare-mode');
+        compareSelection = [];
+        showNotification('Select 2 images to compare side by side', 'info');
+        console.log('🔄 Entered compare mode (smooth)');
+    }
+    
+    // Add to comparison selection
+    selectForComparison(mediaId);
+}
 
 function toggleCompareMode() {
     const isCompareMode = document.body.classList.contains('compare-mode');
@@ -4331,6 +4347,7 @@ window.showNutritionModal = showNutritionModal;
 window.deleteFoodEntry = deleteFoodEntry;
 window.deleteMediaItem = deleteMediaItem;
 window.showFullscreenImage = showFullscreenImage;
+window.handleCompareClick = handleCompareClick;
 window.toggleCompareMode = toggleCompareMode;
 window.selectForComparison = selectForComparison;
 window.downloadMedia = downloadMedia;

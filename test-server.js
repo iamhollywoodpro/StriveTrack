@@ -27,7 +27,9 @@ const mimeTypes = {
 };
 
 const server = createServer((req, res) => {
-  let filePath = join(PUBLIC_DIR, req.url === '/' ? 'index.html' : req.url);
+  // Remove query parameters from URL for file path
+  const url = req.url.split('?')[0];
+  let filePath = join(PUBLIC_DIR, url === '/' ? 'index.html' : url);
   
   // Security check - prevent directory traversal
   if (!filePath.startsWith(PUBLIC_DIR)) {

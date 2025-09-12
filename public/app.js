@@ -562,6 +562,57 @@ let compareMode = false;
 let selectedMedia = [];
 const MAX_COMPARE_ITEMS = 2;
 
+// Setup working habits system
+function setupWorkingHabits() {
+    console.log('🔧 Setting up working habits system...');
+    
+    const habits = getLocalHabits();
+    if (habits.length === 0) {
+        console.log('📋 No habits found, creating sample habits');
+        createSampleHabits();
+    }
+    
+    // Ensure points are initialized
+    if (!currentUser || typeof currentUser.points !== 'number') {
+        if (currentUser) {
+            currentUser.points = 0;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+    }
+    
+    updatePointsDisplay();
+}
+
+// Load user progress from localStorage
+function loadUserProgress() {
+    console.log('📊 Loading user progress...');
+    
+    if (currentUser) {
+        // Initialize points if missing
+        if (typeof currentUser.points !== 'number') {
+            currentUser.points = 0;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        }
+        
+        updatePointsDisplay();
+        
+        // Load any stored completions and update points based on them
+        const completions = getLocalCompletions();
+        let totalCompletionPoints = 0;
+        
+        Object.values(completions).forEach(habitCompletions => {
+            totalCompletionPoints += Object.keys(habitCompletions).length * 10; // 10 points per completion
+        });
+        
+        // Only update if user has no points but has completions
+        if (currentUser.points === 0 && totalCompletionPoints > 0) {
+            currentUser.points = totalCompletionPoints;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updatePointsDisplay();
+        }
+    }
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
     console.log('StriveTrack app initializing...');
@@ -1529,7 +1580,7 @@ async function loadHabits() {
 }
 
 function displayHabits(habits) {
-    console.log('🎯 Displaying habits - FIXED VERSION');
+    console.log('🎯 Displaying habits - WEEKLY CALENDAR VERSION');
     console.log('📊 Input habits:', habits?.length || 0, 'habits');
     
     const container = document.getElementById('habits-container');
@@ -1553,12 +1604,16 @@ function displayHabits(habits) {
         return;
     }
     
+    // Use weekly habit elements with clickable day cells
     habits.forEach(habit => {
-        const habitElement = createSimpleHabitCard(habit);
+        const habitElement = createWeeklyHabitElement(habit);
         container.appendChild(habitElement);
     });
     
-    console.log('✅ Displayed', habits.length, 'habits successfully');
+    // Set up click handlers for day cells and delete buttons
+    setupHabitDayClickHandlers(container);
+    
+    console.log('✅ Displayed', habits.length, 'habits with weekly calendars');
     console.log('🎯 ===== DISPLAY HABITS DEBUG END =====');
 }
 
@@ -2028,34 +2083,68 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
 
 async function toggleHabitCompletion(habitId) {
     try {
-        const response = await fetch('/api/habits/complete', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-session-id': sessionId 
-            },
-            body: JSON.stringify({ habitId })
-        });
+        console.log('🔄 Toggling habit completion for:', habitId);
         
-        if (response.ok) {
-            const data = await response.json();
-            if (data.completed) {
-                showNotification(`Habit completed! +${data.points_earned} points 💪`, 'success');
-                // Update user points
-                currentUser.points += data.points_earned;
-                document.getElementById('user-points').textContent = `⭐ ${currentUser.points} pts`;
+        const today = new Date().toISOString().split('T')[0];
+        const dayOfWeek = new Date().getDay();
+        
+        // Always update localStorage immediately for instant UI feedback
+        const localResult = toggleLocalHabitCompletion(habitId, today, dayOfWeek);
+        
+        // Update UI and points immediately
+        updatePointsDisplay();
+        
+        const pointsText = localResult.points > 0 ? `+${localResult.points}` : localResult.points;
+        
+        if (isOnline()) {
+            try {
+                console.log('🌐 Syncing to API...');
+                const response = await fetch('/api/habits/complete', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-session-id': sessionId 
+                    },
+                    body: JSON.stringify({ habitId })
+                });
                 
-                // Check for achievements after habit completion
-                checkLocalAchievements('habit_completion');
-            } else {
-                showNotification('Habit uncompleted', 'info');
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ API sync successful');
+                    
+                    // Update user points from API response if different
+                    if (data.points_earned !== undefined && currentUser) {
+                        const pointsDiff = data.points_earned - localResult.points;
+                        if (pointsDiff !== 0) {
+                            currentUser.points += pointsDiff;
+                            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                            updatePointsDisplay();
+                        }
+                    }
+                } else {
+                    console.log('❌ API sync failed, using local result');
+                }
+            } catch (apiError) {
+                console.log('❌ API unavailable, using local result');
             }
-            loadHabits();
-            updateDashboardStats();
-        } else {
-            const data = await response.json();
-            showNotification(data.error || 'Failed to update habit', 'error');
         }
+        
+        // Show notification
+        if (localResult.completed) {
+            showNotification(`Habit completed! ${pointsText} pts 💪`, 'success');
+        } else {
+            showNotification(`Habit unmarked! ${pointsText} pts`, 'info');
+        }
+        
+        // Refresh views
+        loadHabits();
+        updateDashboardStats();
+        
+        // Check for achievements
+        if (localResult.completed) {
+            checkLocalAchievements('habit_completion', { habitId, habit: localResult.habit });
+        }
+        
     } catch (error) {
         console.error('Toggle habit error:', error);
         showNotification('Failed to update habit', 'error');
@@ -2404,8 +2493,20 @@ async function submitMediaUpload(event) {
         
         xhr.onerror = function() {
             progressContainer.classList.add('hidden');
-            showNotification('Upload failed', 'error');
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            showNotification('Upload failed - please try again', 'error');
         };
+        
+        xhr.ontimeout = function() {
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            showNotification('Upload timeout - please try again', 'error');
+        };
+        
+        // Set timeout for uploads
+        xhr.timeout = 300000; // 5 minutes
         
         xhr.send(formData);
         
@@ -4335,6 +4436,201 @@ async function downloadAdminMedia(mediaId, filename) {
         console.error('Admin download error:', error);
         showNotification('Download failed: ' + error.message, 'error');
     }
+}
+
+// Profile functions
+async function loadProfileData() {
+    console.log('Loading profile data...');
+    
+    if (!currentUser) {
+        showNotification('No user data available', 'error');
+        return;
+    }
+    
+    // Populate profile form with current user data
+    const profileForm = document.getElementById('profile-form');
+    if (profileForm) {
+        const usernameField = document.getElementById('profile-username');
+        const emailField = document.getElementById('profile-email');
+        
+        if (usernameField) {
+            usernameField.value = currentUser.username || currentUser.email?.split('@')[0] || '';
+        }
+        if (emailField) {
+            emailField.value = currentUser.email || '';
+        }
+    }
+    
+    // Update profile stats
+    updateProfileStats();
+}
+
+async function handleProfileUpdate(event) {
+    event.preventDefault();
+    console.log('🔄 Updating profile...');
+    
+    const formData = new FormData(event.target);
+    const username = formData.get('username')?.trim();
+    const email = formData.get('email')?.trim();
+    
+    if (!username || !email) {
+        showNotification('Username and email are required', 'error');
+        return;
+    }
+    
+    try {
+        // Update currentUser object
+        const oldUsername = currentUser.username;
+        currentUser.username = username;
+        currentUser.email = email;
+        
+        // Save to localStorage immediately
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // Try to update on server if online
+        if (isOnline()) {
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-session-id': sessionId
+                    },
+                    body: JSON.stringify({ username, email })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Profile updated on server');
+                    showNotification('Profile updated successfully! 👤', 'success');
+                } else {
+                    console.log('⚠️ Server update failed, but local changes saved');
+                    showNotification('Profile updated locally (server sync pending)', 'warning');
+                }
+            } catch (apiError) {
+                console.log('⚠️ API unavailable, but local changes saved');
+                showNotification('Profile updated locally (will sync when online)', 'warning');
+            }
+        } else {
+            showNotification('Profile updated locally (offline mode)', 'success');
+        }
+        
+        // Update UI elements
+        updateProfileDisplay();
+        updatePointsDisplay(); // This updates welcome text with new username
+        
+    } catch (error) {
+        console.error('Profile update error:', error);
+        // Revert changes
+        currentUser.username = oldUsername;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        showNotification('Failed to update profile', 'error');
+    }
+}
+
+async function handlePasswordChange(event) {
+    event.preventDefault();
+    console.log('🔄 Changing password...');
+    
+    const formData = new FormData(event.target);
+    const currentPassword = formData.get('current-password');
+    const newPassword = formData.get('new-password');
+    const confirmPassword = formData.get('confirm-password');
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showNotification('All password fields are required', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showNotification('New passwords do not match', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showNotification('New password must be at least 6 characters', 'error');
+        return;
+    }
+    
+    try {
+        if (isOnline()) {
+            const response = await fetch('/api/profile/password', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-session-id': sessionId
+                },
+                body: JSON.stringify({ 
+                    currentPassword, 
+                    newPassword 
+                })
+            });
+            
+            if (response.ok) {
+                showNotification('Password changed successfully! 🔐', 'success');
+                event.target.reset();
+            } else {
+                const errorData = await response.json();
+                showNotification(errorData.error || 'Failed to change password', 'error');
+            }
+        } else {
+            // For offline mode, update local storage
+            if (currentUser.password === currentPassword) {
+                currentUser.password = newPassword;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem(`offline_user_${currentUser.email}`, JSON.stringify(currentUser));
+                showNotification('Password changed locally (offline mode)', 'success');
+                event.target.reset();
+            } else {
+                showNotification('Current password is incorrect', 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Password change error:', error);
+        showNotification('Failed to change password', 'error');
+    }
+}
+
+function updateProfileDisplay() {
+    // Update any profile-related display elements
+    const profileUsernameDisplay = document.getElementById('profile-username-display');
+    const profileEmailDisplay = document.getElementById('profile-email-display');
+    
+    if (profileUsernameDisplay && currentUser) {
+        profileUsernameDisplay.textContent = currentUser.username || 'Username';
+    }
+    
+    if (profileEmailDisplay && currentUser) {
+        profileEmailDisplay.textContent = currentUser.email || 'Email';
+    }
+}
+
+function updateProfileStats() {
+    if (!currentUser) return;
+    
+    const stats = {
+        totalPoints: currentUser.points || 0,
+        level: Math.floor((currentUser.points || 0) / 100) + 1,
+        joinedDate: currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString() : 'Unknown',
+        habitsCreated: getLocalHabits().length,
+        totalCompletions: getLocalHabits().reduce((sum, habit) => sum + (habit.total_completions || 0), 0)
+    };
+    
+    // Update stats display elements
+    const statsElements = {
+        'profile-total-points': stats.totalPoints,
+        'profile-level': stats.level,
+        'profile-joined-date': stats.joinedDate,
+        'profile-habits-created': stats.habitsCreated,
+        'profile-total-completions': stats.totalCompletions
+    };
+    
+    Object.entries(statsElements).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    });
 }
 
 // UI functions

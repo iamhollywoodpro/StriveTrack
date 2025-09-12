@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StriveTrack Functionality Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #00ff00; }
+        .log { margin: 5px 0; }
+        .error { color: #ff4444; }
+        .success { color: #00ff00; }
+        .warning { color: #ffaa00; }
+        .info { color: #4444ff; }
+    </style>
+</head>
+<body>
+    <h1>🔍 StriveTrack Production Test</h1>
+    <div id="results"></div>
+    <script>
+        const log = (message, type = 'info') => {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            document.getElementById('results').appendChild(div);
+            console.log(message);
+        };
+
+        async function testStriveTrack() {
+            log('🚀 Starting comprehensive StriveTrack test...', 'info');
+            
+            try {
+                // Test 1: Basic connectivity
+                log('📡 Testing basic connectivity...', 'info');
+                const baseResponse = await fetch('https://strivetrackapp.pages.dev/');
+                log(`✅ Base site responds: ${baseResponse.status}`, 'success');
+
+                // Test 2: Try to register a test user
+                log('👤 Testing user registration...', 'info');
+                const testEmail = `test_${Date.now()}@example.com`;
+                const registerResponse = await fetch('https://strivetrackapp.pages.dev/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        password: 'testpass123',
+                        username: `testuser_${Date.now()}`
+                    })
+                });
+                
+                let sessionId = null;
+                if (registerResponse.ok) {
+                    const regData = await registerResponse.json();
+                    sessionId = regData.sessionId;
+                    log(`✅ Registration successful, sessionId: ${sessionId?.substring(0, 10)}...`, 'success');
+                } else {
+                    const regError = await registerResponse.text();
+                    log(`❌ Registration failed: ${registerResponse.status} - ${regError}`, 'error');
+                    
+                    // Try login with admin account instead
+                    log('🔑 Trying admin login...', 'info');
+                    const loginResponse = await fetch('https://strivetrackapp.pages.dev/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: 'iamhollywoodpro@protonmail.com',
+                            password: 'admin123'
+                        })
+                    });
+                    
+                    if (loginResponse.ok) {
+                        const loginData = await loginResponse.json();
+                        sessionId = loginData.sessionId;
+                        log(`✅ Admin login successful, sessionId: ${sessionId?.substring(0, 10)}...`, 'success');
+                    } else {
+                        const loginError = await loginResponse.text();
+                        log(`❌ Admin login failed: ${loginResponse.status} - ${loginError}`, 'error');
+                    }
+                }
+
+                if (!sessionId) {
+                    log('❌ Cannot proceed without valid session', 'error');
+                    return;
+                }
+
+                // Test 3: Profile API
+                log('👤 Testing profile API...', 'info');
+                const profileResponse = await fetch('https://strivetrackapp.pages.dev/api/profile', {
+                    headers: { 'x-session-id': sessionId }
+                });
+                
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    log(`✅ Profile API works: ${JSON.stringify(profileData, null, 2)}`, 'success');
+                } else {
+                    const profileError = await profileResponse.text();
+                    log(`❌ Profile API failed: ${profileResponse.status} - ${profileError}`, 'error');
+                }
+
+                // Test 4: Habits API
+                log('🏃 Testing habits API...', 'info');
+                const habitsResponse = await fetch('https://strivetrackapp.pages.dev/api/habits/weekly', {
+                    headers: { 'x-session-id': sessionId }
+                });
+                
+                if (habitsResponse.ok) {
+                    const habitsData = await habitsResponse.json();
+                    log(`✅ Habits API works: Found ${habitsData.habits?.length || 0} habits`, 'success');
+                    log(`📊 Habits data: ${JSON.stringify(habitsData, null, 2)}`, 'info');
+                } else {
+                    const habitsError = await habitsResponse.text();
+                    log(`❌ Habits API failed: ${habitsResponse.status} - ${habitsError}`, 'error');
+                }
+
+                // Test 5: Create a test habit
+                log('➕ Testing habit creation...', 'info');
+                const createHabitResponse = await fetch('https://strivetrackapp.pages.dev/api/habits', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-session-id': sessionId 
+                    },
+                    body: JSON.stringify({
+                        name: `Test Habit ${Date.now()}`,
+                        description: 'Test habit for debugging',
+                        category: 'fitness',
+                        weekly_target: 5
+                    })
+                });
+                
+                if (createHabitResponse.ok) {
+                    const createData = await createHabitResponse.json();
+                    log(`✅ Habit creation works: ${JSON.stringify(createData)}`, 'success');
+                } else {
+                    const createError = await createHabitResponse.text();
+                    log(`❌ Habit creation failed: ${createHabitResponse.status} - ${createError}`, 'error');
+                }
+
+                // Test 6: Database schema check (admin only)
+                log('🗄️ Testing database fix endpoint...', 'info');
+                const dbFixResponse = await fetch('https://strivetrackapp.pages.dev/api/admin/fix-database', {
+                    method: 'POST',
+                    headers: { 'x-session-id': sessionId }
+                });
+                
+                if (dbFixResponse.ok) {
+                    const dbFixData = await dbFixResponse.json();
+                    log(`✅ Database fix endpoint works: ${JSON.stringify(dbFixData, null, 2)}`, 'success');
+                } else {
+                    const dbFixError = await dbFixResponse.text();
+                    log(`⚠️ Database fix failed (expected if not admin): ${dbFixResponse.status} - ${dbFixError}`, 'warning');
+                }
+
+                log('🎉 Test completed!', 'success');
+
+            } catch (error) {
+                log(`💥 Critical error: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+
+        // Run the test
+        testStriveTrack();
+    </script>
+</body>
+</html>

@@ -14,28 +14,34 @@ class MigrationHelper {
     static async migrateUserData(currentUser) {
         if (!currentUser || !currentUser.id) {
             console.log('No user to migrate');
-            return;
+            return false;
         }
 
         console.log('🔄 Starting migration for user:', currentUser.name);
+        console.log('🔍 User object:', JSON.stringify(currentUser));
         
         try {
             // Ensure we have a working Supabase client
             this.getSupabaseClient();
 
             // 1. Migrate user record
+            console.log('📝 Step 1: Migrating user record...');
             await this.migrateUser(currentUser);
 
             // 2. Migrate habits
+            console.log('📝 Step 2: Migrating habits...');
             await this.migrateHabits(currentUser.id);
 
             // 3. Migrate goals
+            console.log('📝 Step 3: Migrating goals...');
             await this.migrateGoals(currentUser.id);
 
             // 4. Migrate nutrition logs
+            console.log('📝 Step 4: Migrating nutrition...');
             await this.migrateNutrition(currentUser.id);
 
             // 5. Migrate achievements
+            console.log('📝 Step 5: Migrating achievements...');
             await this.migrateAchievements(currentUser.id);
 
             console.log('✅ Migration completed successfully');
@@ -48,10 +54,18 @@ class MigrationHelper {
 
     static async migrateUser(currentUser) {
         try {
+            // Validate user has required fields
+            if (!currentUser.email || !currentUser.name) {
+                throw new Error(`Invalid user data: missing email (${currentUser.email}) or name (${currentUser.name})`);
+            }
+
+            console.log(`🔍 Looking for user: ${currentUser.email}`);
+            
             // Check if user exists
             let user = await SupabaseServices.users.getUserByEmail(currentUser.email);
             
             if (!user) {
+                console.log(`📝 Creating new user: ${currentUser.email}`);
                 // Create new user
                 user = await SupabaseServices.users.createUser(
                     currentUser.email,
@@ -66,7 +80,8 @@ class MigrationHelper {
             currentUser.supabaseId = user.id;
             return user;
         } catch (error) {
-            console.error('Failed to migrate user:', error);
+            console.error('❌ Failed to migrate user:', error);
+            console.error('❌ Error details:', error.message);
             throw error;
         }
     }

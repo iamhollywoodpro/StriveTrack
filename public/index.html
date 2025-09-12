@@ -2543,7 +2543,7 @@
             </div>
             
             <!-- Habits Section -->
-            <div id="habits-section" class="section">
+            <div id="habits-section" class="section hidden">
                 <div class="glass-card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div>
@@ -2561,7 +2561,7 @@
                     </div>
                     
                     <!-- Empty State -->
-                    <div id="habits-empty-state" class="text-center py-12 hidden">
+                    <div id="habits-empty-state" class="text-center py-12">
                         <div class="text-6xl mb-4">🎯</div>
                         <h3 class="text-xl font-semibold text-white mb-2">No Habits Yet</h3>
                         <p class="text-white/60 mb-6">Start building your fitness routine by creating your first habit!</p>
@@ -2571,22 +2571,8 @@
                         </button>
                     </div>
                     
-                    <div id="habits-container" style="display: block; visibility: visible; opacity: 1;">
-                        <!-- FIXED TEST: Simple HTML habit card with forced visibility -->
-                        <div class="habit-card" style="display: block; visibility: visible; background: rgba(255,255,255,0.1); border: 2px solid #10b981; padding: 20px; margin: 10px 0;">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-white font-semibold text-lg" style="color: white;">✅ FIXED TEST HABIT</h3>
-                                    <p class="text-white/60 text-sm" style="color: rgba(255,255,255,0.7);">This should be visible now with forced CSS</p>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <button class="px-4 py-2 rounded-lg font-medium bg-green-600 text-white" style="background: #10b981; color: white; padding: 8px 16px; border-radius: 8px;">
-                                        ✓ VISIBLE
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End test -->
+                    <div id="habits-container">
+                        <!-- Habits will be loaded here -->
                     </div>
                 </div>
             </div>

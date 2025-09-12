@@ -7,7 +7,7 @@ let sessionId = localStorage.getItem('sessionId') || 'offline_' + Date.now();
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
 // **SUPABASE INTEGRATION FLAG**
-let useSupabase = false; // Set to true to enable Supabase mode
+let useSupabase = true; // Set to true to enable Supabase mode
 let supabaseReady = false;
 
 // **SESSION VALIDATION ON APP LOAD**

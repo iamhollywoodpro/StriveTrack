@@ -573,29 +573,35 @@ function openMediaUploadModal() {
             <!-- Media Type Selection -->
             <div class="mb-6">
                 <label class="block text-white/90 text-sm font-medium mb-3">Media Type</label>
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-3 gap-4">
                     <div class="media-type-option">
                         <input type="radio" name="media-type" value="before" id="type-before" class="hidden">
-                        <label for="type-before" class="media-type-card cursor-pointer">
-                            <div class="text-2xl mb-2">🏁</div>
-                            <div class="font-semibold">Before</div>
-                            <div class="text-xs text-white/60">Starting point photo</div>
+                        <label for="type-before" class="media-type-card-improved cursor-pointer block">
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-center border-2 border-transparent transition-all duration-200 hover:border-blue-400">
+                                <div class="text-3xl mb-2">🏁</div>
+                                <div class="font-semibold text-white">Before</div>
+                                <div class="text-xs text-blue-100 mt-1">Starting point</div>
+                            </div>
                         </label>
                     </div>
                     <div class="media-type-option">
                         <input type="radio" name="media-type" value="progress" id="type-progress" class="hidden" checked>
-                        <label for="type-progress" class="media-type-card cursor-pointer">
-                            <div class="text-2xl mb-2">💪</div>
-                            <div class="font-semibold">Progress</div>
-                            <div class="text-xs text-white/60">Journey update</div>
+                        <label for="type-progress" class="media-type-card-improved cursor-pointer block">
+                            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-4 text-center border-2 border-purple-400 transition-all duration-200 hover:border-purple-300">
+                                <div class="text-3xl mb-2">💪</div>
+                                <div class="font-semibold text-white">Progress</div>
+                                <div class="text-xs text-purple-100 mt-1">Journey update</div>
+                            </div>
                         </label>
                     </div>
                     <div class="media-type-option">
                         <input type="radio" name="media-type" value="after" id="type-after" class="hidden">
-                        <label for="type-after" class="media-type-card cursor-pointer">
-                            <div class="text-2xl mb-2">🎆</div>
-                            <div class="font-semibold">After</div>
-                            <div class="text-xs text-white/60">Achievement photo</div>
+                        <label for="type-after" class="media-type-card-improved cursor-pointer block">
+                            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg p-4 text-center border-2 border-transparent transition-all duration-200 hover:border-green-400">
+                                <div class="text-3xl mb-2">🎆</div>
+                                <div class="font-semibold text-white">After</div>
+                                <div class="text-xs text-green-100 mt-1">Achievement</div>
+                            </div>
                         </label>
                     </div>
                 </div>
@@ -687,23 +693,29 @@ function handleMediaUpload() {
     // Simulate upload progress with smooth animation
     let progress = 0;
     const interval = setInterval(() => {
-        progress += Math.random() * 12 + 3; // More consistent progress increments
+        progress += Math.random() * 8 + 4; // More consistent progress increments
         if (progress > 100) progress = 100;
         
         if (progressBar) {
+            // Force reflow to ensure animation works
+            progressBar.style.transition = 'none';
+            progressBar.offsetHeight; // Trigger reflow
+            progressBar.style.transition = 'width 0.4s ease-out';
             progressBar.style.width = `${progress}%`;
-            progressBar.style.transition = 'width 0.3s ease-out'; // Smooth animation
         }
         if (percentage) percentage.textContent = `${Math.round(progress)}%`;
         
         if (progress >= 100) {
             clearInterval(interval);
-            // Add a slight delay to ensure 100% is visible
+            // Ensure 100% is visible before completion
+            if (progressBar) progressBar.style.width = '100%';
+            if (percentage) percentage.textContent = '100%';
+            
             setTimeout(() => {
                 completeUpload(files, mediaType);
-            }, 300);
+            }, 500);
         }
-    }, 150); // Slightly faster updates
+    }, 200); // Balanced update speed
 }
 
 // **FIXED: Media upload with proper file storage**
@@ -773,11 +785,14 @@ function finishUpload(uploadedItems) {
     
     // Auto-close modal after showing completion
     setTimeout(() => {
-        closeModal('media-upload-modal');
+        const modal = document.getElementById('media-upload-modal');
+        if (modal) {
+            modal.remove();
+        }
         // Refresh progress gallery and check achievements
         loadProgressGallery();
         checkAndUnlockAchievements();
-    }, 2000); // Longer delay to show completion state
+    }, 2500); // Adequate time to see completion
     
     console.log('✅ Upload completed successfully with', uploadedItems.length, 'files');
 }
@@ -1045,6 +1060,25 @@ function createMediaCard(item) {
     
     return `
         <div class="media-item" data-media-id="${item.id}" data-media-type="${item.type}">
+            <!-- Action buttons at top of media item -->
+            <div class="media-actions-top flex justify-end gap-1 p-2 absolute top-0 right-0 z-10">
+                <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-600/90 hover:bg-blue-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="View Fullscreen">
+                    <i class="fas fa-expand text-sm"></i>
+                </button>
+                ${isInCompareMode ? `
+                    <button onclick="event.stopPropagation(); selectForComparison('${item.id}')" class="bg-purple-600/90 hover:bg-purple-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="Select for Comparison">
+                        <i class="fas fa-check text-sm"></i>
+                    </button>
+                ` : `
+                    <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-600/90 hover:bg-purple-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="Compare Photos">
+                        <i class="fas fa-plus text-sm"></i>
+                    </button>
+                `}
+                <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-600/90 hover:bg-red-600 text-white p-2 rounded-md shadow-lg transition-all duration-200" title="Delete Media">
+                    <i class="fas fa-trash text-sm"></i>
+                </button>
+            </div>
+            
             <div class="media-preview relative" style="height: 200px; ${isImage ? 'cursor: zoom-in;' : ''}" onclick="handleMediaClick('${item.id}', event)">
                 ${item.url && isImage ? 
                     `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover rounded-t-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -1052,27 +1086,8 @@ function createMediaCard(item) {
                     `<div class="w-full h-full flex items-center justify-center text-white/40 text-4xl bg-white/5 rounded-t-lg">${isImage ? '🖼️' : '🎥'}</div>`
                 }
                 
-                <div class="media-type-badge ${item.type} absolute top-2 right-2">
+                <div class="media-type-badge ${item.type} absolute bottom-2 left-2">
                     ${typeIcons[item.type]} ${item.type.toUpperCase()}
-                </div>
-                
-                <!-- Media action overlay - shows on hover -->
-                <div class="media-actions-overlay absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3" style="border-radius: 12px 12px 0 0;">
-                    <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="View Fullscreen">
-                        <i class="fas fa-expand text-lg"></i>
-                    </button>
-                    ${isInCompareMode ? `
-                        <button onclick="event.stopPropagation(); selectForComparison('${item.id}')" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="Select for Comparison">
-                            <i class="fas fa-check text-lg"></i>
-                        </button>
-                    ` : `
-                        <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="Compare Photos">
-                            <i class="fas fa-plus text-lg"></i>
-                        </button>
-                    `}
-                    <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="Delete Media">
-                        <i class="fas fa-trash text-lg"></i>
-                    </button>
                 </div>
             </div>
             
@@ -1092,7 +1107,7 @@ function createMediaCard(item) {
 // **HANDLE MEDIA CLICK**
 function handleMediaClick(mediaId, event) {
     // If not clicking on action buttons, show fullscreen
-    if (!event.target.closest('.media-actions')) {
+    if (!event.target.closest('.media-actions-top')) {
         showFullscreenImage(mediaId);
     }
 }
@@ -1119,7 +1134,7 @@ function showFullscreenImage(mediaId) {
                     <h3 class="text-lg font-semibold">${item.name}</h3>
                     <p class="text-white/70 text-sm">${item.type.toUpperCase()} • ${new Date(item.uploaded_at).toLocaleDateString()}</p>
                 </div>
-                <button onclick="closeModal('fullscreen-image-modal')" class="text-white/70 hover:text-white text-2xl">
+                <button class="text-white/70 hover:text-white text-2xl p-2 hover:bg-white/10 rounded-lg transition-all duration-200" id="fullscreen-close-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -1141,6 +1156,30 @@ function showFullscreenImage(mediaId) {
     
     document.body.appendChild(modal);
     modal.classList.remove('hidden');
+    
+    // Set up close button event listener
+    const closeBtn = modal.querySelector('#fullscreen-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.remove();
+        });
+    }
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // Close on Escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
     
     console.log('🖼️ Opened fullscreen view for:', item.name);
 }

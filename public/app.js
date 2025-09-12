@@ -1725,6 +1725,8 @@ function downloadMedia(mediaId) {
 }
 
 function deleteMediaItem(mediaId) {
+    console.log('🗑️ Attempting to delete media item:', mediaId);
+    
     if (!currentUser || !currentUser.id) {
         showNotification('Please log in to delete media', 'error');
         return;
@@ -1736,6 +1738,7 @@ function deleteMediaItem(mediaId) {
     
     const userPrefix = `user_${currentUser.id}`;
     let media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    console.log('📊 Current media count:', media.length);
     const item = media.find(m => m.id === mediaId);
     
     if (!item) {
@@ -1747,8 +1750,10 @@ function deleteMediaItem(mediaId) {
     media = media.filter(m => m.id !== mediaId);
     localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
     
-    // Refresh gallery
-    loadProgressGallery();
+    // Refresh gallery - reload the progress section
+    if (getCurrentTab() === 'progress') {
+        loadProgressGallery();
+    }
     
     showNotification(`Deleted: ${item.name}`, 'success');
     console.log('🗑️ Deleted media:', item.name);
@@ -1778,17 +1783,8 @@ function downloadComparison() {
     showNotification('Comparison download feature coming soon!', 'info');
 }
 
-// **DELETE MEDIA ITEM**
-function deleteMediaItem(mediaId) {
-    if (!confirm('Are you sure you want to delete this media item?')) return;
-    
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
-    const filteredMedia = media.filter(item => item.id !== mediaId);
-    
-    localStorage.setItem('strivetrack_media', JSON.stringify(filteredMedia));
-    loadProgressGallery();
-    showNotification('Media item deleted', 'info');
-}
+// **DELETE MEDIA ITEM - REMOVED DUPLICATE**
+// This duplicate function is causing conflicts - using the user-specific version above
 
 // **ENHANCED MODAL FUNCTIONS**
 function showModal(modalId) {

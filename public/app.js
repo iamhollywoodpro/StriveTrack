@@ -1258,53 +1258,59 @@ function showComparison() {
     
     const [item1, item2] = compareSelection;
     
-    // Create comparison modal
+    // Create comparison modal with fixed layout and proper close functionality
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.id = 'comparison-modal';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
     modal.innerHTML = `
-        <div class="modal-content max-w-6xl mx-auto">
+        <div class="modal-content" style="max-width: 95vw; max-height: 95vh; padding: 20px; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;">
+            <!-- Header -->
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-2xl font-bold text-white">🔄 Media Comparison</h2>
-                <button onclick="closeModal('comparison-modal')" class="text-white/70 hover:text-white">
-                    <i class="fas fa-times text-xl"></i>
+                <button id="comparison-close-btn" class="text-white/70 hover:text-white text-2xl p-2 hover:bg-white/10 rounded-lg transition-all duration-200">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="comparison-item">
-                    <div class="comparison-header">
-                        <h3 class="text-white font-semibold">${item1.name}</h3>
+            <!-- Side-by-side comparison layout (always side-by-side on screens > 768px) -->
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                <!-- Left Image -->
+                <div class="flex-1 bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                    <div class="bg-white/10 p-3 border-b border-white/10">
+                        <h3 class="text-white font-semibold text-lg">${item1.name}</h3>
                         <div class="text-white/60 text-sm">
                             ${item1.type.toUpperCase()} • ${new Date(item1.uploaded_at).toLocaleDateString()}
                         </div>
                     </div>
-                    <div class="comparison-media">
-                        <img src="${item1.url}" alt="${item1.name}" class="w-full h-full object-cover">
+                    <div style="height: 400px; display: flex; align-items: center; justify-content: center;">
+                        <img src="${item1.url}" alt="${item1.name}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                     </div>
                 </div>
                 
-                <div class="comparison-item">
-                    <div class="comparison-header">
-                        <h3 class="text-white font-semibold">${item2.name}</h3>
+                <!-- Right Image -->
+                <div class="flex-1 bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                    <div class="bg-white/10 p-3 border-b border-white/10">
+                        <h3 class="text-white font-semibold text-lg">${item2.name}</h3>
                         <div class="text-white/60 text-sm">
                             ${item2.type.toUpperCase()} • ${new Date(item2.uploaded_at).toLocaleDateString()}
                         </div>
                     </div>
-                    <div class="comparison-media">
-                        <img src="${item2.url}" alt="${item2.name}" class="w-full h-full object-cover">
+                    <div style="height: 400px; display: flex; align-items: center; justify-content: center;">
+                        <img src="${item2.url}" alt="${item2.name}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                     </div>
                 </div>
             </div>
             
-            <div class="flex gap-3 mt-6">
+            <!-- Action buttons -->
+            <div class="flex gap-3">
+                <button id="comparison-close-bottom-btn" class="btn-secondary flex-1">
+                    <i class="fas fa-times mr-2"></i>
+                    Close Comparison
+                </button>
                 <button onclick="downloadComparison()" class="btn-primary flex-1">
                     <i class="fas fa-download mr-2"></i>
                     Download Comparison
-                </button>
-                <button onclick="closeModal('comparison-modal'); toggleCompareMode();" class="btn-secondary">
-                    <i class="fas fa-times mr-2"></i>
-                    Close
                 </button>
             </div>
         </div>
@@ -1312,6 +1318,39 @@ function showComparison() {
     
     document.body.appendChild(modal);
     modal.classList.remove('hidden');
+    
+    // Set up close button event listeners  
+    const closeBtn = modal.querySelector('#comparison-close-btn');
+    const closeBottomBtn = modal.querySelector('#comparison-close-bottom-btn');
+    
+    const closeComparison = () => {
+        modal.remove();
+        toggleCompareMode(); // Exit compare mode
+    };
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeComparison);
+    }
+    
+    if (closeBottomBtn) {
+        closeBottomBtn.addEventListener('click', closeComparison);
+    }
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeComparison();
+        }
+    });
+    
+    // Close on Escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            closeComparison();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
     
     console.log('🔄 Showing comparison between:', item1.name, 'and', item2.name);
 }

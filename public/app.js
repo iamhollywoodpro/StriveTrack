@@ -127,6 +127,7 @@ function createWeeklyHabitElement(habit) {
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
+    weekStart.setHours(0, 0, 0, 0); // Reset time to midnight
     
     let weeklyCompletedCount = 0;
     
@@ -269,17 +270,32 @@ function setupHabitClickHandlers() {
 }
 
 function handleHabitClick(event) {
-    console.log('🖱️ CLICK DETECTED! Target:', event.target.className);
+    console.log('🖱️ CLICK DETECTED! Target:', event.target);
+    console.log('🖱️ Target classes:', event.target.className);
+    console.log('🖱️ Target parent:', event.target.parentElement);
     
-    // Handle day cell clicks
+    // Handle day cell clicks - check target and parent
+    let dayCell = null;
+    
     if (event.target.classList.contains('day-cell')) {
-        const habitId = event.target.getAttribute('data-habit-id');
-        const date = event.target.getAttribute('data-date');
+        dayCell = event.target;
+    } else if (event.target.parentElement && event.target.parentElement.classList.contains('day-cell')) {
+        dayCell = event.target.parentElement;
+    } else if (event.target.closest && event.target.closest('.day-cell')) {
+        dayCell = event.target.closest('.day-cell');
+    }
+    
+    if (dayCell) {
+        const habitId = dayCell.getAttribute('data-habit-id');
+        const date = dayCell.getAttribute('data-date');
         
         console.log('📅 Day cell clicked:', habitId, date);
         
         if (habitId && date) {
+            event.preventDefault();
+            event.stopPropagation();
             toggleHabitCompletion(habitId, date);
+            return;
         }
     }
     
@@ -297,7 +313,7 @@ function handleHabitClick(event) {
     }
 }
 
-// **FIXED TOGGLE HABIT COMPLETION**
+// **FIXED TOGGLE HABIT COMPLETION WITH POINTS**
 function toggleHabitCompletion(habitId, date = null) {
     const targetDate = date || new Date().toISOString().split('T')[0];
     console.log('🔄 Toggling habit completion:', habitId, 'on date:', targetDate);
@@ -312,20 +328,26 @@ function toggleHabitCompletion(habitId, date = null) {
     const wasCompleted = completions[habitId][targetDate];
     completions[habitId][targetDate] = !wasCompleted;
     
+    const newStatus = !wasCompleted;
     console.log('🎯 Habit', habitId, 'on', targetDate, ':', wasCompleted ? 'unmarked' : 'marked');
     
     // Save to localStorage
     saveLocalCompletions(completions);
     
-    // Update points display
+    // Calculate points change
+    const pointsChange = newStatus ? 10 : -10;
+    console.log('💰 Points change:', pointsChange);
+    
+    // Update points display immediately
     updatePointsDisplay();
     
-    // Refresh habit display
+    // Refresh habit display to show new status
     loadHabits();
     
-    // Show notification
+    // Show notification with points
     const action = wasCompleted ? 'unmarked' : 'completed';
-    showNotification(`Habit ${action} for ${targetDate}!`, 'success');
+    const pointsText = newStatus ? ' (+10 pts)' : ' (-10 pts)';
+    showNotification(`Habit ${action}${pointsText} 🎉`, newStatus ? 'success' : 'info');
 }
 
 // Load habits function
@@ -391,6 +413,38 @@ function createSampleHabits() {
     console.log('✅ Sample habits created');
 }
 
+// MISSING HABIT CREATION FUNCTIONS
+function openCreateHabitModal() {
+    console.log('📝 Opening create habit modal');
+    showModal('create-habit-modal');
+}
+
+function handleCreateHabit(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const habit = {
+        id: 'habit_' + Date.now(),
+        name: formData.get('habit-name') || document.getElementById('habit-name').value,
+        description: formData.get('habit-description') || document.getElementById('habit-description').value,
+        weekly_target: parseInt(formData.get('habit-target') || document.getElementById('habit-target')?.value || 7),
+        difficulty: formData.get('habit-difficulty') || document.getElementById('habit-difficulty')?.value || 'medium',
+        created_at: new Date().toISOString()
+    };
+    
+    console.log('🎯 Creating habit:', habit);
+    
+    const habits = getLocalHabits();
+    habits.push(habit);
+    saveLocalHabits(habits);
+    
+    closeModal('create-habit-modal');
+    loadHabits();
+    updatePointsDisplay();
+    
+    showNotification(`Habit "${habit.name}" created successfully! 🎉`, 'success');
+}
+
 // **FIXED PROFILE UPDATE FUNCTION**
 async function handleProfileUpdate(event) {
     event.preventDefault();
@@ -438,7 +492,7 @@ async function handleProfileUpdate(event) {
     }
 }
 
-// **MEDIA UPLOAD FUNCTIONS (Simplified)**
+// **FIXED MEDIA UPLOAD FUNCTIONS**
 function openMediaUploadModal() {
     console.log('📸 Opening media upload modal');
     showModal('media-upload-modal');
@@ -448,40 +502,64 @@ function handleMediaUpload() {
     console.log('📸 Handling media upload');
     
     const fileInput = document.getElementById('media-file-input');
-    const file = fileInput.files[0];
+    if (!fileInput) {
+        console.log('❌ File input not found');
+        showNotification('Upload interface not ready. Please try again.', 'error');
+        return;
+    }
     
+    const file = fileInput.files[0];
     if (!file) {
         showNotification('Please select a file to upload.', 'warning');
         return;
     }
     
-    // Simulate upload process
+    console.log('📸 Uploading file:', file.name, file.type);
+    
+    // Show upload progress
     showNotification('Upload starting...', 'info');
     
     setTimeout(() => {
-        // Simulate successful upload
+        // Create media item
         const mediaItem = {
             id: 'media_' + Date.now(),
-            type: file.type.startsWith('image/') ? 'image' : 'video',
+            type: file.type.startsWith('image/') ? 'before' : 'progress', // Default type
             name: file.name,
             uploaded_at: new Date().toISOString(),
-            url: URL.createObjectURL(file) // Local preview
+            url: URL.createObjectURL(file),
+            size: file.size
         };
+        
+        console.log('📸 Created media item:', mediaItem);
         
         // Save to localStorage
         const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
         media.push(mediaItem);
         localStorage.setItem('strivetrack_media', JSON.stringify(media));
         
-        showNotification('Media uploaded successfully!', 'success');
+        showNotification('Media uploaded successfully! 📸', 'success');
         closeModal('media-upload-modal');
         
-        // Refresh media gallery if on that tab
-        if (getCurrentTab() === 'progress-gallery') {
-            loadProgressGallery();
-        }
+        // Clear file input
+        fileInput.value = '';
         
-    }, 2000);
+        // Refresh media gallery
+        loadProgressGallery();
+        
+    }, 1500);
+}
+
+// Add media upload button handlers
+function setupMediaUploadButtons() {
+    const uploadButtons = document.querySelectorAll('[onclick*="openMediaUploadModal"], #upload-media-btn, .upload-btn');
+    uploadButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openMediaUploadModal();
+        });
+    });
+    
+    console.log('✅ Media upload buttons connected:', uploadButtons.length);
 }
 
 // **UTILITY FUNCTIONS**
@@ -790,6 +868,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     console.log('✅ Navigation tabs connected');
     
+    // CONNECT HABIT CREATION BUTTONS
+    const createHabitCard = document.getElementById('create-habit-card');
+    if (createHabitCard) {
+        createHabitCard.addEventListener('click', openCreateHabitModal);
+    }
+    
+    const addHabitBtn = document.getElementById('add-habit-btn');
+    if (addHabitBtn) {
+        addHabitBtn.addEventListener('click', openCreateHabitModal);
+    }
+    
+    const createHabitForm = document.getElementById('create-habit-form');
+    if (createHabitForm) {
+        createHabitForm.addEventListener('submit', handleCreateHabit);
+    }
+    
+    console.log('✅ Habit creation buttons connected');
+    
+    // CONNECT MEDIA UPLOAD BUTTONS
+    setupMediaUploadButtons();
+    
     // Check if user is logged in
     if (currentUser && sessionId) {
         console.log('✅ User session found:', currentUser.name);
@@ -866,6 +965,11 @@ window.handleRegister = handleRegister;
 window.handleProfileUpdate = handleProfileUpdate;
 window.openMediaUploadModal = openMediaUploadModal;
 window.handleMediaUpload = handleMediaUpload;
+window.openCreateHabitModal = openCreateHabitModal;
+window.handleCreateHabit = handleCreateHabit;
+window.toggleHabitCompletion = toggleHabitCompletion;
+window.deleteHabit = deleteHabit;
+window.createSampleHabits = createSampleHabits;
 window.showModal = showModal;
 window.closeModal = closeModal;
 window.logout = logout;

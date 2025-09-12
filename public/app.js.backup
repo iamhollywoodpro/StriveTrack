@@ -1207,7 +1207,7 @@ function showLoginScreen() {
 }
 
 // Dashboard functions
-async function showDashboard() {
+function showDashboard() {
     console.log('Showing dashboard for user:', currentUser);
     console.log('Current sessionId:', sessionId);
     
@@ -1231,9 +1231,7 @@ async function showDashboard() {
     }
     
     // Update points display and sync from server if online
-    syncUserPointsFromServer().catch(error => {
-        console.log('Could not sync from server:', error.message);
-    });
+    await syncUserPointsFromServer();
     updatePointsDisplay();
     
     // Show admin tab ONLY for iamhollywoodpro@protonmail.com
@@ -1362,7 +1360,7 @@ function createDashboardProgressElement(habit) {
 async function loadDashboardData() {
     await Promise.all([
         loadDashboardWeeklyProgress(),
-        loadHabits(), // ENABLED: Load habits on dashboard
+        // loadHabits(), // DISABLED: Using simple habit system
         loadMedia(),
         loadAchievements(),
         loadDailyChallenges(),
@@ -1529,36 +1527,76 @@ async function loadHabits() {
 }
 
 function displayHabits(habits) {
-    console.log('🎯 Displaying habits - FIXED VERSION');
-    console.log('📊 Input habits:', habits?.length || 0, 'habits');
+    console.log('🎯 ===== DISPLAY HABITS DEBUG START =====');
+    console.log('📊 Input habits array:', habits);
+    console.log('📊 Habits array length:', habits ? habits.length : 'NULL/undefined');
+    console.log('📊 Habits array type:', typeof habits);
     
     const container = document.getElementById('habits-container');
+    const emptyState = document.getElementById('habits-empty-state');
+    
+    console.log('📊 Container element:', container ? '✅ Found' : '❌ Not found');
+    console.log('📊 Empty state element:', emptyState ? '✅ Found' : '❌ Not found');
+    
     if (!container) {
-        console.error('❌ habits-container not found!');
+        console.error('❌ CRITICAL: habits-container element not found!');
         return;
     }
     
     container.innerHTML = '';
+    console.log('📊 Container cleared, current children count:', container.children.length);
     
     if (!habits || habits.length === 0) {
-        container.innerHTML = `
-            <div class="col-span-full text-center py-8">
-                <h3 class="text-white text-xl mb-2">No habits yet!</h3>
-                <p class="text-white/60 mb-4">Create your first habit to get started.</p>
-                <button onclick="createSampleHabits(); loadHabits();" class="btn-primary">
-                    Create Sample Habits
-                </button>
-            </div>
-        `;
+        console.log('📊 No habits to display - showing empty state');
+        // Show empty state
+        if (emptyState) {
+            emptyState.classList.remove('hidden');
+            console.log('📊 Empty state shown');
+        }
+        container.innerHTML = '';
+        console.log('🎯 ===== DISPLAY HABITS DEBUG END (EMPTY) =====');
         return;
+    } else {
+        console.log('📊 Habits found - hiding empty state');
+        // Hide empty state
+        if (emptyState) {
+            emptyState.classList.add('hidden');
+            console.log('📊 Empty state hidden');
+        }
     }
     
-    habits.forEach(habit => {
-        const habitElement = createSimpleHabitCard(habit);
-        container.appendChild(habitElement);
+    console.log('⚙️ Processing', habits.length, 'habits for display');
+    
+    // Display habits using the enhanced createHabitElement function
+    habits.forEach((habit, index) => {
+        try {
+            console.log(`🔩 Creating element for habit ${index}:`, habit?.name, 'ID:', habit?.id);
+            console.log(`🔩 Full habit data ${index}:`, habit);
+            
+            const habitElement = createHabitElement(habit, false);
+            console.log(`🔩 Created element result:`, habitElement ? '✅ Success' : '❌ Failed');
+            
+            if (habitElement) {
+                container.appendChild(habitElement);
+                console.log(`✅ Added habit ${index} to container`);
+                console.log(`📊 Container children count after adding:`, container.children.length);
+            } else {
+                console.warn(`⚠️ createHabitElement returned null for habit ${index}:`, habit);
+            }
+        } catch (error) {
+            console.error(`❌ Error creating habit element ${index}:`, error, habit);
+            console.error('❌ Error stack:', error.stack);
+        }
     });
     
-    console.log('✅ Displayed', habits.length, 'habits successfully');
+    console.log('✅ Successfully processed all habits');
+    console.log('📋 Final container children count:', container.children.length);
+    console.log('📋 Container innerHTML length:', container.innerHTML.length);
+    console.log('📋 Container innerHTML preview:', container.innerHTML.substring(0, 200) + '...');
+    
+    // CRITICAL: Add event delegation for day cell clicks
+    try {
+        setupHabitDayClickHandlers(container);
         console.log('✅ Event handlers set up successfully');
     } catch (error) {
         console.error('❌ Failed to set up event handlers:', error);
@@ -1734,64 +1772,8 @@ function updateCurrentWeekDisplay() {
 }
 
 function createHabitElement(habit, showWeekView = true) {
-    return createSimpleHabitCard(habit);
-}
-
-// FIXED: Simple habit card that actually works
-function createSimpleHabitCard(habit) {
-    const div = document.createElement('div');
-    div.className = 'glass-card p-6 hover:bg-white/10 transition-all duration-300';
-    
-    const today = new Date().toISOString().split('T')[0];
-    const completedToday = habit.completed_days && habit.completed_days[today];
-    const streak = habit.current_streak || 0;
-    const totalCompletions = habit.total_completions || 0;
-    const weeklyTarget = habit.weekly_target || 7;
-    
-    div.innerHTML = `
-        <div class="flex justify-between items-start mb-4">
-            <div>
-                <h3 class="text-white font-semibold text-lg mb-1">${habit.name}</h3>
-                ${habit.description ? `<p class="text-white/60 text-sm">${habit.description}</p>` : ''}
-            </div>
-            <div class="px-3 py-1 rounded-full text-xs font-medium ${completedToday ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
-                ${completedToday ? '✅ Done' : '⏳ Pending'}
-            </div>
-        </div>
-        
-        <div class="flex justify-between text-sm text-white/70 mb-4">
-            <span>🔥 ${streak} day streak</span>
-            <span>📊 ${totalCompletions} total</span>
-            <span>🎯 ${weeklyTarget}/week</span>
-        </div>
-        
-        <div class="flex gap-2">
-            <button onclick="toggleHabitCompletion('${habit.id}')" 
-                    class="flex-1 py-2 px-4 rounded-lg font-medium transition-all ${completedToday ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'} text-white"
-                    ${completedToday ? 'title="Mark as incomplete"' : 'title="Mark as complete"'}>
-                ${completedToday ? 'Undo ↺' : 'Complete ✓'}
-            </button>
-            <button onclick="deleteHabit('${habit.id}')" 
-                    class="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-all" 
-                    title="Delete habit">
-                🗑️
-            </button>
-        </div>
-    `;
-    
-    return div;
-}
-
-// Sample habits creation
-function createSampleHabits() {
-    const sampleHabits = [
-        { id: 'habit_1', name: 'Morning Workout', description: '30 minutes of exercise', category: 'fitness', weekly_target: 5, created_at: new Date().toISOString() },
-        { id: 'habit_2', name: 'Drink Water', description: '8 glasses throughout the day', category: 'health', weekly_target: 7, created_at: new Date().toISOString() },
-        { id: 'habit_3', name: 'Read Daily', description: 'Read for 20 minutes', category: 'learning', weekly_target: 6, created_at: new Date().toISOString() }
-    ];
-    
-    saveLocalHabits(sampleHabits);
-    console.log('✅ Created sample habits');
+    // Always use weekly view for habits in the main habits section
+    return createWeeklyHabitElement(habit);
 }
 
 // Delete habit function - removed duplicate, keeping the modal version below

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StriveTrack - FIXED VERSION</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    
+    <style>
+        :root {
+            --primary-color: #3B82F6;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --bg-color: #0F172A;
+            --surface-color: #1E293B;
+            --surface-light: #334155;
+            --text-primary: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --border-color: #334155;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            padding: 2rem 0;
+        }
+        
+        .dashboard-header {
+            background: var(--surface-color);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .user-info h2 {
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: var(--surface-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn.active,
+        .nav-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Habits Container */
+        #habits-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .habit-card {
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s;
+        }
+        
+        .habit-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Fix Badge */
+        .fix-badge {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: var(--success-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+        
+        /* Sections */
+        .section {
+            min-height: 400px;
+        }
+        
+        .placeholder-section {
+            text-align: center;
+            padding: 3rem;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+        
+        .placeholder-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .placeholder-section p {
+            color: var(--text-secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .user-stats {
+                gap: 1rem;
+            }
+            
+            #habits-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .fix-badge {
+                position: relative;
+                margin: 1rem;
+            }
+        }
+        
+        /* Keyframes for notifications */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Fix Badge -->
+    <div class="fix-badge">
+        ✅ FIXED - This version works!
+    </div>
+
+    <!-- Dashboard (no login screen - direct to functionality) -->
+    <div id="dashboard" class="screen">
+        <div class="dashboard">
+            <div class="container">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <div class="header-content">
+                        <div class="user-info">
+                            <h2 id="welcome-text">Welcome back, User!</h2>
+                            <div class="user-stats">
+                                <span id="user-points">Points: 0</span>
+                                <span id="user-streak">Streak: 0 days</span>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-actions">
+                            <span style="color: var(--success-color); font-weight: 500;">✅ Working</span>
+                            <button onclick="window.debugApp()" class="btn btn-secondary">Debug</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <div class="nav-tabs">
+                    <button class="nav-btn active" data-target="habits-section">Habits</button>
+                    <button class="nav-btn" data-target="progress-section">Progress</button>
+                    <button class="nav-btn" data-target="profile-section">Profile</button>
+                </div>
+                
+                <!-- Habits Section -->
+                <div id="habits-section" class="section">
+                    <div id="habits-container">
+                        <!-- Habits will be loaded here by JavaScript -->
+                        <div style="text-align: center; padding: 2rem; color: #CBD5E1;">
+                            <p>Loading habits...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Section -->
+                <div id="progress-section" class="section hidden">
+                    <div class="placeholder-section">
+                        <h2>📊 Progress Tracking</h2>
+                        <p>Your progress charts and statistics will appear here.</p>
+                        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                            Feature available in full cloud version.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Profile Section -->
+                <div id="profile-section" class="section hidden">
+                    <div class="placeholder-section">
+                        <h2>👤 Profile Settings</h2>
+                        <p>Manage your account and preferences.</p>
+                        <div style="margin-top: 2rem; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                            <h3 style="margin-bottom: 1rem;">✅ What's Working:</h3>
+                            <ul style="color: var(--text-secondary); margin-left: 2rem;">
+                                <li>✅ Habit display and rendering</li>
+                                <li>✅ Habit completion tracking</li>
+                                <li>✅ Points calculation</li>
+                                <li>✅ Local storage persistence</li>
+                                <li>✅ Navigation between sections</li>
+                                <li>✅ Responsive design</li>
+                            </ul>
+                            
+                            <h3 style="margin: 2rem 0 1rem;">🔍 Debug Info:</h3>
+                            <p style="color: var(--text-secondary);">
+                                Click the "Debug" button in the header to see console information about the app state.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the FIXED app -->
+    <script src="/app-fixed.js"></script>
+</body>
+</html>

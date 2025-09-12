@@ -2871,8 +2871,8 @@ async function loadAdminDashboard() {
                         </div>
                     </div>
                     
-                    <div id="admin-users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        ${allUsers.map(user => createUserCard(user)).join('')}
+                    <div id="admin-users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <!-- Users will be loaded by enhanced management system -->
                     </div>
                 </div>
                 
@@ -2894,9 +2894,10 @@ async function loadAdminDashboard() {
             source: platformStats ? 'Supabase' : 'localStorage'
         });
         
-        // Load analytics charts after dashboard is rendered
+        // Load analytics charts and initialize enhanced user management
         setTimeout(() => {
             loadAdminAnalytics();
+            initializeEnhancedUserManagement(allUsers);
         }, 500);
         
     } catch (error) {
@@ -4874,6 +4875,537 @@ window.deleteUserMedia = deleteUserMedia;
 window.suspendUser = suspendUser;
 window.confirmDeleteUser = confirmDeleteUser;
 window.confirmDeleteAccount = confirmDeleteAccount;
+
+// **PHASE 3: ENHANCED USER MANAGEMENT - BULK OPERATIONS**
+let selectedUsers = new Set();
+let currentUserView = 'grid';
+let currentUsersData = [];
+
+// Enhanced user filtering and searching
+function filterAndSearchUsers() {
+    const searchTerm = document.getElementById('admin-search-users').value.toLowerCase();
+    const filterValue = document.getElementById('admin-filter-users').value;
+    
+    let filteredUsers = currentUsersData.filter(user => {
+        // Search filter
+        const matchesSearch = !searchTerm || 
+            user.name.toLowerCase().includes(searchTerm) ||
+            user.email.toLowerCase().includes(searchTerm);
+        
+        // Status filter
+        let matchesFilter = true;
+        switch(filterValue) {
+            case 'online':
+                matchesFilter = user.online;
+                break;
+            case 'offline':
+                matchesFilter = !user.online;
+                break;
+            case 'admin':
+                matchesFilter = user.role === 'admin';
+                break;
+            case 'user':
+                matchesFilter = user.role === 'user';
+                break;
+        }
+        
+        return matchesSearch && matchesFilter;
+    });
+    
+    displayUsers(filteredUsers);
+    updateDisplayCount(filteredUsers.length);
+}
+
+// Sort users
+function sortUsers() {
+    const sortValue = document.getElementById('admin-sort-users').value;
+    
+    currentUsersData.sort((a, b) => {
+        switch(sortValue) {
+            case 'name':
+                return a.name.localeCompare(b.name);
+            case 'date':
+                return new Date(b.created_at || b.joined) - new Date(a.created_at || a.joined);
+            case 'activity':
+                return new Date(b.last_active || b.last_login) - new Date(a.last_active || a.last_login);
+            case 'points':
+                return (b.points || 0) - (a.points || 0);
+            default:
+                return 0;
+        }
+    });
+    
+    filterAndSearchUsers(); // Re-apply current filters
+}
+
+// Display users in current view mode
+function displayUsers(users) {
+    const container = document.getElementById('admin-users-grid');
+    if (!container) return;
+    
+    if (currentUserView === 'grid') {
+        container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4';
+        container.innerHTML = users.map(user => createEnhancedUserCard(user)).join('');
+    } else {
+        container.className = 'space-y-2';
+        container.innerHTML = users.map(user => createUserListItem(user)).join('');
+    }
+}
+
+// Enhanced user card with selection checkbox
+function createEnhancedUserCard(user) {
+    const timeAgo = getTimeAgo(user.last_login || user.last_active);
+    const joinDate = new Date(user.joined || user.created_at).toLocaleDateString();
+    const isSelected = selectedUsers.has(user.id);
+    
+    return `
+        <div class="user-card bg-white/5 border border-white/10 rounded-lg p-4 transition-all hover:bg-white/10 ${isSelected ? 'ring-2 ring-blue-500' : ''}">
+            <div class="flex items-start justify-between mb-3">
+                <input type="checkbox" ${isSelected ? 'checked' : ''} 
+                       onchange="toggleUserSelection('${user.id}')"
+                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full ${user.online ? 'bg-green-400' : 'bg-gray-400'}"></div>
+                    <span class="text-xs text-white/60">${user.online ? 'Online' : 'Offline'}</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 mb-3 cursor-pointer" onclick="openUserDetails('${user.id}')">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold">${user.name.charAt(0)}</span>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold">${user.name}</h4>
+                    <p class="text-white/60 text-sm">${user.email}</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                <div>
+                    <div class="text-white font-bold text-sm">${user.habits_count || 0}</div>
+                    <div class="text-white/50 text-xs">Habits</div>
+                </div>
+                <div>
+                    <div class="text-white font-bold text-sm">${user.media_count || 0}</div>
+                    <div class="text-white/50 text-xs">Media</div>
+                </div>
+                <div>
+                    <div class="text-white font-bold text-sm">${user.points || 0}</div>
+                    <div class="text-white/50 text-xs">Points</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between text-xs text-white/50">
+                <span>Joined ${joinDate}</span>
+                <div class="flex items-center gap-1">
+                    <span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}">
+                        ${user.role || 'user'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// User list item for list view
+function createUserListItem(user) {
+    const isSelected = selectedUsers.has(user.id);
+    const joinDate = new Date(user.joined || user.created_at).toLocaleDateString();
+    
+    return `
+        <div class="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all ${isSelected ? 'ring-2 ring-blue-500' : ''}">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} 
+                   onchange="toggleUserSelection('${user.id}')"
+                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+            
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                <span class="text-white font-bold">${user.name.charAt(0)}</span>
+            </div>
+            
+            <div class="flex-1 cursor-pointer" onclick="openUserDetails('${user.id}')">
+                <div class="flex items-center gap-3">
+                    <h4 class="text-white font-semibold">${user.name}</h4>
+                    <span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}">
+                        ${user.role || 'user'}
+                    </span>
+                    <div class="w-2 h-2 rounded-full ${user.online ? 'bg-green-400' : 'bg-gray-400'}"></div>
+                </div>
+                <p class="text-white/60 text-sm">${user.email}</p>
+            </div>
+            
+            <div class="flex items-center gap-6 text-sm text-white/70">
+                <div class="text-center">
+                    <div class="font-bold">${user.habits_count || 0}</div>
+                    <div class="text-xs">Habits</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold">${user.media_count || 0}</div>
+                    <div class="text-xs">Media</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold">${user.points || 0}</div>
+                    <div class="text-xs">Points</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs">Joined</div>
+                    <div class="text-xs">${joinDate}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Toggle individual user selection
+function toggleUserSelection(userId) {
+    if (selectedUsers.has(userId)) {
+        selectedUsers.delete(userId);
+    } else {
+        selectedUsers.add(userId);
+    }
+    updateSelectionUI();
+}
+
+// Toggle select all users
+function toggleSelectAllUsers() {
+    const selectAllCheckbox = document.getElementById('select-all-users');
+    const displayedUsers = Array.from(document.querySelectorAll('.user-card, .user-list-item'));
+    
+    if (selectAllCheckbox.checked) {
+        // Select all displayed users
+        displayedUsers.forEach(card => {
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.onchange) {
+                const userId = checkbox.onchange.toString().match(/'([^']+)'/)?.[1];
+                if (userId) selectedUsers.add(userId);
+            }
+        });
+    } else {
+        // Deselect all users
+        selectedUsers.clear();
+    }
+    
+    updateSelectionUI();
+    // Update individual checkboxes
+    displayedUsers.forEach(card => {
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        if (checkbox) checkbox.checked = selectAllCheckbox.checked;
+    });
+}
+
+// Update selection UI
+function updateSelectionUI() {
+    const selectedCount = selectedUsers.size;
+    const bulkActionsBar = document.getElementById('bulk-actions-bar');
+    const selectedCountSpan = document.getElementById('selected-users-count');
+    const bulkSelectedCountSpan = document.getElementById('bulk-selected-count');
+    
+    if (selectedCountSpan) selectedCountSpan.textContent = selectedCount;
+    if (bulkSelectedCountSpan) bulkSelectedCountSpan.textContent = selectedCount;
+    
+    if (bulkActionsBar) {
+        if (selectedCount > 0) {
+            bulkActionsBar.classList.remove('hidden');
+        } else {
+            bulkActionsBar.classList.add('hidden');
+        }
+    }
+    
+    // Update select-all checkbox state
+    const selectAllCheckbox = document.getElementById('select-all-users');
+    if (selectAllCheckbox) {
+        const displayedUserCount = document.querySelectorAll('.user-card, .user-list-item').length;
+        selectAllCheckbox.checked = selectedCount > 0 && selectedCount === displayedUserCount;
+    }
+}
+
+// Switch between grid and list view
+function switchUserView(viewType) {
+    currentUserView = viewType;
+    
+    // Update button states
+    document.getElementById('grid-view-btn').classList.toggle('text-blue-400', viewType === 'grid');
+    document.getElementById('list-view-btn').classList.toggle('text-blue-400', viewType === 'list');
+    
+    // Re-display users in new view
+    filterAndSearchUsers();
+}
+
+// Update display count
+function updateDisplayCount(count) {
+    const displayCountSpan = document.getElementById('users-display-count');
+    if (displayCountSpan) {
+        displayCountSpan.textContent = `${count} users displayed`;
+    }
+}
+
+// Clear user selection
+function clearUserSelection() {
+    selectedUsers.clear();
+    updateSelectionUI();
+    
+    // Uncheck all checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+}
+
+// **BULK USER OPERATIONS**
+async function bulkPromoteUsers() {
+    const selectedUserIds = Array.from(selectedUsers);
+    if (selectedUserIds.length === 0) {
+        showNotification('No users selected', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to promote ${selectedUserIds.length} users to admin role?`)) {
+        return;
+    }
+    
+    showNotification(`Promoting ${selectedUserIds.length} users...`, 'info');
+    
+    try {
+        let successCount = 0;
+        
+        for (const userId of selectedUserIds) {
+            try {
+                if (window.SupabaseServices && window.SupabaseServices.admin) {
+                    await window.SupabaseServices.admin.updateUserRole(userId, 'admin');
+                }
+                successCount++;
+            } catch (error) {
+                console.error('❌ Error promoting user:', userId, error);
+            }
+        }
+        
+        showNotification(`Successfully promoted ${successCount}/${selectedUserIds.length} users to admin`, 'success');
+        clearUserSelection();
+        await refreshAdminData();
+        
+    } catch (error) {
+        console.error('❌ Bulk promote error:', error);
+        showNotification('Error promoting users: ' + error.message, 'error');
+    }
+}
+
+async function bulkDemoteUsers() {
+    const selectedUserIds = Array.from(selectedUsers);
+    if (selectedUserIds.length === 0) {
+        showNotification('No users selected', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to demote ${selectedUserIds.length} users to regular user role?`)) {
+        return;
+    }
+    
+    showNotification(`Demoting ${selectedUserIds.length} users...`, 'info');
+    
+    try {
+        let successCount = 0;
+        
+        for (const userId of selectedUserIds) {
+            try {
+                if (window.SupabaseServices && window.SupabaseServices.admin) {
+                    await window.SupabaseServices.admin.updateUserRole(userId, 'user');
+                }
+                successCount++;
+            } catch (error) {
+                console.error('❌ Error demoting user:', userId, error);
+            }
+        }
+        
+        showNotification(`Successfully demoted ${successCount}/${selectedUserIds.length} users`, 'success');
+        clearUserSelection();
+        await refreshAdminData();
+        
+    } catch (error) {
+        console.error('❌ Bulk demote error:', error);
+        showNotification('Error demoting users: ' + error.message, 'error');
+    }
+}
+
+async function bulkSuspendUsers() {
+    const selectedUserIds = Array.from(selectedUsers);
+    if (selectedUserIds.length === 0) {
+        showNotification('No users selected', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to suspend ${selectedUserIds.length} users?`)) {
+        return;
+    }
+    
+    showNotification(`Suspending ${selectedUserIds.length} users...`, 'info');
+    
+    try {
+        let successCount = 0;
+        
+        for (const userId of selectedUserIds) {
+            try {
+                if (window.SupabaseServices && window.SupabaseServices.admin) {
+                    await window.SupabaseServices.admin.suspendUser(userId, true);
+                }
+                successCount++;
+            } catch (error) {
+                console.error('❌ Error suspending user:', userId, error);
+            }
+        }
+        
+        showNotification(`Successfully suspended ${successCount}/${selectedUserIds.length} users`, 'warning');
+        clearUserSelection();
+        await refreshAdminData();
+        
+    } catch (error) {
+        console.error('❌ Bulk suspend error:', error);
+        showNotification('Error suspending users: ' + error.message, 'error');
+    }
+}
+
+async function bulkDeleteUsers() {
+    const selectedUserIds = Array.from(selectedUsers);
+    if (selectedUserIds.length === 0) {
+        showNotification('No users selected', 'warning');
+        return;
+    }
+    
+    if (!confirm(`⚠️ DANGER: Are you sure you want to permanently delete ${selectedUserIds.length} user accounts? This action cannot be undone!`)) {
+        return;
+    }
+    
+    if (!confirm(`This will delete ALL data for ${selectedUserIds.length} users including habits, media, and progress. Are you absolutely sure?`)) {
+        return;
+    }
+    
+    showNotification(`Deleting ${selectedUserIds.length} users...`, 'info');
+    
+    try {
+        let successCount = 0;
+        
+        for (const userId of selectedUserIds) {
+            try {
+                // Use the existing delete function logic
+                if (window.SupabaseServices && window.SupabaseServices.admin) {
+                    await window.SupabaseServices.admin.deleteUserComplete(userId);
+                }
+                
+                // Clean up localStorage
+                const allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
+                delete allUsers[userId];
+                localStorage.setItem('strivetrack_users', JSON.stringify(allUsers));
+                
+                // Delete user-specific data
+                const userPrefix = `user_${userId}`;
+                const keysToDelete = [
+                    `${userPrefix}_habits`, `${userPrefix}_completions`, 
+                    `${userPrefix}_media`, `${userPrefix}_goals`,
+                    `${userPrefix}_food_log`, `${userPrefix}_achievements`,
+                    `${userPrefix}_points`
+                ];
+                
+                keysToDelete.forEach(key => localStorage.removeItem(key));
+                successCount++;
+                
+            } catch (error) {
+                console.error('❌ Error deleting user:', userId, error);
+            }
+        }
+        
+        showNotification(`Successfully deleted ${successCount}/${selectedUserIds.length} users`, 'success');
+        clearUserSelection();
+        await refreshAdminData();
+        
+    } catch (error) {
+        console.error('❌ Bulk delete error:', error);
+        showNotification('Error deleting users: ' + error.message, 'error');
+    }
+}
+
+async function exportSelectedUsers() {
+    const selectedUserIds = Array.from(selectedUsers);
+    if (selectedUserIds.length === 0) {
+        showNotification('No users selected', 'warning');
+        return;
+    }
+    
+    showNotification(`Exporting data for ${selectedUserIds.length} users...`, 'info');
+    
+    try {
+        const exportData = {
+            export_date: new Date().toISOString(),
+            total_users: selectedUserIds.length,
+            users: []
+        };
+        
+        for (const userId of selectedUserIds) {
+            try {
+                let userData;
+                if (window.SupabaseServices && window.SupabaseServices.admin) {
+                    userData = await window.SupabaseServices.admin.exportUserData(userId);
+                } else {
+                    // Fallback to localStorage data
+                    const user = currentUsersData.find(u => u.id === userId);
+                    userData = {
+                        user_info: user,
+                        export_source: 'localStorage'
+                    };
+                }
+                exportData.users.push(userData);
+            } catch (error) {
+                console.error('❌ Error exporting user data:', userId, error);
+            }
+        }
+        
+        // Create and download file
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `strivetrack_users_export_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        showNotification(`Successfully exported ${exportData.users.length} users`, 'success');
+        clearUserSelection();
+        
+    } catch (error) {
+        console.error('❌ Export error:', error);
+        showNotification('Error exporting user data: ' + error.message, 'error');
+    }
+}
+
+// Initialize enhanced user management system
+function initializeEnhancedUserManagement(users) {
+    console.log('👥 Initializing enhanced user management for', users.length, 'users');
+    
+    // Store users data
+    currentUsersData = users;
+    
+    // Clear selection
+    selectedUsers.clear();
+    
+    // Set default view
+    currentUserView = 'grid';
+    document.getElementById('grid-view-btn')?.classList.add('text-blue-400');
+    
+    // Initialize display
+    displayUsers(users);
+    updateDisplayCount(users.length);
+    updateSelectionUI();
+    
+    console.log('✅ Enhanced user management initialized');
+}
+
+// Export functions to window for HTML access
+window.filterAndSearchUsers = filterAndSearchUsers;
+window.sortUsers = sortUsers;
+window.toggleUserSelection = toggleUserSelection;
+window.toggleSelectAllUsers = toggleSelectAllUsers;
+window.switchUserView = switchUserView;
+window.clearUserSelection = clearUserSelection;
+window.bulkPromoteUsers = bulkPromoteUsers;
+window.bulkDemoteUsers = bulkDemoteUsers;
+window.bulkSuspendUsers = bulkSuspendUsers;
+window.bulkDeleteUsers = bulkDeleteUsers;
+window.exportSelectedUsers = exportSelectedUsers;
 
 // Add missing functions for HTML modals
 function createGoal(event) {

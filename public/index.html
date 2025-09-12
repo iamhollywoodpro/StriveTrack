@@ -3570,21 +3570,92 @@
                     </div>
                 </div>
 
-                <!-- Users Grid -->
+                <!-- Enhanced Users Management -->
                 <div class="glass-card p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-bold text-white">Platform Users</h3>
-                        <div class="flex items-center space-x-3">
+                    <!-- Users Header with Bulk Controls -->
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
+                        <div class="flex items-center gap-4">
+                            <h3 class="text-xl font-bold text-white">Platform Users</h3>
+                            <div class="text-sm text-white/60">
+                                <span id="selected-users-count">0</span> selected
+                            </div>
+                        </div>
+                        
+                        <!-- Search and Filters -->
+                        <div class="flex flex-wrap items-center gap-3">
                             <div class="relative">
-                                <input type="text" id="admin-search-users" placeholder="Search users..." class="input-field pl-10 w-64">
+                                <input type="text" id="admin-search-users" placeholder="Search users..." 
+                                       class="input-field pl-10 w-64" onkeyup="filterAndSearchUsers()">
                                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50"></i>
                             </div>
-                            <select id="admin-filter-users" class="input-field w-32">
+                            <select id="admin-filter-users" class="input-field w-40" onchange="filterAndSearchUsers()">
                                 <option value="all">All Users</option>
                                 <option value="online">Online</option>
                                 <option value="offline">Offline</option>
-                                <option value="flagged">Flagged</option>
+                                <option value="admin">Admins</option>
+                                <option value="user">Regular Users</option>
                             </select>
+                            <select id="admin-sort-users" class="input-field w-40" onchange="sortUsers()">
+                                <option value="name">Sort by Name</option>
+                                <option value="date">Sort by Join Date</option>
+                                <option value="activity">Sort by Activity</option>
+                                <option value="points">Sort by Points</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Actions Bar -->
+                    <div id="bulk-actions-bar" class="hidden bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 mb-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check-circle text-blue-400"></i>
+                                <span class="text-white font-medium">
+                                    <span id="bulk-selected-count">0</span> users selected
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="bulkPromoteUsers()" class="btn-secondary text-sm">
+                                    <i class="fas fa-user-shield mr-2"></i>Promote to Admin
+                                </button>
+                                <button onclick="bulkDemoteUsers()" class="btn-secondary text-sm">
+                                    <i class="fas fa-user-minus mr-2"></i>Demote to User
+                                </button>
+                                <button onclick="bulkSuspendUsers()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded text-sm">
+                                    <i class="fas fa-ban mr-2"></i>Suspend Selected
+                                </button>
+                                <button onclick="bulkDeleteUsers()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">
+                                    <i class="fas fa-trash mr-2"></i>Delete Selected
+                                </button>
+                                <button onclick="exportSelectedUsers()" class="btn-secondary text-sm">
+                                    <i class="fas fa-file-export mr-2"></i>Export Selected
+                                </button>
+                                <button onclick="clearUserSelection()" class="btn-secondary text-sm">
+                                    <i class="fas fa-times mr-2"></i>Clear Selection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Select All Controls -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-4">
+                            <label class="flex items-center gap-2 text-white cursor-pointer">
+                                <input type="checkbox" id="select-all-users" onchange="toggleSelectAllUsers()" 
+                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                                <span class="text-sm">Select All</span>
+                            </label>
+                            <span class="text-white/60 text-sm" id="users-display-count">0 users displayed</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-white/60 text-sm">View:</span>
+                            <button id="grid-view-btn" onclick="switchUserView('grid')" 
+                                    class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button id="list-view-btn" onclick="switchUserView('list')" 
+                                    class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded">
+                                <i class="fas fa-list"></i>
+                            </button>
                         </div>
                     </div>
 

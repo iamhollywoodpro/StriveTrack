@@ -183,7 +183,9 @@ function createWeeklyHabitElement(habit) {
     const htmlContent = `
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
+                <h3 class="text-white font-semibold text-lg">
+                    ${habit.emoji || '🎯'} ${habit.name}
+                </h3>
                 ${habit.description ? `<p class="text-white/60 text-sm mt-1">${habit.description}</p>` : ''}
                 <div class="flex items-center space-x-4 mt-2 text-sm">
                     <span class="text-white/70">
@@ -465,16 +467,71 @@ function openCreateHabitModal() {
     showModal('create-habit-modal');
 }
 
+// Auto-generate emoji based on habit name
+function getHabitEmoji(habitName) {
+    const name = habitName.toLowerCase();
+    
+    // Exercise and fitness
+    if (name.includes('exercise') || name.includes('workout') || name.includes('gym') || name.includes('fitness')) return '💪';
+    if (name.includes('run') || name.includes('jog') || name.includes('cardio')) return '🏃';
+    if (name.includes('walk') || name.includes('steps')) return '🚶';
+    if (name.includes('swim') || name.includes('pool')) return '🏊';
+    if (name.includes('bike') || name.includes('cycle')) return '🚴';
+    if (name.includes('yoga') || name.includes('stretch')) return '🧘';
+    if (name.includes('lift') || name.includes('weight') || name.includes('strength')) return '🏋️';
+    
+    // Health and wellness
+    if (name.includes('water') || name.includes('hydrat') || name.includes('drink')) return '💧';
+    if (name.includes('sleep') || name.includes('rest') || name.includes('bed')) return '😴';
+    if (name.includes('meditat') || name.includes('mindful')) return '🧘';
+    if (name.includes('vitamin') || name.includes('supplement')) return '💊';
+    
+    // Food and nutrition
+    if (name.includes('eat') || name.includes('food') || name.includes('meal')) return '🍽️';
+    if (name.includes('fruit') || name.includes('apple') || name.includes('banana')) return '🍎';
+    if (name.includes('vegetable') || name.includes('salad') || name.includes('green')) return '🥗';
+    if (name.includes('protein') || name.includes('meat') || name.includes('chicken')) return '🍗';
+    
+    // Learning and productivity
+    if (name.includes('read') || name.includes('book') || name.includes('study')) return '📚';
+    if (name.includes('write') || name.includes('journal') || name.includes('diary')) return '✍️';
+    if (name.includes('learn') || name.includes('course') || name.includes('skill')) return '🎓';
+    if (name.includes('work') || name.includes('productive') || name.includes('task')) return '💼';
+    
+    // Social and personal
+    if (name.includes('family') || name.includes('friend') || name.includes('social')) return '👥';
+    if (name.includes('call') || name.includes('phone') || name.includes('contact')) return '📞';
+    if (name.includes('clean') || name.includes('organize') || name.includes('tidy')) return '🧹';
+    if (name.includes('money') || name.includes('save') || name.includes('budget')) return '💰';
+    
+    // Hobbies and activities
+    if (name.includes('music') || name.includes('sing') || name.includes('instrument')) return '🎵';
+    if (name.includes('art') || name.includes('draw') || name.includes('paint')) return '🎨';
+    if (name.includes('garden') || name.includes('plant') || name.includes('grow')) return '🌱';
+    if (name.includes('photo') || name.includes('picture') || name.includes('camera')) return '📸';
+    
+    // Default emojis for common words
+    if (name.includes('daily') || name.includes('every day')) return '📅';
+    if (name.includes('morning')) return '🌅';
+    if (name.includes('evening') || name.includes('night')) return '🌙';
+    
+    // Default fallback
+    return '🎯';
+}
+
 function handleCreateHabit(event) {
     event.preventDefault();
     
     const formData = new FormData(event.target);
+    const habitName = formData.get('habit-name') || document.getElementById('habit-name').value;
+    
     const habit = {
         id: 'habit_' + Date.now(),
-        name: formData.get('habit-name') || document.getElementById('habit-name').value,
+        name: habitName,
         description: formData.get('habit-description') || document.getElementById('habit-description').value,
         weekly_target: parseInt(formData.get('habit-target') || document.getElementById('habit-target')?.value || 7),
         difficulty: formData.get('habit-difficulty') || document.getElementById('habit-difficulty')?.value || 'medium',
+        emoji: getHabitEmoji(habitName), // Auto-generate emoji
         created_at: new Date().toISOString()
     };
     
@@ -969,7 +1026,7 @@ function loadDashboardWeeklyProgress(habits) {
             <div class="bg-white/5 border border-white/10 rounded-lg p-4 mb-3">
                 <div class="flex items-center justify-between mb-3">
                     <div>
-                        <h4 class="text-white font-semibold">${habit.name}</h4>
+                        <h4 class="text-white font-semibold">${habit.emoji || '🎯'} ${habit.name}</h4>
                         <p class="text-white/60 text-sm">${habit.description || 'Track your progress'}</p>
                     </div>
                     <div class="text-right">
@@ -1509,22 +1566,53 @@ function handleRegister(event) {
     
     const formData = new FormData(event.target);
     const email = formData.get('email');
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
     
     console.log('📝 Registering user:', email);
     
+    // Validation
+    if (!email || !email.includes('@')) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    if (!password || password.length < 6) {
+        showNotification('Password must be at least 6 characters long', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+    }
+    
+    // Check for admin email
+    const isAdmin = email === 'iamhollywoodpro@protonmail.com';
+    
     // Create new user
     currentUser = {
-        id: 'user_' + Date.now(),
+        id: isAdmin ? 'admin' : 'user_' + Date.now(),
         email: email,
         name: email.split('@')[0],
+        role: isAdmin ? 'admin' : 'user',
         created_at: new Date().toISOString()
     };
     
-    sessionId = 'offline_' + Date.now();
+    sessionId = isAdmin ? 'admin_' + Date.now() : 'offline_' + Date.now();
     
     // Save to localStorage
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     localStorage.setItem('sessionId', sessionId);
+    
+    // Clear form
+    event.target.reset();
+    
+    console.log('✅ Registration successful for:', currentUser.name, currentUser.role);
+    
+    // Show dashboard
+    showDashboard();
+    showNotification(`Welcome to StriveTrack, ${currentUser.name}!`, 'success');
     
     showDashboard();
     showNotification(`Account created! Welcome ${currentUser.name}!`, 'success');
@@ -1561,14 +1649,38 @@ function showDashboard() {
 function logout() {
     console.log('🚪 Logging out...');
     
+    // Clear all session data
     localStorage.removeItem('sessionId');
     localStorage.removeItem('currentUser');
     
+    // Reset global variables
     sessionId = null;
     currentUser = null;
     
+    // Clear any form data
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        if (form.reset) form.reset();
+    });
+    
+    // Clear any input fields
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        if (input.type !== 'submit' && input.type !== 'button') {
+            input.value = '';
+        }
+    });
+    
+    // Reset navigation to habits tab
+    showSection('habits');
+    
+    // Switch to login screen
     showLoginScreen();
+    
+    // Show notification
     showNotification('Logged out successfully!', 'info');
+    
+    console.log('✅ Logout completed - all data cleared');
 }
 
 // Initialize app

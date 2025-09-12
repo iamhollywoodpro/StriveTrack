@@ -10,6 +10,61 @@ window.testDeleteHabit = function() {
     }
 };
 
+// Debug function to help diagnose issues
+window.debugStriveTrack = function() {
+    console.log('=== 🔍 StriveTrack Debug Report ===');
+    console.log('📄 Current User:', currentUser);
+    console.log('🎫 Session ID:', sessionId);
+    console.log('🌐 Online Status:', isOnline());
+    console.log('📱 Navigator Online:', navigator.onLine);
+    
+    // Check elements
+    const elements = {
+        'habits-container': document.getElementById('habits-container'),
+        'user-points': document.getElementById('user-points'),
+        'welcome-text': document.getElementById('welcome-text'),
+        'dashboard': document.getElementById('dashboard'),
+        'login-screen': document.getElementById('login-screen')
+    };
+    
+    console.log('🏠 DOM Elements:', Object.entries(elements).map(([key, el]) => `${key}: ${el ? '✅' : '❌'}`).join(', '));
+    
+    // Check localStorage
+    const storage = {
+        currentUser: localStorage.getItem('currentUser'),
+        sessionId: localStorage.getItem('sessionId'),
+        habits: localStorage.getItem('strivetrack_habits'),
+        completions: localStorage.getItem('strivetrack_completions')
+    };
+    
+    console.log('💾 localStorage:', Object.entries(storage).map(([key, val]) => `${key}: ${val ? '✅' : '❌'}`).join(', '));
+    
+    // Test API connectivity
+    if (sessionId) {
+        fetch('/api/profile', { headers: { 'x-session-id': sessionId } })
+            .then(r => console.log('🌐 Profile API Status:', r.status, r.ok ? '✅' : '❌'))
+            .catch(e => console.log('❌ Profile API Error:', e.message));
+            
+        fetch('/api/habits/weekly', { headers: { 'x-session-id': sessionId } })
+            .then(r => console.log('🌐 Habits API Status:', r.status, r.ok ? '✅' : '❌'))
+            .catch(e => console.log('❌ Habits API Error:', e.message));
+    } else {
+        console.log('⚠️ No session ID - cannot test API connectivity');
+    }
+    
+    console.log('=== End Debug Report ===');
+    return 'Debug complete - check console for details';
+};
+
+// Auto-run debug on critical errors
+window.addEventListener('error', function(e) {
+    console.error('🚨 Critical error detected:', e.error);
+    if (e.error?.message?.includes('TypeError') || e.error?.message?.includes('ReferenceError')) {
+        console.log('🔍 Running auto-debug due to critical error...');
+        setTimeout(() => window.debugStriveTrack(), 1000);
+    }
+});
+
 let sessionId = localStorage.getItem('sessionId');
 let currentUser = null;
 
@@ -1352,9 +1407,15 @@ async function loadHabits() {
         displayHabits(habits);
         
     } catch (error) {
-        console.error('💥 Load habits error:', error);
+        console.error('❌ Load habits error:', error);
+        console.error('📊 Error details:', error.stack);
+        
+        // Show error notification
+        showNotification('Failed to load habits. Using offline data.', 'warning');
+        
         // Final fallback to localStorage
         const habits = getLocalHabitsWithCompletions();
+        console.log('🔄 Final fallback: loaded', habits.length, 'habits from localStorage after error');
         displayHabits(habits);
     }
 }
@@ -1384,11 +1445,26 @@ function displayHabits(habits) {
         }
     }
     
+    console.log('⚙️ Processing', habits.length, 'habits for display');
+    
     // Display habits using the enhanced createHabitElement function
-    habits.forEach(habit => {
-        const habitElement = createHabitElement(habit, false);
-        container.appendChild(habitElement);
+    habits.forEach((habit, index) => {
+        try {
+            console.log(`🔩 Creating element for habit ${index}:`, habit?.name);
+            const habitElement = createHabitElement(habit, false);
+            if (habitElement) {
+                container.appendChild(habitElement);
+                console.log(`✅ Added habit ${index} to container`);
+            } else {
+                console.warn(`⚠️ createHabitElement returned null for habit ${index}:`, habit);
+            }
+        } catch (error) {
+            console.error(`❌ Error creating habit element ${index}:`, error, habit);
+        }
     });
+    
+    console.log('✅ Successfully displayed habits in container');
+    console.log('📋 Container children count:', container.children.length);
     
     // CRITICAL: Add event delegation for day cell clicks
     setupHabitDayClickHandlers(container);

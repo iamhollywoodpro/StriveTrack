@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StriveTrack - Working Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .habit-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        .habit-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: white;
+            width: 100%;
+        }
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .notification.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen text-white">
+        <!-- Header -->
+        <header class="bg-black/20 backdrop-blur-md border-b border-white/10">
+            <div class="max-w-7xl mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-dumbbell text-white"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold">StriveTrack</h1>
+                        <span class="text-green-400 text-sm">(Working Version)</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <!-- Habits Section -->
+            <div class="glass-card p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">🎯 Fitness Habits</h2>
+                        <p class="text-white/70">Track your fitness goals and build lasting habits</p>
+                    </div>
+                    <button class="btn-primary" onclick="showCreateModal()">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add New Habit
+                    </button>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="habits-empty-state" class="text-center py-12">
+                    <div class="text-6xl mb-4">🎯</div>
+                    <h3 class="text-xl font-semibold text-white mb-2">No Habits Yet</h3>
+                    <p class="text-white/60 mb-6">Start building your fitness routine by creating your first habit!</p>
+                    <button class="btn-primary" onclick="showCreateModal()">
+                        <i class="fas fa-plus mr-2"></i>
+                        Create Your First Habit
+                    </button>
+                </div>
+                
+                <!-- Habits Container -->
+                <div id="habits-container">
+                    <!-- Habits will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Habit Modal -->
+    <div id="create-habit-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold text-white mb-6">Create New Habit</h3>
+            <form id="create-habit-form" onsubmit="createHabit(event)">
+                <div class="mb-4">
+                    <label for="habit-name" class="block text-white/90 text-sm font-medium mb-2">Habit Name</label>
+                    <input type="text" id="habit-name" class="input-field" placeholder="e.g., 30 minutes cardio" required>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="btn-primary flex-1">Create Habit</button>
+                    <button type="button" class="btn-danger flex-1" onclick="closeCreateModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script>
+        // Simple Habit Management System
+        let habits = JSON.parse(localStorage.getItem('strivetrack_habits') || '[]');
+
+        // Display habits
+        function displayHabits() {
+            const container = document.getElementById('habits-container');
+            const emptyState = document.getElementById('habits-empty-state');
+            
+            container.innerHTML = '';
+            
+            if (habits.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            habits.forEach(habit => {
+                const habitDiv = document.createElement('div');
+                habitDiv.className = 'habit-card';
+                habitDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-white font-semibold text-lg mb-2">✅ ${habit.name}</h3>
+                            <p class="text-white/60 text-sm">Created: ${new Date(habit.created).toLocaleDateString()}</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button onclick="toggleHabit('${habit.id}')" 
+                                    class="px-4 py-2 rounded-lg font-medium transition-colors ${
+                                        habit.completed ? 'bg-green-600 text-white' : 'bg-white/20 text-white hover:bg-white/30'
+                                    }">
+                                ${habit.completed ? '✓ Completed' : 'Mark Complete'}
+                            </button>
+                            <button onclick="deleteHabit('${habit.id}')" class="btn-danger">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(habitDiv);
+            });
+        }
+
+        // Create new habit
+        function createHabit(event) {
+            event.preventDefault();
+            
+            const nameInput = document.getElementById('habit-name');
+            const name = nameInput.value.trim();
+            
+            if (!name) return;
+            
+            const habit = {
+                id: Date.now().toString(),
+                name: name,
+                created: new Date().toISOString(),
+                completed: false
+            };
+            
+            habits.push(habit);
+            localStorage.setItem('strivetrack_habits', JSON.stringify(habits));
+            
+            displayHabits();
+            closeCreateModal();
+            nameInput.value = '';
+            
+            showNotification('✅ Habit created successfully!');
+        }
+
+        // Toggle habit completion
+        function toggleHabit(habitId) {
+            const habit = habits.find(h => h.id === habitId);
+            if (habit) {
+                habit.completed = !habit.completed;
+                localStorage.setItem('strivetrack_habits', JSON.stringify(habits));
+                displayHabits();
+                
+                const message = habit.completed ? '✅ Habit completed!' : '↩️ Habit uncompleted';
+                showNotification(message);
+            }
+        }
+
+        // Delete habit
+        function deleteHabit(habitId) {
+            if (confirm('Are you sure you want to delete this habit?')) {
+                habits = habits.filter(h => h.id !== habitId);
+                localStorage.setItem('strivetrack_habits', JSON.stringify(habits));
+                displayHabits();
+                showNotification('🗑️ Habit deleted');
+            }
+        }
+
+        // Modal functions
+        function showCreateModal() {
+            document.getElementById('create-habit-modal').classList.add('show');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('create-habit-modal').classList.remove('show');
+        }
+
+        // Notification system
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification success';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 StriveTrack initialized - habits:', habits.length);
+            displayHabits();
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('create-habit-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCreateModal();
+            }
+        });
+    </script>
+</body>
+</html>

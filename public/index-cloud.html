@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StriveTrack - Elite Fitness Platform</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    
+    <!-- Progressive Web App manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="StriveTrack">
+    
+    <!-- Meta tags for SEO and social sharing -->
+    <meta name="description" content="StriveTrack - Your elite fitness companion with habit tracking, progress monitoring, and achievement system.">
+    <meta property="og:title" content="StriveTrack - Elite Fitness Platform">
+    <meta property="og:description" content="Track habits, monitor progress, earn achievements. Your fitness journey starts here.">
+    <meta property="og:image" content="/icon-512x512.png">
+    
+    <style>
+        /* StriveTrack Cloud-Enabled Styles */
+        :root {
+            --primary-color: #3B82F6;
+            --primary-dark: #1E40AF;
+            --secondary-color: #10B981;
+            --danger-color: #EF4444;
+            --warning-color: #F59E0B;
+            --success-color: #10B981;
+            --info-color: #3B82F6;
+            
+            --bg-color: #0F172A;
+            --surface-color: #1E293B;
+            --surface-light: #334155;
+            --text-primary: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --text-muted: #64748B;
+            
+            --border-color: #334155;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            
+            --animation-speed: 0.3s;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Utility classes */
+        .hidden { display: none !important; }
+        .loading { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 2rem; 
+            color: var(--text-secondary);
+        }
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--danger-color);
+        }
+        .no-habits {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Authentication Screens */
+        .auth-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .auth-container {
+            background: var(--surface-color);
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .auth-header p {
+            color: var(--text-secondary);
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--surface-light);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color var(--animation-speed);
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all var(--animation-speed);
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--surface-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--surface-color);
+        }
+        
+        .btn-complete {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .btn-complete-again {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-edit {
+            background: var(--info-color);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        /* Dashboard Layout */
+        .dashboard {
+            padding: 2rem 0;
+        }
+        
+        .dashboard-header {
+            background: var(--surface-color);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .user-info h2 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all var(--animation-speed);
+        }
+        
+        .nav-btn.active,
+        .nav-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Habit Cards */
+        .habits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .habit-card {
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform var(--animation-speed);
+        }
+        
+        .habit-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .habit-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .habit-icon {
+            font-size: 2rem;
+        }
+        
+        .habit-name {
+            flex: 1;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .habit-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .habit-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+        
+        .habit-status.pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning-color);
+        }
+        
+        .habit-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .habit-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .habit-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .habit-actions .btn {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+        }
+        
+        .modal-content {
+            background: var(--surface-color);
+            padding: 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .modal form {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .form-actions .btn {
+            flex: 1;
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success { background: var(--success-color); }
+        .notification.error { background: var(--danger-color); }
+        .notification.warning { background: var(--warning-color); }
+        .notification.info { background: var(--info-color); }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Sync Status */
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+        }
+        
+        .sync-indicator.offline {
+            background: var(--warning-color);
+        }
+        
+        .sync-indicator.error {
+            background: var(--danger-color);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .user-stats {
+                gap: 1rem;
+            }
+            
+            .nav-tabs {
+                padding-bottom: 1rem;
+            }
+            
+            .habits-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .habit-actions {
+                flex-direction: column;
+            }
+            
+            .habit-actions .btn {
+                flex: none;
+            }
+            
+            .notification {
+                right: 1rem;
+                left: 1rem;
+            }
+        }
+        
+        /* Dark theme is default, but we can add light theme toggle later */
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen auth-screen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>💪 StriveTrack</h1>
+                <p>Your elite fitness companion</p>
+            </div>
+            
+            <div id="auth-tabs">
+                <div class="nav-tabs">
+                    <button class="nav-btn active" onclick="showAuthForm('login')">Sign In</button>
+                    <button class="nav-btn" onclick="showAuthForm('signup')">Sign Up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" name="email" required 
+                               placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" required 
+                               placeholder="Enter your password">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Sign In
+                    </button>
+                </form>
+                
+                <!-- Signup Form -->
+                <form id="signup-form" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" name="fullName" 
+                               placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" name="email" required 
+                               placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" name="password" required 
+                               placeholder="Create a strong password" minlength="6">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+            
+            <div class="sync-status" style="margin-top: 1rem; justify-content: center;">
+                <div class="sync-indicator" id="connection-indicator"></div>
+                <span id="connection-status">Checking connection...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div id="dashboard" class="screen hidden">
+        <div class="dashboard">
+            <div class="container">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <div class="header-content">
+                        <div class="user-info">
+                            <h2 id="welcome-text">Welcome back!</h2>
+                            <div class="user-stats">
+                                <span id="user-points">Points: 0</span>
+                                <span id="user-streak">Streak: 0 days</span>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-actions">
+                            <div class="sync-status">
+                                <div class="sync-indicator" id="sync-indicator"></div>
+                                <span id="sync-status">Synced</span>
+                            </div>
+                            
+                            <button id="sync-btn" class="btn btn-secondary">Sync</button>
+                            <button onclick="showCreateHabitModal()" class="btn btn-primary">+ Add Habit</button>
+                            <button id="logout-btn" class="btn btn-secondary">Logout</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <div class="nav-tabs">
+                    <button class="nav-btn active" data-target="habits-section">Habits</button>
+                    <button class="nav-btn" data-target="progress-section">Progress</button>
+                    <button class="nav-btn" data-target="achievements-section">Achievements</button>
+                    <button class="nav-btn" data-target="profile-section">Profile</button>
+                </div>
+                
+                <!-- Habits Section -->
+                <div id="habits-section" class="section">
+                    <div id="habits-container" class="habits-grid">
+                        <div class="loading">Loading your habits...</div>
+                    </div>
+                </div>
+                
+                <!-- Progress Section -->
+                <div id="progress-section" class="section hidden">
+                    <h2>Progress Tracking</h2>
+                    <p>Progress photos and measurements will appear here.</p>
+                    
+                    <div class="form-group">
+                        <label for="progress-upload">Upload Progress Photo</label>
+                        <input type="file" id="progress-upload" accept="image/*" 
+                               onchange="handleProgressPhotoUpload(event)">
+                    </div>
+                    
+                    <div id="progress-photos" class="progress-grid">
+                        <!-- Progress photos will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Achievements Section -->
+                <div id="achievements-section" class="section hidden">
+                    <h2>Achievements</h2>
+                    <p>Your achievements and badges will appear here.</p>
+                </div>
+                
+                <!-- Profile Section -->
+                <div id="profile-section" class="section hidden">
+                    <h2>Profile</h2>
+                    <p>Profile settings and data management.</p>
+                    
+                    <div class="form-group">
+                        <button onclick="exportData()" class="btn btn-secondary">Export Data</button>
+                        <button onclick="importData()" class="btn btn-secondary">Import Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple auth form switching
+        function showAuthForm(type) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const tabs = document.querySelectorAll('#auth-tabs .nav-btn');
+            
+            if (type === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+            }
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        // Connection status indicator
+        function updateConnectionStatus() {
+            const indicator = document.getElementById('connection-indicator');
+            const status = document.getElementById('connection-status');
+            
+            if (navigator.onLine) {
+                indicator.classList.remove('offline', 'error');
+                status.textContent = 'Online';
+            } else {
+                indicator.classList.add('offline');
+                status.textContent = 'Offline';
+            }
+        }
+        
+        // Placeholder functions for features to be implemented
+        function handleProgressPhotoUpload(event) {
+            console.log('Progress photo upload:', event.target.files);
+            // Will be implemented with storageService
+        }
+        
+        function exportData() {
+            console.log('Export data requested');
+            // Will export user data as JSON
+        }
+        
+        function importData() {
+            console.log('Import data requested');
+            // Will import user data from file
+        }
+        
+        // Update connection status
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        updateConnectionStatus();
+    </script>
+    
+    <!-- Load the cloud-enabled app -->
+    <script type="module" src="/app-cloud.js"></script>
+</body>
+</html>

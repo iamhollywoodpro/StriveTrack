@@ -22,3 +22,36 @@
 2025-09-11 23:25:11,130 INFO success: testserver entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2025-09-11 23:25:50,270 INFO waiting for testserver to die
 2025-09-11 23:25:50,273 WARN stopped: testserver (terminated by SIGTERM)
+2025-09-12 15:36:24,843 INFO RPC interface 'supervisor' initialized
+2025-09-12 15:36:24,843 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2025-09-12 15:36:24,845 INFO daemonizing the supervisord process
+2025-09-12 15:36:24,846 INFO supervisord started with pid 31448
+2025-09-12 15:36:25,850 INFO spawned: 'test-server' with pid 31474
+2025-09-12 15:36:26,949 INFO success: test-server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-12 15:36:26,949 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:27,953 INFO spawned: 'test-server' with pid 31502
+2025-09-12 15:36:28,049 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:29,373 INFO spawned: 'test-server' with pid 31506
+2025-09-12 15:36:29,467 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:31,472 INFO spawned: 'test-server' with pid 31555
+2025-09-12 15:36:32,604 INFO success: test-server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-12 15:36:32,604 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:33,608 INFO spawned: 'test-server' with pid 31567
+2025-09-12 15:36:33,704 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:34,707 INFO spawned: 'test-server' with pid 31600
+2025-09-12 15:36:34,814 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:36,817 INFO spawned: 'test-server' with pid 31687
+2025-09-12 15:36:36,831 INFO waiting for test-server to stop
+2025-09-12 15:36:36,847 WARN stopped: test-server (terminated by SIGTERM)
+2025-09-12 15:36:36,851 INFO spawned: 'test-server' with pid 31688
+2025-09-12 15:36:37,953 INFO success: test-server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-12 15:36:37,954 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:37,957 INFO spawned: 'test-server' with pid 31710
+2025-09-12 15:36:39,093 INFO success: test-server entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-12 15:36:39,094 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:40,097 INFO spawned: 'test-server' with pid 31720
+2025-09-12 15:36:40,190 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:41,193 INFO spawned: 'test-server' with pid 31722
+2025-09-12 15:36:41,289 WARN exited: test-server (exit status 1; not expected)
+2025-09-12 15:36:43,294 INFO spawned: 'test-server' with pid 31725
+2025-09-12 15:36:43,383 WARN exited: test-server (exit status 1; not expected)

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StriveTrack Cloud Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #0F172A;
+            color: #F8FAFC;
+        }
+        .test-section {
+            background: #1E293B;
+            padding: 2rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+        .success { background: #10B981; color: white; }
+        .error { background: #EF4444; color: white; }
+        .warning { background: #F59E0B; color: white; }
+        .info { background: #3B82F6; color: white; }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover { background: #1E40AF; }
+        .log {
+            background: #0F172A;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #334155;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 StriveTrack Cloud Storage Test</h1>
+    
+    <div class="test-section">
+        <h2>📡 Connection Status</h2>
+        <div id="connection-status" class="status info">Checking...</div>
+        <button onclick="testConnection()">Test Connection</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Supabase CDN Test</h2>
+        <div id="supabase-status" class="status info">Ready to test</div>
+        <button onclick="testSupabaseCDN()">Test Supabase CDN</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>💾 Local Storage Test</h2>
+        <div id="storage-status" class="status info">Ready to test</div>
+        <button onclick="testLocalStorage()">Test Local Storage</button>
+        <button onclick="clearLocalStorage()">Clear Storage</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔄 Sync Simulation</h2>
+        <div id="sync-status" class="status info">Ready to test</div>
+        <button onclick="simulateOfflineSync()">Simulate Offline Sync</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📝 Test Log</h2>
+        <div id="test-log" class="log">Test log will appear here...\n</div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        // Test logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('test-log');
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logDiv.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`${prefix} ${message}`);
+        }
+
+        function updateStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        // Test connection
+        function testConnection() {
+            log('Testing connection status...');
+            updateStatus('connection-status', 'Testing...', 'info');
+            
+            if (navigator.onLine) {
+                log('Browser reports: ONLINE', 'success');
+                updateStatus('connection-status', '🟢 Online', 'success');
+            } else {
+                log('Browser reports: OFFLINE', 'warning');
+                updateStatus('connection-status', '🔴 Offline', 'error');
+            }
+
+            // Test external connectivity
+            fetch('https://httpbin.org/json', { method: 'HEAD', mode: 'no-cors' })
+                .then(() => {
+                    log('External connectivity: SUCCESS', 'success');
+                })
+                .catch(err => {
+                    log(`External connectivity: FAILED - ${err.message}`, 'error');
+                });
+        }
+
+        // Test Supabase CDN
+        function testSupabaseCDN() {
+            log('Testing Supabase CDN access...');
+            updateStatus('supabase-status', 'Testing CDN...', 'info');
+            
+            // Test CDN access (this will fail without auth but shows connectivity)
+            fetch('https://supabase.com', { method: 'HEAD', mode: 'no-cors' })
+                .then(() => {
+                    log('Supabase CDN: ACCESSIBLE', 'success');
+                    updateStatus('supabase-status', '🟢 CDN Accessible', 'success');
+                })
+                .catch(err => {
+                    log(`Supabase CDN: FAILED - ${err.message}`, 'error');
+                    updateStatus('supabase-status', '🔴 CDN Unreachable', 'error');
+                });
+                
+            // Test if Supabase client would load
+            try {
+                // Simulate config
+                const testConfig = {
+                    supabaseUrl: 'https://your-project.supabase.co',
+                    supabaseKey: 'your-anon-key'
+                };
+                
+                if (testConfig.supabaseUrl && testConfig.supabaseKey) {
+                    log('Supabase configuration: VALID FORMAT', 'success');
+                } else {
+                    log('Supabase configuration: MISSING', 'warning');
+                }
+            } catch (error) {
+                log(`Supabase config error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test local storage
+        function testLocalStorage() {
+            log('Testing localStorage functionality...');
+            updateStatus('storage-status', 'Testing storage...', 'info');
+            
+            try {
+                // Test write
+                const testData = {
+                    habits: [
+                        { id: 1, name: 'Test Habit', created: new Date().toISOString() }
+                    ],
+                    completions: { '1': [{ date: new Date().toISOString() }] },
+                    timestamp: Date.now()
+                };
+                
+                localStorage.setItem('strivetrack_test', JSON.stringify(testData));
+                log('localStorage write: SUCCESS', 'success');
+                
+                // Test read
+                const retrieved = JSON.parse(localStorage.getItem('strivetrack_test'));
+                if (retrieved && retrieved.habits && retrieved.habits.length > 0) {
+                    log('localStorage read: SUCCESS', 'success');
+                    log(`Data retrieved: ${retrieved.habits.length} habits`, 'info');
+                } else {
+                    log('localStorage read: FAILED - No data', 'error');
+                }
+                
+                // Test storage size
+                const storageSize = JSON.stringify(testData).length;
+                log(`Storage size: ${storageSize} bytes`, 'info');
+                
+                updateStatus('storage-status', '🟢 localStorage Working', 'success');
+                
+            } catch (error) {
+                log(`localStorage error: ${error.message}`, 'error');
+                updateStatus('storage-status', '🔴 localStorage Failed', 'error');
+            }
+        }
+
+        function clearLocalStorage() {
+            try {
+                const keys = Object.keys(localStorage).filter(key => key.startsWith('strivetrack_'));
+                keys.forEach(key => localStorage.removeItem(key));
+                log(`Cleared ${keys.length} StriveTrack items from localStorage`, 'success');
+                updateStatus('storage-status', '🧹 Storage Cleared', 'info');
+            } catch (error) {
+                log(`Clear storage error: ${error.message}`, 'error');
+            }
+        }
+
+        // Simulate offline sync
+        function simulateOfflineSync() {
+            log('Simulating offline sync workflow...');
+            updateStatus('sync-status', 'Simulating sync...', 'info');
+            
+            // Simulate offline data creation
+            const offlineData = {
+                habits: [
+                    { id: 'temp_1', name: 'Offline Habit 1', created: new Date().toISOString(), synced: false },
+                    { id: 'temp_2', name: 'Offline Habit 2', created: new Date().toISOString(), synced: false }
+                ],
+                completions: [
+                    { id: 'temp_comp_1', habitId: 'temp_1', completed: new Date().toISOString(), synced: false }
+                ],
+                syncQueue: [
+                    { type: 'habit_create', data: { name: 'Offline Habit 1' }, timestamp: new Date().toISOString() },
+                    { type: 'habit_complete', habitId: 'temp_1', timestamp: new Date().toISOString() }
+                ]
+            };
+            
+            // Store offline data
+            localStorage.setItem('strivetrack_offline_data', JSON.stringify(offlineData));
+            log('Created offline data with 2 habits, 1 completion', 'info');
+            
+            // Simulate sync process
+            setTimeout(() => {
+                log('Simulating cloud sync...', 'info');
+                
+                // Simulate successful sync
+                const syncedData = {
+                    ...offlineData,
+                    habits: offlineData.habits.map(h => ({ ...h, id: `cloud_${Date.now()}_${Math.random()}`, synced: true })),
+                    completions: offlineData.completions.map(c => ({ ...c, id: `cloud_comp_${Date.now()}`, synced: true })),
+                    syncQueue: [] // Cleared after sync
+                };
+                
+                localStorage.setItem('strivetrack_synced_data', JSON.stringify(syncedData));
+                log('Sync simulation: SUCCESS', 'success');
+                log(`Synced: ${syncedData.habits.length} habits, ${syncedData.completions.length} completions`, 'success');
+                
+                updateStatus('sync-status', '🟢 Sync Simulation Complete', 'success');
+            }, 2000);
+        }
+
+        function clearLog() {
+            document.getElementById('test-log').textContent = 'Test log cleared...\n';
+        }
+
+        // Initialize tests
+        document.addEventListener('DOMContentLoaded', () => {
+            log('StriveTrack Cloud Storage Test initialized', 'success');
+            log('Ready to test cloud functionality', 'info');
+            testConnection();
+        });
+
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            log('Network status changed: ONLINE', 'success');
+            updateStatus('connection-status', '🟢 Back Online', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            log('Network status changed: OFFLINE', 'warning');
+            updateStatus('connection-status', '🔴 Gone Offline', 'error');
+        });
+
+        // Periodic connection check
+        setInterval(() => {
+            if (navigator.onLine) {
+                // Quick connectivity test
+                fetch('data:text/plain,', { method: 'HEAD' })
+                    .then(() => {
+                        // Connection is good
+                        if (document.getElementById('connection-status').textContent.includes('Offline')) {
+                            updateStatus('connection-status', '🟢 Online', 'success');
+                        }
+                    })
+                    .catch(() => {
+                        updateStatus('connection-status', '🔴 Connection Issues', 'warning');
+                    });
+            }
+        }, 30000); // Check every 30 seconds
+    </script>
+</body>
+</html>

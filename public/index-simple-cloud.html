@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StriveTrack - Elite Fitness Platform (Cloud Demo)</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+    
+    <style>
+        /* StriveTrack Simple Cloud Styles */
+        :root {
+            --primary-color: #3B82F6;
+            --primary-dark: #1E40AF;
+            --secondary-color: #10B981;
+            --danger-color: #EF4444;
+            --warning-color: #F59E0B;
+            --success-color: #10B981;
+            --info-color: #3B82F6;
+            
+            --bg-color: #0F172A;
+            --surface-color: #1E293B;
+            --surface-light: #334155;
+            --text-primary: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --text-muted: #64748B;
+            
+            --border-color: #334155;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .hidden { display: none !important; }
+        .loading { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 2rem; 
+            color: var(--text-secondary);
+        }
+        .no-habits {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Auth Styles */
+        .auth-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .auth-container {
+            background: var(--surface-color);
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--surface-light);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--surface-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-complete {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            padding: 2rem 0;
+        }
+        
+        .dashboard-header {
+            background: var(--surface-color);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .user-info h2 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 2rem;
+            color: var(--text-secondary);
+        }
+        
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn.active,
+        .nav-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        /* Habit Cards */
+        #habits-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .habit-card {
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s;
+        }
+        
+        .habit-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .habit-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .habit-icon {
+            font-size: 2rem;
+        }
+        
+        .habit-name {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .habit-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .habit-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+        }
+        
+        .habit-status.pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning-color);
+        }
+        
+        .habit-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .habit-actions .btn {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+        }
+        
+        .modal-content {
+            background: var(--surface-color);
+            padding: 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal form {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .form-actions .btn {
+            flex: 1;
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success { background: var(--success-color); }
+        .notification.error { background: var(--danger-color); }
+        .notification.warning { background: var(--warning-color); }
+        .notification.info { background: var(--info-color); }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Sync Status */
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+        }
+        
+        .sync-indicator.offline {
+            background: var(--warning-color);
+        }
+        
+        .sync-indicator.error {
+            background: var(--danger-color);
+        }
+        
+        /* Demo Badge */
+        .demo-badge {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: var(--warning-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            #habits-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .notification {
+                right: 1rem;
+                left: 1rem;
+            }
+            
+            .demo-badge {
+                position: relative;
+                margin: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Badge -->
+    <div class="demo-badge">
+        🚧 Cloud Storage Demo - Data persistence enabled
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen auth-screen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>💪 StriveTrack</h1>
+                <p>Your elite fitness companion with cloud storage</p>
+            </div>
+            
+            <div id="auth-tabs">
+                <div class="nav-tabs">
+                    <button class="nav-btn active" onclick="showAuthForm('login')">Sign In</button>
+                    <button class="nav-btn" onclick="showAuthForm('signup')">Sign Up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" name="email" required 
+                               placeholder="demo@strivetrack.com" value="demo@strivetrack.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" required 
+                               placeholder="password" value="demo123">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Sign In (Demo)
+                    </button>
+                </form>
+                
+                <!-- Signup Form -->
+                <form id="signup-form" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" name="fullName" 
+                               placeholder="Demo User" value="Demo User">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" name="email" required 
+                               placeholder="demo@strivetrack.com" value="demo@strivetrack.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" name="password" required 
+                               placeholder="demo123" value="demo123" minlength="6">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Create Account (Demo)
+                    </button>
+                </form>
+            </div>
+            
+            <div class="sync-status" style="margin-top: 1rem; justify-content: center;">
+                <div class="sync-indicator" id="connection-indicator"></div>
+                <span id="connection-status">Online</span>
+            </div>
+            
+            <div style="margin-top: 1rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                Demo Mode: Your data will be saved locally and can sync to cloud when configured
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div id="dashboard" class="screen hidden">
+        <div class="dashboard">
+            <div class="container">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <div class="header-content">
+                        <div class="user-info">
+                            <h2 id="welcome-text">Welcome back!</h2>
+                            <div class="user-stats">
+                                <span id="user-points">Points: 0</span>
+                                <span id="user-streak">Streak: 0 days</span>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-actions">
+                            <div class="sync-status">
+                                <div class="sync-indicator" id="sync-indicator"></div>
+                                <span id="sync-status">Demo Mode</span>
+                            </div>
+                            
+                            <button id="sync-btn" class="btn btn-secondary">Sync</button>
+                            <button onclick="showCreateHabitModal()" class="btn btn-primary">+ Add Habit</button>
+                            <button id="logout-btn" class="btn btn-secondary">Logout</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <div class="nav-tabs">
+                    <button class="nav-btn active" data-target="habits-section">Habits</button>
+                    <button class="nav-btn" data-target="progress-section">Progress</button>
+                    <button class="nav-btn" data-target="profile-section">Profile</button>
+                </div>
+                
+                <!-- Habits Section -->
+                <div id="habits-section" class="section">
+                    <div id="habits-container">
+                        <div class="loading">Loading your habits...</div>
+                    </div>
+                </div>
+                
+                <!-- Progress Section -->
+                <div id="progress-section" class="section hidden">
+                    <div style="text-align: center; padding: 3rem;">
+                        <h2>📊 Progress Tracking</h2>
+                        <p style="color: var(--text-secondary); margin: 1rem 0;">
+                            Track your fitness journey with progress photos and measurements.
+                        </p>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">
+                            🚧 Media upload feature coming soon with Supabase Storage integration
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Profile Section -->
+                <div id="profile-section" class="section hidden">
+                    <div style="text-align: center; padding: 3rem;">
+                        <h2>👤 Profile Settings</h2>
+                        <div style="background: var(--surface-color); padding: 2rem; border-radius: var(--border-radius); margin: 2rem 0;">
+                            <h3>Cloud Storage Demo</h3>
+                            <p style="color: var(--text-secondary); margin: 1rem 0;">
+                                This demo shows how StriveTrack will work with persistent cloud storage.
+                            </p>
+                            <div style="text-align: left; color: var(--text-secondary); font-size: 0.875rem;">
+                                <h4 style="margin: 1rem 0 0.5rem; color: var(--text-primary);">What's Working:</h4>
+                                <ul style="margin-left: 2rem;">
+                                    <li>✅ Local data persistence (survives page refresh)</li>
+                                    <li>✅ Offline/online detection</li>
+                                    <li>✅ Sync queue simulation</li>
+                                    <li>✅ User authentication flow</li>
+                                    <li>✅ Habit creation and completion</li>
+                                </ul>
+                                
+                                <h4 style="margin: 1rem 0 0.5rem; color: var(--text-primary);">Ready for Cloud Integration:</h4>
+                                <ul style="margin-left: 2rem;">
+                                    <li>🔄 Supabase database connection</li>
+                                    <li>🔄 Real user authentication</li>
+                                    <li>🔄 Cross-device data sync</li>
+                                    <li>🔄 Media file storage</li>
+                                    <li>🔄 Real-time updates</li>
+                                </ul>
+                            </div>
+                            
+                            <button onclick="window.debugStriveTrack()" class="btn btn-secondary" style="margin-top: 1rem;">
+                                Debug Console
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the cloud-enabled app -->
+    <script src="/app-simple-cloud.js"></script>
+</body>
+</html>

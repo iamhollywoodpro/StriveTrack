@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "name": "strivetrack",
+  "builds": [
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/public/index-cloud.html"
+    }
+  ],
+  "functions": {
+    "public/app-cloud.js": {
+      "includeFiles": "services/**/*.js"
+    }
+  },
+  "headers": [
+    {
+      "source": "/app-cloud.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        }
+      ]
+    }
+  ]
+}

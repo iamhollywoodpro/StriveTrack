@@ -1,0 +1,99 @@
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/home/user/webapp/test_server.py", line 31, in <module>
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use

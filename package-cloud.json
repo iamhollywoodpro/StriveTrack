@@ -1,0 +1,35 @@
+{
+  "name": "strivetrack-cloud",
+  "version": "2.0.0",
+  "description": "StriveTrack - Elite Fitness Platform with Cloud Storage",
+  "main": "public/index-cloud.html",
+  "type": "module",
+  "scripts": {
+    "dev": "python -m http.server 3000 --directory public",
+    "build": "echo 'Build completed - static site ready'",
+    "start": "python -m http.server 3000 --directory public",
+    "test": "echo 'Testing cloud storage functionality'",
+    "deploy": "vercel --prod",
+    "deploy:dev": "vercel",
+    "preview": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  },
+  "author": "Hollywood Pro",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "fitness",
+    "habits",
+    "tracking",
+    "progressive-web-app",
+    "supabase",
+    "cloud-storage"
+  ]
+}

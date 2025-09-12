@@ -691,11 +691,11 @@ function setupEventListeners() {
         });
     }
     
-    // Create habit form (only exists when logged in)
-    const createHabitForm = document.getElementById('create-habit-form');
-    if (createHabitForm) {
-        createHabitForm.addEventListener('submit', createHabit);
-    }
+    // Create habit form (only exists when logged in) - DISABLED: Using simple habit system
+    // const createHabitForm = document.getElementById('create-habit-form');
+    // if (createHabitForm) {
+    //     createHabitForm.addEventListener('submit', createHabit);
+    // }
     
     // Emoji preview auto-update (only exists when logged in)
     const habitName = document.getElementById('habit-name');
@@ -824,12 +824,12 @@ function setupDashboardEventListeners() {
         addHabitBtn.hasEventListener = true;
     }
     
-    // Create habit form
-    const createHabitForm = document.getElementById('create-habit-form');
-    if (createHabitForm && !createHabitForm.hasEventListener) {
-        createHabitForm.addEventListener('submit', createHabit);
-        createHabitForm.hasEventListener = true;
-    }
+    // Create habit form - DISABLED: Using simple habit system
+    // const createHabitForm = document.getElementById('create-habit-form');
+    // if (createHabitForm && !createHabitForm.hasEventListener) {
+    //     createHabitForm.addEventListener('submit', createHabit);
+    //     createHabitForm.hasEventListener = true;
+    // }
     
     // Emoji preview auto-update
     const habitName = document.getElementById('habit-name');
@@ -1360,13 +1360,18 @@ function createDashboardProgressElement(habit) {
 async function loadDashboardData() {
     await Promise.all([
         loadDashboardWeeklyProgress(),
-        loadHabits(),
+        // loadHabits(), // DISABLED: Using simple habit system
         loadMedia(),
         loadAchievements(),
         loadDailyChallenges(),
         loadAdminData(),
         syncUserPointsFromServer() // CRITICAL FIX: Sync points from server
     ]);
+    
+    // Load simple habits instead
+    if (window.loadSimpleHabits) {
+        window.loadSimpleHabits();
+    }
     
     updateDashboardStats();
 }
@@ -4338,7 +4343,10 @@ function showSection(section) {
     // Load section-specific data
     if (section === 'habits') {
         updateCurrentWeekDisplay();
-        loadHabits();
+        // loadHabits(); // DISABLED: Using simple habit system
+        if (window.loadSimpleHabits) {
+            window.loadSimpleHabits();
+        }
     } else if (section === 'progress') {
         loadMedia();
         // Set up compare mode event listener

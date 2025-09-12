@@ -6,15 +6,68 @@ console.log('🔧 Loading FIXED StriveTrack app with weekly calendar...');
 let sessionId = localStorage.getItem('sessionId') || 'offline_' + Date.now();
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
-// Initialize localStorage data structures
+// **SESSION VALIDATION ON APP LOAD**
+// Check if session is expired and clear if needed
+if (currentUser && !isSessionValid()) {
+    console.log('⏰ Session expired, clearing user data');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('sessionId');
+    currentUser = null;
+    sessionId = 'offline_' + Date.now();
+} else if (currentUser) {
+    // Update session expiry on app load if user is logged in
+    updateSessionExpiry();
+    console.log('✅ Valid session found for user:', currentUser.name);
+}
+
+// Initialize localStorage data structures with user-specific storage
 function initializeLocalStorage() {
-    if (!localStorage.getItem('strivetrack_habits')) {
-        localStorage.setItem('strivetrack_habits', JSON.stringify([]));
+    // Initialize global storage keys if they don't exist
+    if (!localStorage.getItem('strivetrack_users')) {
+        localStorage.setItem('strivetrack_users', JSON.stringify({}));
     }
-    if (!localStorage.getItem('strivetrack_completions')) {
-        localStorage.setItem('strivetrack_completions', JSON.stringify({}));
+    if (!localStorage.getItem('strivetrack_session_expiry')) {
+        // Set session to expire in 30 days
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30);
+        localStorage.setItem('strivetrack_session_expiry', expiryDate.getTime().toString());
     }
-    console.log('✅ localStorage initialized');
+    
+    // Initialize user-specific data if user is logged in
+    if (currentUser && currentUser.id) {
+        initializeUserData(currentUser.id);
+    }
+    
+    console.log('✅ localStorage initialized with user-specific storage');
+}
+
+// Initialize user-specific data storage
+function initializeUserData(userId) {
+    const userPrefix = `user_${userId}`;
+    
+    if (!localStorage.getItem(`${userPrefix}_habits`)) {
+        localStorage.setItem(`${userPrefix}_habits`, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(`${userPrefix}_completions`)) {
+        localStorage.setItem(`${userPrefix}_completions`, JSON.stringify({}));
+    }
+    if (!localStorage.getItem(`${userPrefix}_media`)) {
+        localStorage.setItem(`${userPrefix}_media`, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(`${userPrefix}_goals`)) {
+        localStorage.setItem(`${userPrefix}_goals`, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(`${userPrefix}_food_log`)) {
+        localStorage.setItem(`${userPrefix}_food_log`, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(`${userPrefix}_achievements`)) {
+        localStorage.setItem(`${userPrefix}_achievements`, JSON.stringify({}));
+    }
+    if (!localStorage.getItem(`${userPrefix}_points`)) {
+        localStorage.setItem(`${userPrefix}_points`, '0');
+    }
+    
+    console.log('✅ User-specific data initialized for:', userId);
 }
 
 // Simple online check
@@ -22,23 +75,60 @@ function isOnline() {
     return navigator.onLine && sessionId && !sessionId.startsWith('offline_');
 }
 
-// Simple habit functions
+// **30-DAY SESSION MANAGEMENT WITH ACTIVITY TRACKING**
+function updateSessionExpiry() {
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 30);
+    localStorage.setItem('strivetrack_session_expiry', expiryDate.getTime().toString());
+    console.log('✅ Session extended for 30 days');
+}
+
+function isSessionValid() {
+    const expiryTime = localStorage.getItem('strivetrack_session_expiry');
+    if (!expiryTime) return false;
+    
+    const now = new Date().getTime();
+    const expiry = parseInt(expiryTime);
+    return now < expiry;
+}
+
+function trackUserActivity() {
+    if (currentUser && currentUser.id) {
+        currentUser.lastActive = new Date().getTime();
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // Extend session on activity
+        updateSessionExpiry();
+        
+        console.log('📊 User activity tracked and session extended');
+    }
+}
+
+// User-specific habit functions
 function getLocalHabits() {
-    return JSON.parse(localStorage.getItem('strivetrack_habits') || '[]');
+    if (!currentUser || !currentUser.id) return [];
+    const userPrefix = `user_${currentUser.id}`;
+    return JSON.parse(localStorage.getItem(`${userPrefix}_habits`) || '[]');
 }
 
 function saveLocalHabits(habits) {
-    localStorage.setItem('strivetrack_habits', JSON.stringify(habits));
-    console.log('✅ Saved habits to localStorage:', habits.length);
+    if (!currentUser || !currentUser.id) return;
+    const userPrefix = `user_${currentUser.id}`;
+    localStorage.setItem(`${userPrefix}_habits`, JSON.stringify(habits));
+    console.log('✅ Saved habits to user storage:', habits.length);
 }
 
 function getLocalCompletions() {
-    return JSON.parse(localStorage.getItem('strivetrack_completions') || '{}');
+    if (!currentUser || !currentUser.id) return {};
+    const userPrefix = `user_${currentUser.id}`;
+    return JSON.parse(localStorage.getItem(`${userPrefix}_completions`) || '{}');
 }
 
 function saveLocalCompletions(completions) {
-    localStorage.setItem('strivetrack_completions', JSON.stringify(completions));
-    console.log('✅ Saved completions to localStorage');
+    if (!currentUser || !currentUser.id) return;
+    const userPrefix = `user_${currentUser.id}`;
+    localStorage.setItem(`${userPrefix}_completions`, JSON.stringify(completions));
+    console.log('✅ Saved completions to user storage');
 }
 
 // Get habits with completion status
@@ -85,11 +175,14 @@ function calculateTotalCompletions(completions) {
     return Object.values(completions).filter(Boolean).length;
 }
 
-// **FIXED: Calculate total points from multiple sources**
+// **FIXED: Calculate total points from multiple sources with persistent storage**
 function calculateTotalPoints() {
+    if (!currentUser || !currentUser.id) return 0;
+    
+    const userPrefix = `user_${currentUser.id}`;
     const completions = getLocalCompletions();
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
-    const userAchievements = JSON.parse(localStorage.getItem('user_achievements') || '{}');
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    const userAchievements = JSON.parse(localStorage.getItem(`${userPrefix}_achievements`) || '{}');
     
     let totalPoints = 0;
     
@@ -111,17 +204,28 @@ function calculateTotalPoints() {
         }
     });
     
-    console.log('💰 Calculated total points:', totalPoints, '(completions:', Object.values(completions).reduce((total, h) => total + Object.values(h || {}).filter(Boolean).length, 0) * 10, ', media:', media.length * 50, ', achievements:', Object.keys(userAchievements).length, ')');
+    // Save calculated points to user storage
+    localStorage.setItem(`${userPrefix}_points`, totalPoints.toString());
+    
+    console.log('💰 Calculated and saved total points for user:', currentUser.id, '- Points:', totalPoints);
     return totalPoints;
 }
 
-// Update points display
+// Update points display with user-specific data
 function updatePointsDisplay() {
+    if (!currentUser || !currentUser.id) {
+        const pointsElement = document.getElementById('user-points');
+        if (pointsElement) {
+            pointsElement.textContent = '⭐ 0 pts';
+        }
+        return;
+    }
+    
     const totalPoints = calculateTotalPoints();
     const pointsElement = document.getElementById('user-points');
     if (pointsElement) {
-        pointsElement.textContent = `${totalPoints} pts`;
-        console.log('✅ Updated points display:', totalPoints);
+        pointsElement.textContent = `⭐ ${totalPoints} pts`;
+        console.log('✅ Updated points display for user:', currentUser.id, '- Points:', totalPoints);
     }
 }
 
@@ -363,6 +467,9 @@ function handleHabitClick(event) {
 function toggleHabitCompletion(habitId, date = null) {
     const targetDate = date || new Date().toISOString().split('T')[0];
     console.log('🔄 Toggling habit completion:', habitId, 'on date:', targetDate);
+    
+    // Track user activity
+    trackUserActivity();
     
     const completions = getLocalCompletions();
     
@@ -618,7 +725,7 @@ function openMediaUploadModal() {
                      onclick="document.getElementById('media-file-input').click()">
                     <div class="text-4xl mb-4">📷</div>
                     <h3 class="text-white text-lg font-semibold mb-2">Drop files here or click to browse</h3>
-                    <p class="text-white/60 mb-4">Supports: JPG, PNG, WEBP, MP4, MOV (max 50MB)</p>
+                    <p class="text-white/60 mb-4">Supports: All image & video formats (max 50MB per file)</p>
                     <button type="button" class="btn-primary">
                         <i class="fas fa-upload mr-2"></i>
                         Choose Files
@@ -724,6 +831,9 @@ function handleFileSelection() {
 function handleMediaUpload() {
     console.log('📸 Starting media upload process...');
     
+    // Track user activity
+    trackUserActivity();
+    
     const fileInput = document.getElementById('media-file-input');
     const progressContainer = document.getElementById('upload-progress-container');
     const uploadBtn = document.getElementById('upload-btn');
@@ -779,7 +889,12 @@ function handleMediaUpload() {
 function completeUpload(files, mediaType) {
     console.log('📸 Completing upload for', files.length, 'files');
     
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    if (!currentUser || !currentUser.id) {
+        showNotification('Please log in to upload media', 'error');
+        return;
+    }
+    const userPrefix = `user_${currentUser.id}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     const uploadedItems = [];
     
     // Process each file
@@ -799,8 +914,8 @@ function completeUpload(files, mediaType) {
             media.push(mediaItem);
             uploadedItems.push(mediaItem);
             
-            // Save updated media array
-            localStorage.setItem('strivetrack_media', JSON.stringify(media));
+            // Save updated media array to user-specific storage
+            localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
             
             console.log('📸 Media item saved:', mediaItem.name);
             
@@ -1053,10 +1168,19 @@ function loadDashboardWeeklyProgress(habits) {
 }
 
 // **ENHANCED PROGRESS GALLERY**
+// **ENHANCED PROGRESS GALLERY WITH USER-SPECIFIC STORAGE**
 function loadProgressGallery() {
     console.log('📸 Loading progress gallery...');
     
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    if (!currentUser || !currentUser.id) {
+        const container = document.getElementById('media-container');
+        const emptyState = document.getElementById('media-empty-state');
+        if (container) container.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    const userPrefix = `user_${currentUser.id}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     const container = document.getElementById('media-container');
     const emptyState = document.getElementById('media-empty-state');
     
@@ -1527,7 +1651,7 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
-// FIXED LOGIN FUNCTION
+// **UPDATED LOGIN FUNCTION WITH USER REGISTRY AND SESSION MANAGEMENT**
 function handleLogin(event) {
     event.preventDefault();
     
@@ -1536,6 +1660,12 @@ function handleLogin(event) {
     
     console.log('🔐 Login attempt:', email, password);
     
+    // Check session expiry and extend it
+    updateSessionExpiry();
+    
+    // Get or initialize user registry
+    let allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
+    
     // Admin login
     if (email === 'iamhollywoodpro@protonmail.com' && password === 'iampassword@1981') {
         console.log('🔑 Admin login successful');
@@ -1543,19 +1673,75 @@ function handleLogin(event) {
             id: 'admin',
             email: email,
             name: 'Admin',
-            role: 'admin'
+            role: 'admin',
+            lastActive: new Date().getTime()
         };
         sessionId = 'admin_' + Date.now();
+        
+        // Register admin in user registry if not exists
+        if (!allUsers['admin']) {
+            allUsers['admin'] = {
+                id: 'admin',
+                email: email,
+                name: 'Admin',
+                role: 'admin',
+                registeredAt: new Date().getTime(),
+                lastLogin: new Date().getTime()
+            };
+            localStorage.setItem('strivetrack_users', JSON.stringify(allUsers));
+        } else {
+            // Update last login
+            allUsers['admin'].lastLogin = new Date().getTime();
+            localStorage.setItem('strivetrack_users', JSON.stringify(allUsers));
+        }
     }
     // Any other valid email
     else if (email.includes('@') && password.length > 0) {
         console.log('🔑 User login successful');
+        
+        // Check if user already exists in registry
+        let userId = null;
+        let existingUser = null;
+        
+        for (const [id, user] of Object.entries(allUsers)) {
+            if (user.email === email) {
+                userId = id;
+                existingUser = user;
+                break;
+            }
+        }
+        
+        // Create new user if doesn't exist
+        if (!userId) {
+            userId = 'user_' + Date.now();
+            existingUser = {
+                id: userId,
+                email: email,
+                name: email.split('@')[0],
+                role: 'user',
+                registeredAt: new Date().getTime(),
+                lastLogin: new Date().getTime()
+            };
+            allUsers[userId] = existingUser;
+        } else {
+            // Update existing user's last login
+            allUsers[userId].lastLogin = new Date().getTime();
+        }
+        
+        // Save updated registry
+        localStorage.setItem('strivetrack_users', JSON.stringify(allUsers));
+        
         currentUser = {
-            id: 'user_' + Date.now(),
+            id: userId,
             email: email,
-            name: email.split('@')[0]
+            name: existingUser.name,
+            role: existingUser.role || 'user',
+            lastActive: new Date().getTime()
         };
         sessionId = 'user_' + Date.now();
+        
+        // Initialize user-specific data
+        initializeUserData(userId);
     }
     // Invalid
     else {
@@ -2826,21 +3012,61 @@ function suspendUser(userId) {
 }
 
 // Admin delete user function
+// **REAL USER DELETION FUNCTION - ACTUALLY REMOVES USERS FROM SYSTEM**
 function confirmDeleteUser(userId) {
     console.log('🗑️ Admin delete user function called for user:', userId);
     if (confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) {
         if (confirm('This will delete ALL user data including habits, media, and progress. Are you absolutely sure?')) {
             console.log('🗑️ User deletion confirmed by admin for user:', userId);
             
-            // In a real app, this would make an API call to delete the user
-            // For demo purposes, we'll just show success and refresh
-            showNotification(`User account ${userId} deleted successfully`, 'success');
-            closeModal('user-details-modal');
-            
-            // Refresh the admin dashboard to update the user list
-            setTimeout(() => {
-                loadAdminDashboard();
-            }, 1000);
+            try {
+                // Delete from user registry
+                const allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
+                delete allUsers[userId];
+                localStorage.setItem('strivetrack_users', JSON.stringify(allUsers));
+                
+                // Delete ALL user-specific data
+                const userPrefix = `user_${userId}`;
+                const keysToDelete = [
+                    `${userPrefix}_habits`,
+                    `${userPrefix}_completions`, 
+                    `${userPrefix}_media`,
+                    `${userPrefix}_goals`,
+                    `${userPrefix}_food_log`,
+                    `${userPrefix}_achievements`,
+                    `${userPrefix}_points`
+                ];
+                
+                keysToDelete.forEach(key => {
+                    localStorage.removeItem(key);
+                    console.log('🗑️ Deleted user data:', key);
+                });
+                
+                // If currently logged in user is being deleted, log them out
+                if (currentUser && currentUser.id === userId) {
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem('sessionId');
+                    currentUser = null;
+                    sessionId = null;
+                    showNotification('Your account has been deleted by admin', 'error');
+                    window.location.reload();
+                    return;
+                }
+                
+                showNotification(`User account ${userId} and ALL associated data deleted successfully`, 'success');
+                closeModal('user-details-modal');
+                
+                console.log('✅ User completely deleted from system:', userId);
+                
+                // Refresh the admin dashboard to update the user list
+                setTimeout(() => {
+                    loadAdminDashboard();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('❌ Error deleting user:', error);
+                showNotification('Error deleting user account', 'error');
+            }
         }
     }
 }
@@ -2988,13 +3214,18 @@ function createGoalCard(goal) {
 }
 
 // **GOAL HELPER FUNCTIONS**
+// **USER-SPECIFIC GOALS FUNCTIONS**
 function getLocalGoals() {
-    return JSON.parse(localStorage.getItem('strivetrack_goals') || '[]');
+    if (!currentUser || !currentUser.id) return [];
+    const userPrefix = `user_${currentUser.id}`;
+    return JSON.parse(localStorage.getItem(`${userPrefix}_goals`) || '[]');
 }
 
 function saveLocalGoals(goals) {
-    localStorage.setItem('strivetrack_goals', JSON.stringify(goals));
-    console.log('✅ Saved', goals.length, 'goals to localStorage');
+    if (!currentUser || !currentUser.id) return;
+    const userPrefix = `user_${currentUser.id}`;
+    localStorage.setItem(`${userPrefix}_goals`, JSON.stringify(goals));
+    console.log('✅ Saved', goals.length, 'goals to user storage');
 }
 
 function getCategoryIcon(category) {
@@ -3053,6 +3284,9 @@ function showCreateGoalModal() {
 
 function handleGoalForm(event) {
     event.preventDefault();
+    
+    // Track user activity
+    trackUserActivity();
     
     const goalData = {
         id: 'goal_' + Date.now(),
@@ -3239,8 +3473,11 @@ function loadFoodLog() {
 }
 
 // **NUTRITION HELPER FUNCTIONS**
+// **USER-SPECIFIC FOOD LOG FUNCTIONS**
 function getTodayFoodLog() {
-    const allEntries = JSON.parse(localStorage.getItem('food_log') || '[]');
+    if (!currentUser || !currentUser.id) return [];
+    const userPrefix = `user_${currentUser.id}`;
+    const allEntries = JSON.parse(localStorage.getItem(`${userPrefix}_food_log`) || '[]');
     const today = new Date().toISOString().split('T')[0];
     return allEntries.filter(entry => entry.date === today);
 }
@@ -3293,6 +3530,9 @@ function handleNutritionForm(event) {
     event.preventDefault();
     console.log('🍎 Nutrition form submitted');
     
+    // Track user activity
+    trackUserActivity();
+    
     // Get form values using the actual HTML field IDs
     const nameEl = document.getElementById('food-name');
     const mealTypeEl = document.getElementById('meal-type');
@@ -3323,10 +3563,15 @@ function handleNutritionForm(event) {
     
     console.log('🍎 Creating food entry:', formData);
     
-    // Save to localStorage
-    const foodLog = JSON.parse(localStorage.getItem('food_log') || '[]');
+    // Save to user-specific localStorage
+    if (!currentUser || !currentUser.id) {
+        showNotification('Please log in to save food entries', 'error');
+        return;
+    }
+    const userPrefix = `user_${currentUser.id}`;
+    const foodLog = JSON.parse(localStorage.getItem(`${userPrefix}_food_log`) || '[]');
     foodLog.push(formData);
-    localStorage.setItem('food_log', JSON.stringify(foodLog));
+    localStorage.setItem(`${userPrefix}_food_log`, JSON.stringify(foodLog));
     
     console.log('🍎 Food log updated, entries count:', foodLog.length);
     
@@ -3339,7 +3584,9 @@ function handleNutritionForm(event) {
 }
 
 function addSampleFoodEntry() {
-    const foodLog = JSON.parse(localStorage.getItem('food_log') || '[]');
+    if (!currentUser || !currentUser.id) return;
+    const userPrefix = `user_${currentUser.id}`;
+    const foodLog = JSON.parse(localStorage.getItem(`${userPrefix}_food_log`) || '[]');
     const sampleEntry = {
         id: 'food_' + Date.now(),
         name: 'Chicken Breast',
@@ -3355,17 +3602,19 @@ function addSampleFoodEntry() {
     };
     
     foodLog.push(sampleEntry);
-    localStorage.setItem('food_log', JSON.stringify(foodLog));
+    localStorage.setItem(`${userPrefix}_food_log`, JSON.stringify(foodLog));
     
     loadNutrition();
     showNotification('Sample food entry added! 🍗', 'success');
 }
 
 function deleteFoodEntry(entryId) {
-    const foodLog = JSON.parse(localStorage.getItem('food_log') || '[]');
+    if (!currentUser || !currentUser.id) return;
+    const userPrefix = `user_${currentUser.id}`;
+    const foodLog = JSON.parse(localStorage.getItem(`${userPrefix}_food_log`) || '[]');
     const filteredLog = foodLog.filter(entry => entry.id !== entryId);
     
-    localStorage.setItem('food_log', JSON.stringify(filteredLog));
+    localStorage.setItem(`${userPrefix}_food_log`, JSON.stringify(filteredLog));
     loadNutrition();
     showNotification('Food entry deleted', 'info');
 }

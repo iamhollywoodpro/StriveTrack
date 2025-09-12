@@ -7,11 +7,17 @@ let supabase = null;
 // Initialize Supabase client
 function initializeSupabase() {
     const supabaseUrl = 'https://hilukaxsamucnqdbxlwd.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpbHVrYXhzYW11Y25xZGJ4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjYxNjg5NTgsImV4cCI6MjA0MTc0NDk1OH0.uBaJt7nnJNOLJAtsOjFrQvdzcG7BJ5-LopQ1ITMzhH4';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhpbHVrYXhzYW11Y25xZGJ4bHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MTE4NzEsImV4cCI6MjA3MzI4Nzg3MX0.fayoHSkZjlqaOSUbbrarRdKGgNI2UReZXMZfgqPzYD4';
     
-    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase client initialized');
-    return supabase;
+    if (window.supabase) {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        window.supabase = supabase; // Make it globally accessible
+        console.log('✅ Supabase client initialized');
+        return supabase;
+    } else {
+        console.error('❌ Supabase library not loaded');
+        return null;
+    }
 }
 
 // **USER MANAGEMENT**
@@ -523,3 +529,22 @@ window.SupabaseServices = {
 };
 
 console.log('✅ Supabase services loaded');
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            if (window.supabase && !window.supabase.createClient) {
+                // Supabase CDN object exists, initialize client
+                initializeSupabase();
+            }
+        }, 500);
+    });
+} else {
+    // DOM already loaded
+    setTimeout(() => {
+        if (window.supabase && window.supabase.createClient && !supabase) {
+            initializeSupabase();
+        }
+    }, 500);
+}

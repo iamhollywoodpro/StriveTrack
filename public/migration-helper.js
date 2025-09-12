@@ -226,7 +226,7 @@ class MigrationHelper {
             }
 
             // Simple test query
-            const { data, error } = await supabase
+            const { data, error } = await window.supabase
                 .from('users')
                 .select('count', { count: 'exact', head: true });
 

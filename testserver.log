@@ -1,0 +1,4 @@
+Test server running on port 3000, serving from /public directory
+11/Sep/2025 23:25:21 - "GET / HTTP/1.1" 200 -
+11/Sep/2025 23:25:21 - "GET /app.js HTTP/1.1" 200 -
+11/Sep/2025 23:25:22 - "GET /favicon.ico HTTP/1.1" 200 -

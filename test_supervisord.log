@@ -1,0 +1,24 @@
+2025-09-11 23:24:46,921 INFO RPC interface 'supervisor' initialized
+2025-09-11 23:24:46,921 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2025-09-11 23:24:46,923 INFO daemonizing the supervisord process
+2025-09-11 23:24:46,924 INFO supervisord started with pid 2622
+2025-09-11 23:24:47,928 INFO spawned: 'testserver' with pid 2649
+2025-09-11 23:24:49,052 INFO success: testserver entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-11 23:24:49,052 WARN exited: testserver (exit status 1; not expected)
+2025-09-11 23:24:49,084 INFO spawned: 'testserver' with pid 2670
+2025-09-11 23:24:49,201 WARN exited: testserver (exit status 1; not expected)
+2025-09-11 23:24:50,204 INFO spawned: 'testserver' with pid 2678
+2025-09-11 23:24:50,303 WARN exited: testserver (exit status 1; not expected)
+2025-09-11 23:24:52,307 INFO spawned: 'testserver' with pid 2681
+2025-09-11 23:24:52,406 WARN exited: testserver (exit status 1; not expected)
+2025-09-11 23:24:55,412 INFO spawned: 'testserver' with pid 2737
+2025-09-11 23:24:55,611 WARN exited: testserver (exit status 1; not expected)
+2025-09-11 23:24:55,612 INFO gave up: testserver entered FATAL state, too many start retries too quickly
+2025-09-11 23:25:09,043 INFO RPC interface 'supervisor' initialized
+2025-09-11 23:25:09,043 CRIT Server 'unix_http_server' running without any HTTP authentication checking
+2025-09-11 23:25:09,046 INFO daemonizing the supervisord process
+2025-09-11 23:25:09,047 INFO supervisord started with pid 2809
+2025-09-11 23:25:10,050 INFO spawned: 'testserver' with pid 2812
+2025-09-11 23:25:11,130 INFO success: testserver entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-09-11 23:25:50,270 INFO waiting for testserver to die
+2025-09-11 23:25:50,273 WARN stopped: testserver (terminated by SIGTERM)

@@ -35,9 +35,14 @@ function initializeLocalStorage() {
     }
 }
 
-// Online/Offline detection
+// Online/Offline detection with enhanced validation
 function isOnline() {
-    return navigator.onLine && sessionId && !sessionId.startsWith('offline_');
+    const hasNetwork = navigator.onLine;
+    const hasSession = sessionId && sessionId.trim() !== '';
+    const isOfflineSession = sessionId && sessionId.startsWith('offline_');
+    const result = hasNetwork && hasSession && !isOfflineSession;
+    console.log(`🌐 Online check: network=${hasNetwork}, session=${hasSession}, offline=${isOfflineSession}, result=${result}`);
+    return result;
 }
 
 // Queue actions for sync when offline
@@ -50,13 +55,20 @@ function queueForSync(action) {
     localStorage.setItem('strivetrack_pending_sync', JSON.stringify(pending));
 }
 
-// Sync user points and profile from server
+// Sync user points and profile from server with enhanced error handling
 async function syncUserPointsFromServer() {
-    if (!isOnline()) return;
+    if (!isOnline()) {
+        console.log('⏸️ Skipping server sync - offline mode');
+        return;
+    }
     
     try {
+        console.log('🔄 Syncing user data from server...');
         const response = await fetch('/api/profile', {
-            headers: { 'x-session-id': sessionId }
+            headers: { 
+                'x-session-id': sessionId,
+                'Content-Type': 'application/json'
+            }
         });
         
         if (response.ok) {
@@ -64,9 +76,13 @@ async function syncUserPointsFromServer() {
             const serverUser = data.user || data; // Handle different response structures
             
             if (serverUser && currentUser) {
+                console.log('📊 Server user data:', serverUser);
+                
                 // Update points from server (authoritative)
                 if (serverUser.points !== undefined) {
+                    const oldPoints = currentUser.points;
                     currentUser.points = serverUser.points;
+                    console.log(`💰 Points updated: ${oldPoints} → ${serverUser.points}`);
                 }
                 
                 // Update profile info
@@ -81,12 +97,19 @@ async function syncUserPointsFromServer() {
                 // Save updated user data
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 console.log('✅ User data synced from server:', serverUser.points, 'points');
+                
+                // Update display immediately
+                updatePointsDisplay();
             }
         } else {
-            console.log('❌ Profile API response not OK:', response.status);
+            console.log('❌ Profile API response not OK:', response.status, response.statusText);
+            if (response.status === 401) {
+                console.log('🔐 Session expired, showing login screen');
+                showLoginScreen();
+            }
         }
     } catch (error) {
-        console.log('❌ Failed to sync user data from server:', error);
+        console.error('❌ Failed to sync user data from server:', error);
     }
 }
 
@@ -863,6 +886,11 @@ async function handleLogin(event) {
         console.log('🔄 API unavailable, using offline mode...');
         // API is unavailable, use offline mode
         tryOfflineLogin(email, password);
+    } finally {
+        // Always update points display after login attempt
+        setTimeout(() => {
+            updatePointsDisplay();
+        }, 500);
     }
 }
 
@@ -885,6 +913,11 @@ function tryOfflineLogin(email, password) {
             console.log('✅ Offline login successful');
             showNotification('Welcome back! (Offline Mode) 📱', 'success');
             showDashboard();
+            
+            // Update points display after offline login
+            setTimeout(() => {
+                updatePointsDisplay();
+            }, 500);
         } else {
             showNotification('Invalid password', 'error');
         }
@@ -912,6 +945,11 @@ function tryOfflineLogin(email, password) {
         console.log('✅ Offline account created');
         showNotification('Account created! (Offline Mode) 🎯', 'success');
         showDashboard();
+        
+        // Update points display after offline registration
+        setTimeout(() => {
+            updatePointsDisplay();
+        }, 500);
     }
 }
 
@@ -1274,9 +1312,15 @@ async function loadHabits() {
         if (isOnline()) {
             console.log('🌐 Online - fetching from Cloudflare API...');
             
+            // Sync user points first to ensure accurate data
+            await syncUserPointsFromServer();
+            
             // Try API first
             const response = await fetch('/api/habits/weekly', {
-                headers: { 'x-session-id': sessionId }
+                headers: { 
+                    'x-session-id': sessionId,
+                    'Content-Type': 'application/json'
+                }
             });
             
             if (response.ok) {
@@ -1291,7 +1335,12 @@ async function loadHabits() {
                 displayHabits(habits);
                 return;
             } else {
-                console.log('❌ API failed, status:', response.status);
+                console.log('❌ API failed, status:', response.status, response.statusText);
+                if (response.status === 401) {
+                    console.log('🔐 Session expired, redirecting to login');
+                    showLoginScreen();
+                    return;
+                }
             }
         }
         
@@ -1713,7 +1762,12 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
                     data: { habitId, date, dayOfWeek }
                 });
                 
-                showNotification(`${localResult.completed ? 'Day completed' : 'Day unmarked'}! ${pointsText} pts (Offline)`, 'info');
+                // Still show success notification for offline mode
+                if (localResult.completed) {
+                    showNotification(`Day completed! ${pointsText} pts (Offline - will sync)`, 'success');
+                } else {
+                    showNotification(`Day unmarked! ${pointsText} pts (Offline - will sync)`, 'warning');
+                }
             }
         } else {
             console.log('📱 Offline - queuing for sync');
@@ -1724,7 +1778,12 @@ async function toggleWeeklyHabit(habitId, date, dayOfWeek) {
                 data: { habitId, date, dayOfWeek }
             });
             
-            showNotification(`${localResult.completed ? 'Day completed' : 'Day unmarked'}! ${pointsText} pts (Offline)`, 'info');
+            // Show appropriate offline notification
+            if (localResult.completed) {
+                showNotification(`Day completed! ${pointsText} pts (Offline Mode)`, 'success');
+            } else {
+                showNotification(`Day unmarked! ${pointsText} pts (Offline Mode)`, 'warning');
+            }
         }
         
         // Refresh views
@@ -7888,16 +7947,34 @@ function updateProfilePictureDisplay(profilePictureUrl) {
     const profilePicElement = document.getElementById('current-profile-pic');
     const removeButton = document.getElementById('remove-profile-pic');
     
-    if (profilePictureUrl) {
-        profilePicElement.innerHTML = `
-            <img src="${profilePictureUrl}" alt="Profile Picture" class="w-full h-full object-cover rounded-full">
-        `;
-        removeButton.classList.remove('hidden');
+    if (profilePictureUrl && profilePictureUrl.trim()) {
+        // Test image loading before displaying
+        const testImg = new Image();
+        testImg.onload = function() {
+            profilePicElement.innerHTML = `
+                <img src="${profilePictureUrl}" alt="Profile Picture" class="w-full h-full object-cover rounded-full">
+            `;
+            if (removeButton) removeButton.classList.remove('hidden');
+        };
+        testImg.onerror = function() {
+            console.log('❌ Profile picture failed to load in display:', profilePictureUrl);
+            profilePicElement.innerHTML = `
+                <i class="fas fa-user text-white text-2xl"></i>
+            `;
+            if (removeButton) removeButton.classList.add('hidden');
+            
+            // Clear broken URL from user data
+            if (currentUser && currentUser.profile_picture_url === profilePictureUrl) {
+                currentUser.profile_picture_url = null;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+        };
+        testImg.src = profilePictureUrl;
     } else {
         profilePicElement.innerHTML = `
             <i class="fas fa-user text-white text-2xl"></i>
         `;
-        removeButton.classList.add('hidden');
+        if (removeButton) removeButton.classList.add('hidden');
     }
 }
 

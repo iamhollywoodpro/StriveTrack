@@ -6,6 +6,10 @@ console.log('🔧 Loading FIXED StriveTrack app with weekly calendar...');
 let sessionId = localStorage.getItem('sessionId') || 'offline_' + Date.now();
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
+// **SUPABASE INTEGRATION FLAG**
+let useSupabase = false; // Set to true to enable Supabase mode
+let supabaseReady = false;
+
 // **SESSION VALIDATION ON APP LOAD**
 // Check if session is expired and clear if needed
 if (currentUser && !isSessionValid()) {
@@ -4394,4 +4398,121 @@ window.handleGoalForm = handleGoalForm;
 window.showAdminMediaFullscreen = showAdminMediaFullscreen;
 window.exportUserData = exportUserData;
 
-console.log('✅ StriveTrack FIXED version loaded successfully!');
+// **SUPABASE INITIALIZATION**
+async function initializeSupabaseIntegration() {
+    try {
+        if (window.SupabaseServices && window.MigrationHelper) {
+            // Test Supabase connection
+            const isConnected = await MigrationHelper.testSupabaseConnection();
+            if (isConnected) {
+                supabaseReady = true;
+                console.log('✅ Supabase cloud integration ready');
+                
+                // Check if user has local data that needs migration
+                if (currentUser && hasLocalData()) {
+                    showMigrationPrompt();
+                }
+            } else {
+                console.log('❌ Supabase connection failed - using localStorage mode');
+            }
+        } else {
+            console.log('⚠️ Supabase services not loaded - using localStorage mode');
+        }
+    } catch (error) {
+        console.warn('Supabase initialization error:', error);
+    }
+}
+
+function hasLocalData() {
+    if (!currentUser || !currentUser.id) return false;
+    
+    const userPrefix = `user_${currentUser.id}`;
+    const keys = [`${userPrefix}_habits`, `${userPrefix}_goals`, `${userPrefix}_food_log`];
+    
+    return keys.some(key => {
+        const data = localStorage.getItem(key);
+        return data && JSON.parse(data).length > 0;
+    });
+}
+
+function showMigrationPrompt() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'migration-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="text-center mb-6">
+                <div class="text-4xl mb-4">☁️</div>
+                <h3 class="text-xl font-bold text-white mb-2">Cloud Migration Available</h3>
+                <p class="text-white/70">We've detected local data that can be migrated to secure cloud storage.</p>
+            </div>
+            
+            <div class="bg-blue-500/20 border border-blue-400/30 rounded-lg p-4 mb-6">
+                <h4 class="text-blue-300 font-semibold mb-2">✨ Benefits of Cloud Migration:</h4>
+                <ul class="text-white/80 text-sm space-y-1">
+                    <li>• 📱 Access your data from any device</li>
+                    <li>• 🔒 Secure, encrypted cloud storage</li>
+                    <li>• 📸 50MB+ media file support</li>
+                    <li>• 🔄 Real-time sync and backup</li>
+                    <li>• 👥 Enhanced social features</li>
+                </ul>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="closeModal('migration-modal')" class="btn-secondary flex-1">
+                    Maybe Later
+                </button>
+                <button onclick="startMigration()" class="btn-primary flex-1">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i>
+                    Migrate Now
+                </button>
+            </div>
+            
+            <p class="text-xs text-white/50 mt-4 text-center">
+                Your local data will be preserved during migration
+            </p>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+}
+
+async function startMigration() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Migrating...';
+    button.disabled = true;
+    
+    try {
+        const success = await MigrationHelper.migrateUserData(currentUser);
+        
+        if (success) {
+            showNotification('✅ Data migrated to cloud successfully!', 'success');
+            useSupabase = true;
+            closeModal('migration-modal');
+            
+            // Reload app to use Supabase data
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            throw new Error('Migration failed');
+        }
+    } catch (error) {
+        console.error('Migration error:', error);
+        showNotification('Migration failed. Please try again later.', 'error');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+console.log('✅ StriveTrack with Cloud Integration loaded successfully!');
+
+// Initialize Supabase integration when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initializeSupabaseIntegration();
+    }, 1000); // Give time for Supabase libraries to load
+});

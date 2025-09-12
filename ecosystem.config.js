@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'strivetrack-test',
     script: 'python3',
-    args: '-m http.server 8080',
+    args: '-m http.server 8000',
     cwd: './public',
     env: {
       NODE_ENV: 'development'

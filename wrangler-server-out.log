@@ -1,0 +1,107 @@
+
+ ⛅️ wrangler 4.24.3 (update available 4.36.0)
+─────────────────────────────────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (local-DB)                                          D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("iampassword@1981")                    Environment Variable      local
+env.ENVIRONMENT ("production")                             Environment Variable      local
+
+
+[32mIf you think this is a bug then please create an issue at https://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+Note that there is a newer version of Wrangler available (4.36.0). Consider checking whether upgrading resolves this error.
+? Would you like to report this error to Cloudflare? Wrangler's output and the error details will be shared with the Wrangler team to help us diagnose and fix the issue.
+🤖 Using fallback value in non-interactive context: no
+⎔ Starting local server...
+
+ ⛅️ wrangler 4.24.3 (update available 4.36.0)
+─────────────────────────────────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (local-DB)                                          D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("iampassword@1981")                    Environment Variable      local
+env.ENVIRONMENT ("production")                             Environment Variable      local
+
+⎔ Starting local server...
+
+[32mIf you think this is a bug then please create an issue at https://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+Note that there is a newer version of Wrangler available (4.36.0). Consider checking whether upgrading resolves this error.
+? Would you like to report this error to Cloudflare? Wrangler's output and the error details will be shared with the Wrangler team to help us diagnose and fix the issue.
+🤖 Using fallback value in non-interactive context: no
+
+ ⛅️ wrangler 4.24.3 (update available 4.36.0)
+─────────────────────────────────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (local-DB)                                          D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("iampassword@1981")                    Environment Variable      local
+env.ENVIRONMENT ("production")                             Environment Variable      local
+
+⎔ Starting local server...
+
+[32mIf you think this is a bug then please create an issue at https://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+Note that there is a newer version of Wrangler available (4.36.0). Consider checking whether upgrading resolves this error.
+? Would you like to report this error to Cloudflare? Wrangler's output and the error details will be shared with the Wrangler team to help us diagnose and fix the issue.
+🤖 Using fallback value in non-interactive context: no
+
+ ⛅️ wrangler 4.24.3 (update available 4.36.0)
+─────────────────────────────────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (local-DB)                                          D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("iampassword@1981")                    Environment Variable      local
+env.ENVIRONMENT ("production")                             Environment Variable      local
+
+⎔ Starting local server...
+
+[32mIf you think this is a bug then please create an issue at https://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+Note that there is a newer version of Wrangler available (4.36.0). Consider checking whether upgrading resolves this error.
+? Would you like to report this error to Cloudflare? Wrangler's output and the error details will be shared with the Wrangler team to help us diagnose and fix the issue.
+🤖 Using fallback value in non-interactive context: no
+
+ ⛅️ wrangler 4.24.3 (update available 4.36.0)
+─────────────────────────────────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (local-DB)                                          D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("iampassword@1981")                    Environment Variable      local
+env.ENVIRONMENT ("production")                             Environment Variable      local
+
+⎔ Starting local server...
+
+[32mIf you think this is a bug then please create an issue at https://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+Note that there is a newer version of Wrangler available (4.36.0). Consider checking whether upgrading resolves this error.
+? Would you like to report this error to Cloudflare? Wrangler's output and the error details will be shared with the Wrangler team to help us diagnose and fix the issue.
+🤖 Using fallback value in non-interactive context: no
+
+ ⛅️ wrangler 4.24.3 (update available 4.36.0)
+─────────────────────────────────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                    Resource                  Mode
+env.DB (local-DB)                                          D1 Database               local
+env.MEDIA_BUCKET (strivetrack-media)                       R2 Bucket                 local
+env.ADMIN_EMAIL ("iamhollywoodpro@protonmail.com")         Environment Variable      local
+env.ADMIN_PASSWORD ("iampassword@1981")                    Environment Variable      local
+env.ENVIRONMENT ("production")                             Environment Variable      local
+
+[wrangler:info] Ready on http://localhost:3001
+⎔ Starting local server...
+[wrangler:info] GET / 200 OK (42ms)
+[wrangler:info] GET /app.js 200 OK (11ms)
+[wrangler:info] GET /favicon.ico 200 OK (11ms)

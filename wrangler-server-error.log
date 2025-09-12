@@ -1,0 +1,105 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1m*** Fatal uncaught kj::Exception: kj/async-io-unix.c++:945: failed: ::bind(sockfd, &addr.generic, addrlen): Address already in use; toString() = 127.0.0.1:8000[0m
+
+  stack: /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395dc7 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395bb9 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43940fd /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b70f35 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b718db /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b722a3 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b72bea /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1af2a91 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c55e6 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c5a27 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c3828 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c352c /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1addbb6 /lib/x86_64-linux-gnu/libc.so.6@27249 /lib/x86_64-linux-gnu/libc.so.6@27304 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1add024
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mThe Workers runtime failed to start. There is likely additional logging output above.[0m
+
+
+🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-12_16-49-03_043.log"
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1m*** Fatal uncaught kj::Exception: kj/async-io-unix.c++:945: failed: ::bind(sockfd, &addr.generic, addrlen): Address already in use; toString() = 127.0.0.1:8000[0m
+
+  stack: /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395dc7 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395bb9 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43940fd /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b70f35 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b718db /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b722a3 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b72bea /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1af2a91 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c55e6 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c5a27 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c3828 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c352c /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1addbb6 /lib/x86_64-linux-gnu/libc.so.6@27249 /lib/x86_64-linux-gnu/libc.so.6@27304 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1add024
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mThe Workers runtime failed to start. There is likely additional logging output above.[0m
+
+
+🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-12_16-49-07_128.log"
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1m*** Fatal uncaught kj::Exception: kj/async-io-unix.c++:945: failed: ::bind(sockfd, &addr.generic, addrlen): Address already in use; toString() = 127.0.0.1:8000[0m
+
+  stack: /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395dc7 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395bb9 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43940fd /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b70f35 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b718db /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b722a3 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b72bea /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1af2a91 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c55e6 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c5a27 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c3828 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c352c /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1addbb6 /lib/x86_64-linux-gnu/libc.so.6@27249 /lib/x86_64-linux-gnu/libc.so.6@27304 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1add024
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mThe Workers runtime failed to start. There is likely additional logging output above.[0m
+
+
+🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-12_16-49-09_987.log"
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mThe Workers runtime failed to start. There is likely additional logging output above.[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1m*** Fatal uncaught kj::Exception: kj/async-io-unix.c++:945: failed: ::bind(sockfd, &addr.generic, addrlen): Address already in use; toString() = 127.0.0.1:8000[0m
+
+  stack: /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395dc7 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395bb9 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43940fd /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b70f35 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b718db /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b722a3 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b72bea /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1af2a91 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c55e6 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c5a27 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c3828 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c352c /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1addbb6 /lib/x86_64-linux-gnu/libc.so.6@27249 /lib/x86_64-linux-gnu/libc.so.6@27304 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1add024
+
+
+🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-12_16-49-13_266.log"
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mThe Workers runtime failed to start. There is likely additional logging output above.[0m
+
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1m*** Fatal uncaught kj::Exception: kj/async-io-unix.c++:945: failed: ::bind(sockfd, &addr.generic, addrlen): Address already in use; toString() = 127.0.0.1:8000[0m
+
+  stack: /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395dc7 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@4395bb9 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43940fd /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b70f35 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b718db /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b722a3 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1b72bea /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1af2a91 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c55e6 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c5a27 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c3828 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@43c352c /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1addbb6 /lib/x86_64-linux-gnu/libc.so.6@27249 /lib/x86_64-linux-gnu/libc.so.6@27304 /usr/lib/node_modules/wrangler/node_modules/@cloudflare/workerd-linux-64/bin/workerd@1add024
+
+
+🪵  Logs were written to "/home/user/.config/.wrangler/logs/wrangler-2025-09-12_16-49-16_540.log"
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in build field: "environment"
+
+

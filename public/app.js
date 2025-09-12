@@ -39,6 +39,18 @@ window.debugStriveTrack = function() {
     
     console.log('💾 localStorage:', Object.entries(storage).map(([key, val]) => `${key}: ${val ? '✅' : '❌'}`).join(', '));
     
+    // Parse and show actual localStorage data
+    try {
+        const habits = JSON.parse(localStorage.getItem('strivetrack_habits') || '[]');
+        console.log('📊 Parsed habits from localStorage:', habits);
+        console.log('📊 Habits count:', habits.length);
+        
+        const completions = JSON.parse(localStorage.getItem('strivetrack_completions') || '{}');
+        console.log('📊 Parsed completions from localStorage:', completions);
+    } catch (e) {
+        console.error('❌ Error parsing localStorage data:', e);
+    }
+    
     // Test API connectivity
     if (sessionId) {
         fetch('/api/profile', { headers: { 'x-session-id': sessionId } })
@@ -54,6 +66,24 @@ window.debugStriveTrack = function() {
     
     console.log('=== End Debug Report ===');
     return 'Debug complete - check console for details';
+};
+
+// Quick habit debugging function
+window.debugHabits = function() {
+    console.log('=== 🎯 Habit-Specific Debug ===');
+    const habits = getLocalHabits();
+    console.log('📊 Raw localStorage habits:', habits);
+    console.log('📊 Habits count:', habits.length);
+    
+    const habitsWithCompletions = getLocalHabitsWithCompletions();
+    console.log('📊 Habits with completions:', habitsWithCompletions);
+    console.log('📊 Habits with completions count:', habitsWithCompletions.length);
+    
+    // Force reload habits
+    console.log('🔄 Force reloading habits...');
+    loadHabits();
+    
+    return 'Habit debug complete - check console for details';
 };
 
 // Auto-run debug on critical errors
@@ -1393,6 +1423,8 @@ async function loadHabits() {
         await processPendingSync();
         console.log('📊 Pending sync processed');
         
+        let useLocalStorage = false;
+        
         if (isOnline()) {
             console.log('🌐 Online - fetching from Cloudflare API...');
             
@@ -1427,21 +1459,24 @@ async function loadHabits() {
                     console.log('📊 Parsed API response:', data);
                 } catch (parseError) {
                     console.error('❌ Failed to parse API response as JSON:', parseError);
-                    throw new Error('API returned non-JSON response');
+                    console.log('📊 JSON parse failed - falling back to localStorage');
+                    useLocalStorage = true;
                 }
                 
-                const habits = data.habits || [];
-                console.log('✅ API Success - loaded', habits.length, 'habits');
-                console.log('📊 API habits data:', habits);
-                
-                // Cache to localStorage for offline access
-                saveLocalHabits(habits);
-                updateLocalCompletionsFromAPI(habits);
-                console.log('📊 Habits cached to localStorage');
-                
-                displayHabits(habits);
-                console.log('🔄 ===== LOAD HABITS DEBUG END (API SUCCESS) =====');
-                return;
+                if (!useLocalStorage) {
+                    const habits = data.habits || [];
+                    console.log('✅ API Success - loaded', habits.length, 'habits');
+                    console.log('📊 API habits data:', habits);
+                    
+                    // Cache to localStorage for offline access
+                    saveLocalHabits(habits);
+                    updateLocalCompletionsFromAPI(habits);
+                    console.log('📊 Habits cached to localStorage');
+                    
+                    displayHabits(habits);
+                    console.log('🔄 ===== LOAD HABITS DEBUG END (API SUCCESS) =====');
+                    return;
+                }
             } else {
                 const errorText = await response.text();
                 console.log('❌ API failed, status:', response.status, response.statusText);
@@ -1452,13 +1487,24 @@ async function loadHabits() {
                     showLoginScreen();
                     return;
                 }
+                
+                console.log('📊 API failed with status', response.status, '- forcing localStorage fallback...');
+                useLocalStorage = true;
             }
+        } else {
+            console.log('📊 Offline or no session - using localStorage directly');
+            useLocalStorage = true;
         }
         
         // Fallback to localStorage (offline or API failed)
-        console.log('💾 Using localStorage fallback...');
+        if (useLocalStorage) {
+            console.log('💾 Using localStorage fallback...');
+        } else {
+            console.log('💾 Direct localStorage access...');
+        }
+        
         const habits = getLocalHabitsWithCompletions();
-        console.log('📱 Offline - loaded', habits.length, 'habits from localStorage');
+        console.log('📱 Loaded', habits.length, 'habits from localStorage');
         console.log('📊 localStorage habits data:', habits);
         
         displayHabits(habits);

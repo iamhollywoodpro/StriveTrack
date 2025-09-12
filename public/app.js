@@ -3406,8 +3406,16 @@ function toggleFlagMedia(mediaId) {
 
 function deleteUserMedia(mediaId) {
     if (confirm('Are you sure you want to delete this media?')) {
-        console.log('🗑️ Deleting media:', mediaId);
-        showNotification('Media deleted', 'success');
+        console.log('🗑️ Admin deleting user media:', mediaId);
+        
+        // Since this is called from admin panel, we need the current user's media
+        if (!currentUser || !currentUser.id) {
+            showNotification('No user context for deletion', 'error');
+            return;
+        }
+        
+        // Use the same logic as deleteMediaItem
+        deleteMediaItem(mediaId);
     }
 }
 

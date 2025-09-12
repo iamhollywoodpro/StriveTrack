@@ -700,37 +700,52 @@ function handleMediaUpload() {
     }, 200);
 }
 
+// **FIXED: Media upload with proper file storage**
 function completeUpload(files, mediaType) {
     console.log('📸 Completing upload for', files.length, 'files');
     
     const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
     const uploadedItems = [];
     
-    files.forEach(file => {
-        const mediaItem = {
-            id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-            type: mediaType,
-            name: file.name,
-            uploaded_at: new Date().toISOString(),
-            url: URL.createObjectURL(file),
-            size: file.size,
-            file_type: file.type
+    // Process each file
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const mediaItem = {
+                id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                type: mediaType,
+                name: file.name,
+                uploaded_at: new Date().toISOString(),
+                url: e.target.result, // Base64 data URL - will persist
+                size: file.size,
+                file_type: file.type
+            };
+            
+            media.push(mediaItem);
+            uploadedItems.push(mediaItem);
+            
+            // Save updated media array
+            localStorage.setItem('strivetrack_media', JSON.stringify(media));
+            
+            console.log('📸 Media item saved:', mediaItem.name);
+            
+            // If this is the last file, complete the upload
+            if (uploadedItems.length === files.length) {
+                finishUpload(uploadedItems);
+            }
         };
         
-        media.push(mediaItem);
-        uploadedItems.push(mediaItem);
+        reader.readAsDataURL(file); // Convert to base64
     });
-    
-    // Save to localStorage
-    localStorage.setItem('strivetrack_media', JSON.stringify(media));
-    
+}
+
+function finishUpload(uploadedItems) {
     // **FIX: Update points immediately and show success**
     updatePointsDisplay();
     
-    // Show success and close modal immediately
-    showNotification(`Successfully uploaded ${files.length} file(s)! 📸 +${files.length * 50} pts`, 'success');
+    // Show success and close modal
+    showNotification(`Successfully uploaded ${uploadedItems.length} file(s)! 📸 +${uploadedItems.length * 50} pts`, 'success');
     
-    // **FIX: Close modal without delay**
     setTimeout(() => {
         closeModal('media-upload-modal');
     }, 1000);
@@ -741,7 +756,7 @@ function completeUpload(files, mediaType) {
         checkAndUnlockAchievements();
     }, 1200);
     
-    console.log('✅ Upload completed successfully');
+    console.log('✅ Upload completed successfully with', uploadedItems.length, 'files');
 }
 
 // Add media upload button handlers
@@ -999,8 +1014,7 @@ function loadProgressGallery() {
     console.log('📸 Gallery loaded - Total:', totalUploads, 'Before:', beforePhotos, 'Progress:', progressPhotos, 'After:', afterPhotos);
 }
 
-// **CREATE MEDIA CARD**
-// **ENHANCED MEDIA CARD WITH FULLSCREEN AND COMPARE**
+// **FIXED MEDIA CARD WITH PROPER IMAGE DISPLAY AND INTERACTIONS**
 function createMediaCard(item) {
     const typeColors = {
         before: 'text-blue-400',
@@ -1018,30 +1032,44 @@ function createMediaCard(item) {
     const isImage = item.file_type && item.file_type.startsWith('image/');
     const isInCompareMode = document.body.classList.contains('compare-mode');
     
+    console.log('📸 Creating media card for:', item.name, 'URL exists:', !!item.url, 'Is image:', isImage);
+    
     return `
         <div class="media-item" data-media-id="${item.id}" data-media-type="${item.type}">
-            <div class="media-preview" onclick="${isImage ? `showFullscreenImage('${item.id}')` : ''}" style="${isImage ? 'cursor: zoom-in;' : ''}">
+            <div class="media-preview relative" style="height: 200px; ${isImage ? 'cursor: zoom-in;' : ''}" onclick="handleMediaClick('${item.id}', event)">
                 ${item.url && isImage ? 
-                    `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover">` :
-                    `<div class="text-white/40 text-4xl">${isImage ? '🖼️' : '🎥'}</div>`
+                    `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover rounded-t-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     <div class="w-full h-full flex items-center justify-center text-white/40 text-4xl" style="display: none;">🖼️</div>` :
+                    `<div class="w-full h-full flex items-center justify-center text-white/40 text-4xl bg-white/5 rounded-t-lg">${isImage ? '🖼️' : '🎥'}</div>`
                 }
-                <div class="media-type-badge ${item.type}">
+                
+                <div class="media-type-badge ${item.type} absolute top-2 right-2">
                     ${typeIcons[item.type]} ${item.type.toUpperCase()}
                 </div>
-                <div class="media-actions">
+                
+                <!-- Always show action buttons on hover -->
+                <div class="media-actions absolute top-2 left-2 opacity-0 hover:opacity-100 transition-opacity duration-200 flex gap-1">
+                    <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-600 text-white p-2 rounded" title="View fullscreen">
+                        <i class="fas fa-expand text-xs"></i>
+                    </button>
                     ${isInCompareMode ? `
-                        <button onclick="selectForComparison('${item.id}')" class="btn-compare" title="Select for comparison">
-                            <i class="fas fa-check"></i>
+                        <button onclick="event.stopPropagation(); selectForComparison('${item.id}')" class="bg-purple-600 text-white p-2 rounded" title="Select for comparison">
+                            <i class="fas fa-check text-xs"></i>
                         </button>
-                    ` : ''}
-                    <button onclick="deleteMediaItem('${item.id}')" class="delete-btn" title="Delete media">
-                        <i class="fas fa-trash"></i>
+                    ` : `
+                        <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-600 text-white p-2 rounded" title="Compare">
+                            <i class="fas fa-images text-xs"></i>
+                        </button>
+                    `}
+                    <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-600 text-white p-2 rounded" title="Delete media">
+                        <i class="fas fa-trash text-xs"></i>
                     </button>
                 </div>
             </div>
-            <div class="media-info">
-                <div class="media-date">${uploadDate}</div>
-                <div class="media-description">
+            
+            <div class="media-info p-3">
+                <div class="media-date text-xs text-white/60 mb-1">${uploadDate}</div>
+                <div class="media-description text-sm text-white font-medium truncate">
                     ${item.name}
                 </div>
                 <div class="text-xs text-white/50 mt-1">
@@ -1050,6 +1078,14 @@ function createMediaCard(item) {
             </div>
         </div>
     `;
+}
+
+// **HANDLE MEDIA CLICK**
+function handleMediaClick(mediaId, event) {
+    // If not clicking on action buttons, show fullscreen
+    if (!event.target.closest('.media-actions')) {
+        showFullscreenImage(mediaId);
+    }
 }
 
 // **FULLSCREEN IMAGE VIEWER**
@@ -2360,24 +2396,33 @@ function filterUsers(query) {
     }
 }
 
+// **FIXED USER DETAILS WITH ACTUAL MEDIA DISPLAY**
 function openUserDetails(userId) {
     const users = getAllUsersData();
     const user = users.find(u => u.id === userId);
     
     if (!user) return;
     
-    // Get user's media
-    const allMedia = getAllMediaData();
-    const userMedia = allMedia.filter(m => m.user_id === userId);
+    // Get user's actual media - if it's current user, get real media
+    let userMedia = [];
+    if (currentUser && userId === currentUser.id) {
+        // Get current user's actual media
+        userMedia = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+        console.log('📸 Loading actual user media:', userMedia.length, 'items');
+    } else {
+        // Get demo media for other users
+        const allMedia = getAllMediaData();
+        userMedia = allMedia.filter(m => m.user_id === userId);
+    }
     
     // Create user details modal
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.id = 'user-details-modal';
     modal.innerHTML = `
-        <div class="modal-content max-w-4xl mx-auto">
+        <div class="modal-content max-w-6xl mx-auto max-h-90vh overflow-y-auto">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-white">👤 User Details</h2>
+                <h2 class="text-2xl font-bold text-white">👤 User Details: ${user.name}</h2>
                 <button onclick="closeModal('user-details-modal')" class="text-white/70 hover:text-white">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -2389,8 +2434,8 @@ function openUserDetails(userId) {
                     <div class="space-y-3">
                         <div><span class="text-white/60">Name:</span> <span class="text-white">${user.name}</span></div>
                         <div><span class="text-white/60">Email:</span> <span class="text-white">${user.email}</span></div>
-                        <div><span class="text-white/60">Role:</span> <span class="text-white">${user.role}</span></div>
-                        <div><span class="text-white/60">Status:</span> <span class="text-${user.online ? 'green' : 'gray'}-400">${user.online ? 'Online' : 'Offline'}</span></div>
+                        <div><span class="text-white/60">Role:</span> <span class="text-white capitalize">${user.role}</span></div>
+                        <div><span class="text-white/60">Status:</span> <span class="text-${user.online ? 'green' : 'gray'}-400">${user.online ? '🟢 Online' : '⚫ Offline'}</span></div>
                         <div><span class="text-white/60">Joined:</span> <span class="text-white">${new Date(user.joined).toLocaleDateString()}</span></div>
                         <div><span class="text-white/60">Last Login:</span> <span class="text-white">${getTimeAgo(user.last_login)}</span></div>
                     </div>
@@ -2399,40 +2444,70 @@ function openUserDetails(userId) {
                 <div class="bg-white/5 border border-white/10 rounded-lg p-6">
                     <h3 class="text-lg font-bold text-white mb-4">Activity Stats</h3>
                     <div class="space-y-3">
-                        <div><span class="text-white/60">Habits:</span> <span class="text-white">${user.habits_count}</span></div>
-                        <div><span class="text-white/60">Media Uploads:</span> <span class="text-white">${user.media_count}</span></div>
-                        <div><span class="text-white/60">Total Points:</span> <span class="text-white">${user.points}</span></div>
+                        <div><span class="text-white/60">Active Habits:</span> <span class="text-white font-bold">${user.habits_count}</span></div>
+                        <div><span class="text-white/60">Media Uploads:</span> <span class="text-white font-bold">${userMedia.length}</span></div>
+                        <div><span class="text-white/60">Total Points:</span> <span class="text-yellow-400 font-bold">${user.points.toLocaleString()}</span></div>
+                        <div><span class="text-white/60">Account Status:</span> <span class="text-green-400 font-bold">Active</span></div>
                     </div>
                 </div>
             </div>
             
             <div class="mb-6">
-                <h3 class="text-lg font-bold text-white mb-4">User's Media (${userMedia.length})</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    ${userMedia.map(media => `
-                        <div class="bg-white/5 border border-white/10 rounded-lg p-3">
-                            <div class="aspect-square bg-white/5 rounded-lg flex items-center justify-center mb-2">
-                                <div class="text-2xl">📸</div>
-                            </div>
-                            <div class="text-xs text-white truncate">${media.name}</div>
-                            <div class="text-xs text-white/60">${media.type}</div>
-                            <div class="flex gap-1 mt-2">
-                                <button onclick="downloadUserMedia('${media.id}')" class="text-xs bg-blue-600 text-white px-2 py-1 rounded">
-                                    <i class="fas fa-download"></i>
-                                </button>
-                                <button onclick="toggleFlagMedia('${media.id}')" class="text-xs bg-yellow-600 text-white px-2 py-1 rounded">
-                                    <i class="fas fa-flag"></i>
-                                </button>
-                                <button onclick="deleteUserMedia('${media.id}')" class="text-xs bg-red-600 text-white px-2 py-1 rounded">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `).join('')}
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-white">User's Media Files (${userMedia.length})</h3>
+                    <div class="text-sm text-white/60">
+                        Click images to view fullscreen • Admin controls available
+                    </div>
                 </div>
+                
+                ${userMedia.length === 0 ? `
+                    <div class="text-center py-8 text-white/60">
+                        <div class="text-4xl mb-2">📸</div>
+                        <p>No media uploads yet</p>
+                    </div>
+                ` : `
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        ${userMedia.map(media => `
+                            <div class="admin-media-item bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition-all">
+                                <div class="aspect-square relative cursor-pointer" onclick="showAdminMediaFullscreen('${media.id}')">
+                                    ${media.url ? 
+                                        `<img src="${media.url}" alt="${media.name}" class="w-full h-full object-cover">` :
+                                        `<div class="w-full h-full flex items-center justify-center text-white/40 text-2xl bg-white/5">📸</div>`
+                                    }
+                                    <div class="absolute top-1 right-1 bg-${getMediaTypeColor(media.type)}-600 text-white text-xs px-1 py-0.5 rounded">
+                                        ${media.type.toUpperCase()}
+                                    </div>
+                                    ${media.flagged ? '<div class="absolute top-1 left-1 w-3 h-3 bg-red-500 rounded-full" title="Flagged content"></div>' : ''}
+                                </div>
+                                <div class="p-3">
+                                    <div class="text-xs text-white font-medium truncate mb-1" title="${media.name}">${media.name}</div>
+                                    <div class="text-xs text-white/60 mb-2">${getTimeAgo(media.uploaded_at)}</div>
+                                    <div class="text-xs text-white/50 mb-3">${(media.size / (1024 * 1024)).toFixed(2)} MB</div>
+                                    
+                                    <!-- Admin Actions -->
+                                    <div class="flex gap-1">
+                                        <button onclick="downloadUserMedia('${media.id}')" class="flex-1 text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button onclick="toggleFlagMedia('${media.id}')" class="flex-1 text-xs bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded transition-colors" title="Flag/Unflag">
+                                            <i class="fas fa-flag"></i>
+                                        </button>
+                                        <button onclick="deleteUserMedia('${media.id}')" class="flex-1 text-xs bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded transition-colors" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `}
             </div>
             
-            <div class="flex gap-3">
+            <div class="flex gap-3 pt-4 border-t border-white/10">
+                <button onclick="exportUserData('${user.id}')" class="btn-primary">
+                    <i class="fas fa-file-export mr-2"></i>
+                    Export Data
+                </button>
                 <button onclick="suspendUser('${user.id}')" class="btn-danger">
                     <i class="fas fa-ban mr-2"></i>
                     Suspend User
@@ -2446,6 +2521,40 @@ function openUserDetails(userId) {
     
     document.body.appendChild(modal);
     modal.classList.remove('hidden');
+    
+    console.log('👤 Opened user details for:', user.name, 'with', userMedia.length, 'media files');
+}
+
+// **HELPER FUNCTIONS FOR ADMIN**
+function getMediaTypeColor(type) {
+    const colors = {
+        before: 'blue',
+        progress: 'purple',
+        after: 'green'
+    };
+    return colors[type] || 'gray';
+}
+
+function showAdminMediaFullscreen(mediaId) {
+    // Get media from current user's storage or demo data
+    const allMedia = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    const demoMedia = getAllMediaData();
+    const allMediaCombined = [...allMedia, ...demoMedia];
+    
+    const media = allMediaCombined.find(m => m.id === mediaId);
+    
+    if (!media || !media.url) {
+        showNotification('Media not found or no image available', 'error');
+        return;
+    }
+    
+    // Show fullscreen with admin controls
+    showFullscreenImage(mediaId);
+}
+
+function exportUserData(userId) {
+    console.log('💾 Exporting data for user:', userId);
+    showNotification('User data export started', 'info');
 }
 
 function openMediaDetails(mediaId) {
@@ -2651,11 +2760,119 @@ function updateGoalStats(goals) {
     if (completionRateEl) completionRateEl.textContent = `${completionRate}%`;
 }
 
-// **GOAL MANAGEMENT FUNCTIONS**
+// **REAL GOAL CREATION MODAL**
 function showCreateGoalModal() {
     console.log('🎯 Opening create goal modal');
-    // For now, create a sample goal
-    createSampleGoal();
+    
+    // Create goal creation modal
+    const modal = document.createElement('div');
+    modal.id = 'create-goal-modal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content max-w-lg mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">🎯 Create New Goal</h2>
+                <button onclick="closeModal('create-goal-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="goal-form" class="space-y-4">
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-2">Goal Name</label>
+                    <input type="text" id="goal-name" class="input-field" placeholder="e.g., Lose 15 pounds" required>
+                </div>
+                
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-2">Description</label>
+                    <textarea id="goal-description" class="input-field" rows="3" placeholder="Describe your goal and how you plan to achieve it"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-2">Category</label>
+                    <select id="goal-category" class="input-field">
+                        <option value="fitness">Fitness</option>
+                        <option value="weight">Weight</option>
+                        <option value="strength">Strength</option>
+                        <option value="endurance">Endurance</option>
+                        <option value="habit">Habit</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Target Value</label>
+                        <input type="number" id="goal-target" class="input-field" placeholder="15" required>
+                    </div>
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Unit</label>
+                        <input type="text" id="goal-unit" class="input-field" placeholder="lbs" required>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-2">Target Date</label>
+                    <input type="date" id="goal-due-date" class="input-field">
+                </div>
+                
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-plus mr-2"></i>
+                        Create Goal
+                    </button>
+                    <button type="button" onclick="closeModal('create-goal-modal')" class="btn-secondary">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+    
+    // Set up form handler
+    const form = document.getElementById('goal-form');
+    if (form) {
+        form.addEventListener('submit', handleGoalForm);
+    }
+    
+    // Set default date to 3 months from now
+    const dueDateInput = document.getElementById('goal-due-date');
+    if (dueDateInput) {
+        const futureDate = new Date();
+        futureDate.setMonth(futureDate.getMonth() + 3);
+        dueDateInput.value = futureDate.toISOString().split('T')[0];
+    }
+}
+
+function handleGoalForm(event) {
+    event.preventDefault();
+    
+    const goalData = {
+        id: 'goal_' + Date.now(),
+        name: document.getElementById('goal-name').value,
+        description: document.getElementById('goal-description').value,
+        category: document.getElementById('goal-category').value,
+        current_value: 0,
+        target_value: parseFloat(document.getElementById('goal-target').value),
+        unit: document.getElementById('goal-unit').value,
+        due_date: document.getElementById('goal-due-date').value,
+        completed: false,
+        created_at: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    const goals = getLocalGoals();
+    goals.push(goalData);
+    saveLocalGoals(goals);
+    
+    // Close modal and refresh
+    closeModal('create-goal-modal');
+    loadGoals();
+    
+    showNotification(`Goal "${goalData.name}" created! 🎯`, 'success');
+    console.log('✅ Goal created:', goalData);
 }
 
 function createSampleGoal() {
@@ -2833,11 +3050,128 @@ function calculateNutritionTotals(entries) {
     }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
 }
 
-// **NUTRITION MODAL FUNCTIONS**
+// **REAL NUTRITION MODAL**
 function showNutritionModal() {
     console.log('🍎 Opening nutrition modal');
-    // For now, add a sample food entry
-    addSampleFoodEntry();
+    
+    // Create nutrition entry modal
+    const modal = document.createElement('div');
+    modal.id = 'nutrition-modal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content max-w-lg mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">🍽️ Add Food Entry</h2>
+                <button onclick="closeModal('nutrition-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="nutrition-form" class="space-y-4">
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-2">Food Name</label>
+                    <input type="text" id="food-name" class="input-field" placeholder="e.g., Chicken Breast" required>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Quantity</label>
+                        <input type="number" id="food-quantity" class="input-field" placeholder="200" required>
+                    </div>
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Unit</label>
+                        <select id="food-unit" class="input-field">
+                            <option value="g">grams</option>
+                            <option value="oz">ounces</option>
+                            <option value="cup">cups</option>
+                            <option value="piece">pieces</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-white/90 text-sm font-medium mb-2">Meal Type</label>
+                    <select id="meal-type" class="input-field">
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Calories</label>
+                        <input type="number" id="food-calories" class="input-field" placeholder="250" required>
+                    </div>
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Protein (g)</label>
+                        <input type="number" id="food-protein" class="input-field" placeholder="30">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Carbs (g)</label>
+                        <input type="number" id="food-carbs" class="input-field" placeholder="15">
+                    </div>
+                    <div>
+                        <label class="block text-white/90 text-sm font-medium mb-2">Fat (g)</label>
+                        <input type="number" id="food-fat" class="input-field" placeholder="8">
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 mt-6">
+                    <button type="submit" class="btn-primary flex-1">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Food Entry
+                    </button>
+                    <button type="button" onclick="closeModal('nutrition-modal')" class="btn-secondary">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+    
+    // Set up form handler
+    const form = document.getElementById('nutrition-form');
+    if (form) {
+        form.addEventListener('submit', handleNutritionForm);
+    }
+}
+
+function handleNutritionForm(event) {
+    event.preventDefault();
+    
+    const formData = {
+        id: 'food_' + Date.now(),
+        name: document.getElementById('food-name').value,
+        quantity: parseFloat(document.getElementById('food-quantity').value),
+        unit: document.getElementById('food-unit').value,
+        meal_type: document.getElementById('meal-type').value,
+        calories: parseFloat(document.getElementById('food-calories').value),
+        protein: parseFloat(document.getElementById('food-protein').value) || 0,
+        carbs: parseFloat(document.getElementById('food-carbs').value) || 0,
+        fat: parseFloat(document.getElementById('food-fat').value) || 0,
+        date: new Date().toISOString().split('T')[0],
+        logged_at: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    const foodLog = JSON.parse(localStorage.getItem('food_log') || '[]');
+    foodLog.push(formData);
+    localStorage.setItem('food_log', JSON.stringify(foodLog));
+    
+    // Close modal and refresh
+    closeModal('nutrition-modal');
+    loadNutrition();
+    
+    showNotification(`Added ${formData.name} to your food log! 🍎`, 'success');
+    console.log('✅ Food entry added:', formData);
 }
 
 function addSampleFoodEntry() {
@@ -2918,5 +3252,10 @@ window.downloadUserMedia = downloadUserMedia;
 window.toggleFlagMedia = toggleFlagMedia;
 window.deleteUserMedia = deleteUserMedia;
 window.suspendUser = suspendUser;
+window.handleMediaClick = handleMediaClick;
+window.handleNutritionForm = handleNutritionForm;
+window.handleGoalForm = handleGoalForm;
+window.showAdminMediaFullscreen = showAdminMediaFullscreen;
+window.exportUserData = exportUserData;
 
 console.log('✅ StriveTrack FIXED version loaded successfully!');

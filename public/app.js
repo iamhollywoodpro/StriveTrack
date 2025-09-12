@@ -1647,15 +1647,19 @@ function showDashboard() {
 }
 
 function logout() {
-    console.log('🚪 Logging out...');
+    console.log('🚪 LOGOUT FUNCTION CALLED!');
+    console.log('🚪 Current sessionId:', sessionId);
+    console.log('🚪 Current currentUser:', currentUser);
     
     // Clear all session data
     localStorage.removeItem('sessionId');
     localStorage.removeItem('currentUser');
+    console.log('🚪 LocalStorage cleared');
     
     // Reset global variables
     sessionId = null;
     currentUser = null;
+    console.log('🚪 Global variables reset');
     
     // Clear any form data
     const forms = document.querySelectorAll('form');
@@ -1742,7 +1746,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
+            console.log('🔴 LOGOUT BUTTON CLICKED!'); // Debug log
             e.preventDefault();
+            e.stopPropagation();
+            console.log('🔴 Calling logout function...');
             logout();
         });
         console.log('✅ Logout button connected');

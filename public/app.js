@@ -1525,16 +1525,16 @@ let compareSelection = [];
 function handleCompareClick(mediaId) {
     console.log('📸 Compare button clicked for:', mediaId);
     
-    // Enter compare mode if not already in it (without reloading gallery)
-    if (!document.body.classList.contains('compare-mode')) {
-        document.body.classList.add('compare-mode');
+    // Initialize comparison without adding global CSS class (avoid reflow)
+    if (!window.compareMode) {
+        window.compareMode = true;
         compareSelection = [];
         showNotification('Select 2 images to compare side by side', 'info');
         console.log('🔄 Entered compare mode (smooth)');
     }
     
-    // Add to comparison selection
-    selectForComparison(mediaId);
+    // Add to comparison selection directly
+    selectForComparisonSmooth(mediaId);
 }
 
 function toggleCompareMode() {
@@ -1577,7 +1577,8 @@ function toggleCompareMode() {
     }
 }
 
-function selectForComparison(mediaId) {
+// **SMOOTH SELECTION WITHOUT CSS REFLOWS**
+function selectForComparisonSmooth(mediaId) {
     if (!currentUser || !currentUser.id) {
         showNotification('Please log in to compare media', 'error');
         return;
@@ -1594,21 +1595,52 @@ function selectForComparison(mediaId) {
     if (existingIndex >= 0) {
         // Deselect
         compareSelection.splice(existingIndex, 1);
-        document.querySelector(`[data-media-id="${mediaId}"]`).classList.remove('selected');
+        const mediaElement = document.querySelector(`[data-media-id="${mediaId}"]`);
+        if (mediaElement) {
+            // Use inline styles instead of CSS classes to avoid reflow
+            mediaElement.style.border = '';
+            mediaElement.style.boxShadow = '';
+            mediaElement.style.transform = '';
+        }
+        showNotification(`Deselected image ${existingIndex + 1}`, 'info');
     } else if (compareSelection.length < 2) {
         // Select
         compareSelection.push(item);
-        document.querySelector(`[data-media-id="${mediaId}"]`).classList.add('selected');
+        const mediaElement = document.querySelector(`[data-media-id="${mediaId}"]`);
+        if (mediaElement) {
+            // Use inline styles instead of CSS classes to avoid reflow
+            mediaElement.style.border = '2px solid #3b82f6';
+            mediaElement.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+            mediaElement.style.transform = 'translateY(-2px)';
+        }
+        
+        showNotification(`Selected image ${compareSelection.length}/2`, 'info');
         
         if (compareSelection.length === 2) {
-            // Show comparison
-            setTimeout(() => showComparison(), 500);
+            // Show comparison immediately
+            setTimeout(() => {
+                showComparison();
+                // Reset selection after showing comparison
+                compareSelection = [];
+                window.compareMode = false;
+                // Clear visual selections
+                document.querySelectorAll('[data-media-id]').forEach(el => {
+                    el.style.border = '';
+                    el.style.boxShadow = '';
+                    el.style.transform = '';
+                });
+            }, 300);
         }
     } else {
         showNotification('You can only select 2 images for comparison', 'warning');
     }
     
     console.log('🔄 Compare selection:', compareSelection.length, 'items');
+}
+
+// Keep original function for compatibility
+function selectForComparison(mediaId) {
+    selectForComparisonSmooth(mediaId);
 }
 
 function showComparison() {
@@ -4348,6 +4380,7 @@ window.deleteFoodEntry = deleteFoodEntry;
 window.deleteMediaItem = deleteMediaItem;
 window.showFullscreenImage = showFullscreenImage;
 window.handleCompareClick = handleCompareClick;
+window.selectForComparisonSmooth = selectForComparisonSmooth;
 window.toggleCompareMode = toggleCompareMode;
 window.selectForComparison = selectForComparison;
 window.downloadMedia = downloadMedia;

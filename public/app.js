@@ -250,7 +250,13 @@ function saveLocalCompletions(completions) {
 }
 
 function createLocalHabit(habitData) {
+    console.log('💾 ===== CREATE LOCAL HABIT DEBUG START =====');
+    console.log('📊 Input habit data:', habitData);
+    
     const habits = getLocalHabits();
+    console.log('📊 Current habits count before creation:', habits.length);
+    console.log('📊 Current habits before creation:', habits);
+    
     const newHabit = {
         id: Date.now().toString(),
         name: habitData.name,
@@ -263,8 +269,21 @@ function createLocalHabit(habitData) {
         completed_days: []
     };
     
+    console.log('📊 Created new habit object:', newHabit);
+    
     habits.push(newHabit);
+    console.log('📊 Habits count after adding:', habits.length);
+    console.log('📊 All habits after adding:', habits);
+    
     saveLocalHabits(habits);
+    console.log('📊 Habits saved to localStorage');
+    
+    // Verify save
+    const savedHabits = getLocalHabits();
+    console.log('📊 Verification - habits count after save:', savedHabits.length);
+    console.log('📊 Verification - all habits after save:', savedHabits);
+    
+    console.log('💾 ===== CREATE LOCAL HABIT DEBUG END =====');
     return newHabit;
 }
 
@@ -1355,22 +1374,38 @@ async function syncUserPointsFromServer() {
 
 // Habits functions
 async function loadHabits() {
+    console.log('🔄 ===== LOAD HABITS DEBUG START =====');
     console.log('📚 Loading habits with hybrid storage...');
+    console.log('📊 Session ID:', sessionId);
+    console.log('📊 Is Online:', isOnline());
     
     try {
         // Initialize localStorage for fallback
         initializeLocalStorage();
+        console.log('📊 LocalStorage initialized');
+        
+        // Check current localStorage state
+        const currentLocalHabits = getLocalHabits();
+        console.log('📊 Current localStorage habits count:', currentLocalHabits.length);
+        console.log('📊 Current localStorage habits:', currentLocalHabits);
         
         // Process any pending sync items first
         await processPendingSync();
+        console.log('📊 Pending sync processed');
         
         if (isOnline()) {
             console.log('🌐 Online - fetching from Cloudflare API...');
             
             // Sync user points first to ensure accurate data
-            await syncUserPointsFromServer();
+            try {
+                await syncUserPointsFromServer();
+                console.log('📊 User points synced');
+            } catch (syncError) {
+                console.log('⚠️ Failed to sync user points:', syncError);
+            }
             
             // Try API first
+            console.log('📊 Making API request to /api/habits/weekly...');
             const response = await fetch('/api/habits/weekly', {
                 headers: { 
                     'x-session-id': sessionId,
@@ -1378,19 +1413,40 @@ async function loadHabits() {
                 }
             });
             
+            console.log('📊 API Response status:', response.status);
+            console.log('📊 API Response ok:', response.ok);
+            console.log('📊 API Response headers:', Object.fromEntries(response.headers.entries()));
+            
             if (response.ok) {
-                const data = await response.json();
+                const responseText = await response.text();
+                console.log('📊 Raw API response:', responseText.substring(0, 500) + '...');
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                    console.log('📊 Parsed API response:', data);
+                } catch (parseError) {
+                    console.error('❌ Failed to parse API response as JSON:', parseError);
+                    throw new Error('API returned non-JSON response');
+                }
+                
                 const habits = data.habits || [];
                 console.log('✅ API Success - loaded', habits.length, 'habits');
+                console.log('📊 API habits data:', habits);
                 
                 // Cache to localStorage for offline access
                 saveLocalHabits(habits);
                 updateLocalCompletionsFromAPI(habits);
+                console.log('📊 Habits cached to localStorage');
                 
                 displayHabits(habits);
+                console.log('🔄 ===== LOAD HABITS DEBUG END (API SUCCESS) =====');
                 return;
             } else {
+                const errorText = await response.text();
                 console.log('❌ API failed, status:', response.status, response.statusText);
+                console.log('❌ API error response:', errorText.substring(0, 500));
+                
                 if (response.status === 401) {
                     console.log('🔐 Session expired, redirecting to login');
                     showLoginScreen();
@@ -1403,6 +1459,7 @@ async function loadHabits() {
         console.log('💾 Using localStorage fallback...');
         const habits = getLocalHabitsWithCompletions();
         console.log('📱 Offline - loaded', habits.length, 'habits from localStorage');
+        console.log('📊 localStorage habits data:', habits);
         
         displayHabits(habits);
         
@@ -1421,27 +1478,41 @@ async function loadHabits() {
 }
 
 function displayHabits(habits) {
+    console.log('🎯 ===== DISPLAY HABITS DEBUG START =====');
+    console.log('📊 Input habits array:', habits);
+    console.log('📊 Habits array length:', habits ? habits.length : 'NULL/undefined');
+    console.log('📊 Habits array type:', typeof habits);
+    
     const container = document.getElementById('habits-container');
     const emptyState = document.getElementById('habits-empty-state');
     
+    console.log('📊 Container element:', container ? '✅ Found' : '❌ Not found');
+    console.log('📊 Empty state element:', emptyState ? '✅ Found' : '❌ Not found');
+    
     if (!container) {
-        console.error('habits-container element not found!');
+        console.error('❌ CRITICAL: habits-container element not found!');
         return;
     }
     
     container.innerHTML = '';
+    console.log('📊 Container cleared, current children count:', container.children.length);
     
-    if (habits.length === 0) {
+    if (!habits || habits.length === 0) {
+        console.log('📊 No habits to display - showing empty state');
         // Show empty state
         if (emptyState) {
             emptyState.classList.remove('hidden');
+            console.log('📊 Empty state shown');
         }
         container.innerHTML = '';
+        console.log('🎯 ===== DISPLAY HABITS DEBUG END (EMPTY) =====');
         return;
     } else {
+        console.log('📊 Habits found - hiding empty state');
         // Hide empty state
         if (emptyState) {
             emptyState.classList.add('hidden');
+            console.log('📊 Empty state hidden');
         }
     }
     
@@ -1450,24 +1521,39 @@ function displayHabits(habits) {
     // Display habits using the enhanced createHabitElement function
     habits.forEach((habit, index) => {
         try {
-            console.log(`🔩 Creating element for habit ${index}:`, habit?.name);
+            console.log(`🔩 Creating element for habit ${index}:`, habit?.name, 'ID:', habit?.id);
+            console.log(`🔩 Full habit data ${index}:`, habit);
+            
             const habitElement = createHabitElement(habit, false);
+            console.log(`🔩 Created element result:`, habitElement ? '✅ Success' : '❌ Failed');
+            
             if (habitElement) {
                 container.appendChild(habitElement);
                 console.log(`✅ Added habit ${index} to container`);
+                console.log(`📊 Container children count after adding:`, container.children.length);
             } else {
                 console.warn(`⚠️ createHabitElement returned null for habit ${index}:`, habit);
             }
         } catch (error) {
             console.error(`❌ Error creating habit element ${index}:`, error, habit);
+            console.error('❌ Error stack:', error.stack);
         }
     });
     
-    console.log('✅ Successfully displayed habits in container');
-    console.log('📋 Container children count:', container.children.length);
+    console.log('✅ Successfully processed all habits');
+    console.log('📋 Final container children count:', container.children.length);
+    console.log('📋 Container innerHTML length:', container.innerHTML.length);
+    console.log('📋 Container innerHTML preview:', container.innerHTML.substring(0, 200) + '...');
     
     // CRITICAL: Add event delegation for day cell clicks
-    setupHabitDayClickHandlers(container);
+    try {
+        setupHabitDayClickHandlers(container);
+        console.log('✅ Event handlers set up successfully');
+    } catch (error) {
+        console.error('❌ Failed to set up event handlers:', error);
+    }
+    
+    console.log('🎯 ===== DISPLAY HABITS DEBUG END =====');
 }
 
 async function loadWeeklyHabits() {
@@ -2023,19 +2109,27 @@ async function createHabit(event) {
     };
     
     try {
+        console.log('🎯 ===== CREATE HABIT DEBUG START =====');
         console.log('🎯 Creating habit with hybrid storage:', displayName);
+        console.log('📊 Habit data to create:', habitData);
         
         // Create habit locally for immediate UI feedback
+        console.log('📊 Creating local habit...');
         const localHabit = createLocalHabit(habitData);
+        console.log('📊 Local habit created:', localHabit);
         
         // Update UI immediately
+        console.log('📊 Updating UI...');
         showNotification('Habit created successfully! 🎯', 'success');
         closeModal('create-habit-modal');
         document.getElementById('create-habit-form').reset();
         updateEmojiPreview();
+        
+        console.log('📊 Calling loadHabits() to refresh display...');
         loadHabits();
         loadDashboardWeeklyProgress(); 
         updateDashboardStats();
+        console.log('📊 UI update completed');
         
         if (isOnline()) {
             try {

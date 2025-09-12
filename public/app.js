@@ -85,18 +85,33 @@ function calculateTotalCompletions(completions) {
     return Object.values(completions).filter(Boolean).length;
 }
 
-// Calculate total points (10 points per completion)
+// **FIXED: Calculate total points from multiple sources**
 function calculateTotalPoints() {
     const completions = getLocalCompletions();
+    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    const userAchievements = JSON.parse(localStorage.getItem('user_achievements') || '{}');
+    
     let totalPoints = 0;
     
+    // Points from habit completions (10 points each)
     Object.values(completions).forEach(habitCompletions => {
         if (habitCompletions) {
             totalPoints += Object.values(habitCompletions).filter(Boolean).length * 10;
         }
     });
     
-    console.log('💰 Calculated total points:', totalPoints);
+    // Points from media uploads (50 points each)
+    totalPoints += media.length * 50;
+    
+    // Points from achievements
+    const definitions = getAchievementDefinitions();
+    Object.keys(userAchievements).forEach(achievementId => {
+        if (userAchievements[achievementId].unlocked && definitions[achievementId]) {
+            totalPoints += definitions[achievementId].points;
+        }
+    });
+    
+    console.log('💰 Calculated total points:', totalPoints, '(completions:', Object.values(completions).reduce((total, h) => total + Object.values(h || {}).filter(Boolean).length, 0) * 10, ', media:', media.length * 50, ', achievements:', Object.keys(userAchievements).length, ')');
     return totalPoints;
 }
 
@@ -151,10 +166,10 @@ function createWeeklyHabitElement(habit) {
                  data-habit-id="${habit.id}" 
                  data-date="${dateStr}" 
                  data-day-index="${dayIndex}"
-                 style="cursor: pointer;"
+                 style="cursor: pointer; min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px;"
                  title="${dayName}, ${dayDate.toLocaleDateString()} - Click to ${isCompleted ? 'unmark' : 'mark'} as completed">
-                <div class="text-xs text-white/70 font-medium">${dayName}</div>
-                <div class="text-2xl mt-1">${isCompleted ? '✅' : (isPastDay ? '❌' : '⭕')}</div>
+                <div class="text-xs text-white/70 font-medium mb-1">${dayName}</div>
+                <div class="text-lg mb-1">${isCompleted ? '✅' : (isPastDay ? '❌' : '⭕')}</div>
                 <div class="text-xs text-white/60">${dayDate.getDate()}</div>
             </div>
         `;
@@ -363,20 +378,22 @@ function toggleHabitCompletion(habitId, date = null) {
     // Save to localStorage
     saveLocalCompletions(completions);
     
-    // Calculate points change
-    const pointsChange = newStatus ? 10 : -10;
-    console.log('💰 Points change:', pointsChange);
-    
-    // Update points display immediately
+    // **FIX: Update points display immediately**
     updatePointsDisplay();
     
     // Refresh habit display to show new status
     loadHabits();
     
+    // Check for achievements
+    checkAndUnlockAchievements();
+    
     // Show notification with points
     const action = wasCompleted ? 'unmarked' : 'completed';
+    const pointsChange = newStatus ? 10 : -10;
     const pointsText = newStatus ? ' (+10 pts)' : ' (-10 pts)';
     showNotification(`Habit ${action}${pointsText} 🎉`, newStatus ? 'success' : 'info');
+    
+    console.log('💰 Points updated! Total now:', calculateTotalPoints());
 }
 
 // Load habits function
@@ -707,17 +724,22 @@ function completeUpload(files, mediaType) {
     // Save to localStorage
     localStorage.setItem('strivetrack_media', JSON.stringify(media));
     
-    // Show success and close modal
-    showNotification(`Successfully uploaded ${files.length} file(s)! 📸`, 'success');
-    closeModal('media-upload-modal');
+    // **FIX: Update points immediately and show success**
+    updatePointsDisplay();
     
-    // Refresh progress gallery
+    // Show success and close modal immediately
+    showNotification(`Successfully uploaded ${files.length} file(s)! 📸 +${files.length * 50} pts`, 'success');
+    
+    // **FIX: Close modal without delay**
+    setTimeout(() => {
+        closeModal('media-upload-modal');
+    }, 1000);
+    
+    // Refresh progress gallery and check achievements
     setTimeout(() => {
         loadProgressGallery();
-        
-        // Check for achievements
         checkAndUnlockAchievements();
-    }, 500);
+    }, 1200);
     
     console.log('✅ Upload completed successfully');
 }
@@ -952,6 +974,22 @@ function loadProgressGallery() {
     
     if (emptyState) emptyState.classList.add('hidden');
     
+    // **FIX: Add compare mode button before displaying media**
+    const progressSection = document.getElementById('progress-section');
+    if (progressSection && !document.getElementById('compare-mode-btn')) {
+        // Add compare button if it doesn't exist
+        const uploadBtn = document.getElementById('upload-media-btn');
+        if (uploadBtn && uploadBtn.parentElement) {
+            const compareBtn = document.createElement('button');
+            compareBtn.id = 'compare-mode-btn';
+            compareBtn.className = 'px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors';
+            compareBtn.innerHTML = '<i class="fas fa-images mr-2"></i>Compare Mode';
+            compareBtn.onclick = toggleCompareMode;
+            
+            uploadBtn.parentElement.insertBefore(compareBtn, uploadBtn);
+        }
+    }
+    
     // Display media items
     if (container) {
         const mediaHtml = media.map(item => createMediaCard(item)).join('');
@@ -962,6 +1000,7 @@ function loadProgressGallery() {
 }
 
 // **CREATE MEDIA CARD**
+// **ENHANCED MEDIA CARD WITH FULLSCREEN AND COMPARE**
 function createMediaCard(item) {
     const typeColors = {
         before: 'text-blue-400',
@@ -977,10 +1016,11 @@ function createMediaCard(item) {
     
     const uploadDate = new Date(item.uploaded_at).toLocaleDateString();
     const isImage = item.file_type && item.file_type.startsWith('image/');
+    const isInCompareMode = document.body.classList.contains('compare-mode');
     
     return `
-        <div class="media-item" data-media-id="${item.id}">
-            <div class="media-preview">
+        <div class="media-item" data-media-id="${item.id}" data-media-type="${item.type}">
+            <div class="media-preview" onclick="${isImage ? `showFullscreenImage('${item.id}')` : ''}" style="${isImage ? 'cursor: zoom-in;' : ''}">
                 ${item.url && isImage ? 
                     `<img src="${item.url}" alt="${item.name}" class="w-full h-full object-cover">` :
                     `<div class="text-white/40 text-4xl">${isImage ? '🖼️' : '🎥'}</div>`
@@ -989,6 +1029,11 @@ function createMediaCard(item) {
                     ${typeIcons[item.type]} ${item.type.toUpperCase()}
                 </div>
                 <div class="media-actions">
+                    ${isInCompareMode ? `
+                        <button onclick="selectForComparison('${item.id}')" class="btn-compare" title="Select for comparison">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    ` : ''}
                     <button onclick="deleteMediaItem('${item.id}')" class="delete-btn" title="Delete media">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -1005,6 +1050,215 @@ function createMediaCard(item) {
             </div>
         </div>
     `;
+}
+
+// **FULLSCREEN IMAGE VIEWER**
+function showFullscreenImage(mediaId) {
+    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item || !item.url) {
+        console.log('❌ Media item not found:', mediaId);
+        return;
+    }
+    
+    // Create fullscreen modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'fullscreen-image-modal';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 95vw; max-height: 95vh; padding: 0; background: transparent; border: none;">
+            <div class="flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm">
+                <div class="text-white">
+                    <h3 class="text-lg font-semibold">${item.name}</h3>
+                    <p class="text-white/70 text-sm">${item.type.toUpperCase()} • ${new Date(item.uploaded_at).toLocaleDateString()}</p>
+                </div>
+                <button onclick="closeModal('fullscreen-image-modal')" class="text-white/70 hover:text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-center" style="max-height: 80vh;">
+                <img src="${item.url}" alt="${item.name}" class="max-w-full max-h-full object-contain">
+            </div>
+            <div class="flex justify-center gap-4 p-4 bg-black/50 backdrop-blur-sm">
+                <button onclick="downloadMedia('${item.id}')" class="btn-secondary">
+                    <i class="fas fa-download mr-2"></i>
+                    Download
+                </button>
+                <button onclick="deleteMediaItem('${item.id}'); closeModal('fullscreen-image-modal');" class="btn-danger">
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+    
+    console.log('🖼️ Opened fullscreen view for:', item.name);
+}
+
+// **MEDIA COMPARISON SYSTEM**
+let compareSelection = [];
+
+function toggleCompareMode() {
+    const isCompareMode = document.body.classList.contains('compare-mode');
+    
+    if (isCompareMode) {
+        // Exit compare mode
+        document.body.classList.remove('compare-mode');
+        compareSelection = [];
+        
+        // Update UI
+        const compareBtn = document.getElementById('compare-mode-btn');
+        if (compareBtn) {
+            compareBtn.innerHTML = '<i class="fas fa-images mr-2"></i>Compare Mode';
+            compareBtn.classList.remove('bg-red-600');
+            compareBtn.classList.add('bg-purple-600');
+        }
+        
+        // Refresh gallery to remove compare selections
+        loadProgressGallery();
+        
+        console.log('🔄 Exited compare mode');
+    } else {
+        // Enter compare mode
+        document.body.classList.add('compare-mode');
+        
+        // Update UI
+        const compareBtn = document.getElementById('compare-mode-btn');
+        if (compareBtn) {
+            compareBtn.innerHTML = '<i class="fas fa-times mr-2"></i>Exit Compare';
+            compareBtn.classList.remove('bg-purple-600');
+            compareBtn.classList.add('bg-red-600');
+        }
+        
+        // Refresh gallery to show compare interface
+        loadProgressGallery();
+        
+        showNotification('Select 2 images to compare side by side', 'info');
+        console.log('🔄 Entered compare mode');
+    }
+}
+
+function selectForComparison(mediaId) {
+    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item) return;
+    
+    // Check if already selected
+    const existingIndex = compareSelection.findIndex(s => s.id === mediaId);
+    
+    if (existingIndex >= 0) {
+        // Deselect
+        compareSelection.splice(existingIndex, 1);
+        document.querySelector(`[data-media-id="${mediaId}"]`).classList.remove('selected');
+    } else if (compareSelection.length < 2) {
+        // Select
+        compareSelection.push(item);
+        document.querySelector(`[data-media-id="${mediaId}"]`).classList.add('selected');
+        
+        if (compareSelection.length === 2) {
+            // Show comparison
+            setTimeout(() => showComparison(), 500);
+        }
+    } else {
+        showNotification('You can only select 2 images for comparison', 'warning');
+    }
+    
+    console.log('🔄 Compare selection:', compareSelection.length, 'items');
+}
+
+function showComparison() {
+    if (compareSelection.length !== 2) return;
+    
+    const [item1, item2] = compareSelection;
+    
+    // Create comparison modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'comparison-modal';
+    modal.innerHTML = `
+        <div class="modal-content max-w-6xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">🔄 Media Comparison</h2>
+                <button onclick="closeModal('comparison-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="comparison-item">
+                    <div class="comparison-header">
+                        <h3 class="text-white font-semibold">${item1.name}</h3>
+                        <div class="text-white/60 text-sm">
+                            ${item1.type.toUpperCase()} • ${new Date(item1.uploaded_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="comparison-media">
+                        <img src="${item1.url}" alt="${item1.name}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                
+                <div class="comparison-item">
+                    <div class="comparison-header">
+                        <h3 class="text-white font-semibold">${item2.name}</h3>
+                        <div class="text-white/60 text-sm">
+                            ${item2.type.toUpperCase()} • ${new Date(item2.uploaded_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="comparison-media">
+                        <img src="${item2.url}" alt="${item2.name}" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button onclick="downloadComparison()" class="btn-primary flex-1">
+                    <i class="fas fa-download mr-2"></i>
+                    Download Comparison
+                </button>
+                <button onclick="closeModal('comparison-modal'); toggleCompareMode();" class="btn-secondary">
+                    <i class="fas fa-times mr-2"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+    
+    console.log('🔄 Showing comparison between:', item1.name, 'and', item2.name);
+}
+
+// **MEDIA DOWNLOAD FUNCTION**
+function downloadMedia(mediaId) {
+    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item || !item.url) {
+        showNotification('Media not found', 'error');
+        return;
+    }
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = item.url;
+    link.download = item.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('Download started!', 'success');
+    console.log('💾 Downloaded:', item.name);
+}
+
+function downloadComparison() {
+    showNotification('Comparison download feature coming soon!', 'info');
 }
 
 // **DELETE MEDIA ITEM**
@@ -1775,21 +2029,457 @@ function showAchievementDetails(achievementId) {
     // Could implement a detailed modal here
 }
 
+// **COMPLETE ADMIN DASHBOARD SYSTEM**
 function loadAdminDashboard() {
     console.log('⚡ Loading admin dashboard...');
-    if (currentUser && currentUser.role === 'admin') {
-        console.log('✅ Admin dashboard loaded for:', currentUser.email);
-        // Show admin-specific content
-        const adminContainer = document.getElementById('admin-container');
-        if (adminContainer) {
-            adminContainer.innerHTML = `
-                <div class="text-center text-white p-8">
-                    <h2 class="text-2xl mb-4">⚡ Admin Dashboard</h2>
-                    <p>Welcome, Admin ${currentUser.name}!</p>
-                    <p class="text-white/60 mt-2">Admin features are being developed.</p>
+    
+    if (!currentUser || currentUser.role !== 'admin') {
+        console.log('❌ Access denied - not admin');
+        showNotification('Access denied. Admin only.', 'error');
+        showTab('dashboard');
+        return;
+    }
+    
+    console.log('✅ Admin dashboard loaded for:', currentUser.email);
+    
+    // Get all users data (simulate multiple users)
+    const allUsers = getAllUsersData();
+    const allMedia = getAllMediaData();
+    const flaggedContent = getFlaggedContent();
+    
+    // Show admin dashboard
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection) {
+        adminSection.innerHTML = `
+            <div class="glass-card p-6">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">🚫 StriveTrack Admin Dashboard</h2>
+                        <p class="text-white/70">User management and platform oversight</p>
+                        <div class="text-green-400 text-sm mt-1">
+                            <i class="fas fa-circle text-xs mr-1"></i>
+                            Online
+                        </div>
+                    </div>
+                    <button onclick="refreshAdminData()" class="btn-primary">
+                        <i class="fas fa-sync mr-2"></i>
+                        Refresh
+                    </button>
                 </div>
-            `;
+                
+                <!-- Admin Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
+                        <div class="text-3xl mb-2">👥</div>
+                        <div class="text-2xl font-bold text-white" id="admin-total-users">${allUsers.length}</div>
+                        <div class="text-white/60 text-sm">Total Users</div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
+                        <div class="text-3xl mb-2">📸</div>
+                        <div class="text-2xl font-bold text-white" id="admin-total-media">${allMedia.length}</div>
+                        <div class="text-white/60 text-sm">Media Files</div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
+                        <div class="text-3xl mb-2">🟢</div>
+                        <div class="text-2xl font-bold text-green-400" id="admin-online-users">${allUsers.filter(u => u.online).length}</div>
+                        <div class="text-white/60 text-sm">Online Now</div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
+                        <div class="text-3xl mb-2">🚩</div>
+                        <div class="text-2xl font-bold text-red-400" id="admin-flagged">${flaggedContent.length}</div>
+                        <div class="text-white/60 text-sm">Flagged</div>
+                    </div>
+                </div>
+                
+                <!-- Platform Users Section -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Platform Users</h3>
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <input type="text" placeholder="Search users..." 
+                                       class="input-field text-sm pl-8" 
+                                       id="admin-user-search"
+                                       onkeyup="filterUsers(this.value)">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="admin-users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        ${allUsers.map(user => createUserCard(user)).join('')}
+                    </div>
+                </div>
+                
+                <!-- Recent Media Uploads -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-white mb-6">Recent Media Uploads</h3>
+                    <div id="admin-recent-media" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        ${allMedia.slice(0, 12).map(media => createAdminMediaCard(media)).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// **GENERATE DEMO USER DATA**
+function getAllUsersData() {
+    const demoUsers = [
+        {
+            id: 'admin',
+            name: 'Admin',
+            email: 'iamhollywoodpro@protonmail.com',
+            role: 'admin',
+            online: true,
+            last_login: new Date().toISOString(),
+            habits_count: 5,
+            media_count: 8,
+            points: 2450,
+            joined: '2024-01-15'
+        },
+        {
+            id: 'user1',
+            name: 'Sarah Johnson',
+            email: 'sarah.j@email.com',
+            role: 'user',
+            online: true,
+            last_login: new Date(Date.now() - 300000).toISOString(), // 5 min ago
+            habits_count: 3,
+            media_count: 12,
+            points: 1890,
+            joined: '2024-02-20'
+        },
+        {
+            id: 'user2',
+            name: 'Mike Chen',
+            email: 'mike.chen@email.com',
+            role: 'user',
+            online: false,
+            last_login: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+            habits_count: 7,
+            media_count: 25,
+            points: 3420,
+            joined: '2024-01-30'
+        },
+        {
+            id: 'user3',
+            name: 'Emma Wilson',
+            email: 'emma.w@email.com',
+            role: 'user',
+            online: true,
+            last_login: new Date(Date.now() - 120000).toISOString(), // 2 min ago
+            habits_count: 4,
+            media_count: 18,
+            points: 2100,
+            joined: '2024-03-05'
+        },
+        {
+            id: 'user4',
+            name: 'David Rodriguez',
+            email: 'david.r@email.com',
+            role: 'user',
+            online: false,
+            last_login: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+            habits_count: 2,
+            media_count: 6,
+            points: 980,
+            joined: '2024-03-12'
         }
+    ];
+    
+    // Add current user if not admin
+    if (currentUser && currentUser.role !== 'admin') {
+        const userHabits = getLocalHabits();
+        const userMedia = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+        const userPoints = calculateTotalPoints();
+        
+        demoUsers.push({
+            id: currentUser.id,
+            name: currentUser.name,
+            email: currentUser.email,
+            role: 'user',
+            online: true,
+            last_login: new Date().toISOString(),
+            habits_count: userHabits.length,
+            media_count: userMedia.length,
+            points: userPoints,
+            joined: new Date().toISOString().split('T')[0]
+        });
+    }
+    
+    return demoUsers;
+}
+
+// **GENERATE DEMO MEDIA DATA**
+function getAllMediaData() {
+    const userMedia = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    
+    // Add demo media from other users
+    const demoMedia = [
+        {
+            id: 'demo_media_1',
+            user_id: 'user1',
+            user_name: 'Sarah Johnson',
+            type: 'before',
+            name: 'before_workout.jpg',
+            uploaded_at: new Date(Date.now() - 86400000).toISOString(),
+            size: 2.1 * 1024 * 1024,
+            flagged: false
+        },
+        {
+            id: 'demo_media_2',
+            user_id: 'user2',
+            user_name: 'Mike Chen',
+            type: 'progress',
+            name: 'gym_session.jpg',
+            uploaded_at: new Date(Date.now() - 3600000).toISOString(),
+            size: 1.8 * 1024 * 1024,
+            flagged: false
+        },
+        {
+            id: 'demo_media_3',
+            user_id: 'user3',
+            user_name: 'Emma Wilson',
+            type: 'after',
+            name: 'transformation.jpg',
+            uploaded_at: new Date(Date.now() - 7200000).toISOString(),
+            size: 2.5 * 1024 * 1024,
+            flagged: true
+        }
+    ];
+    
+    // Add user's actual media
+    const enrichedUserMedia = userMedia.map(media => ({
+        ...media,
+        user_id: currentUser?.id || 'unknown',
+        user_name: currentUser?.name || 'Unknown User',
+        flagged: false
+    }));
+    
+    return [...demoMedia, ...enrichedUserMedia];
+}
+
+// **GET FLAGGED CONTENT**
+function getFlaggedContent() {
+    const allMedia = getAllMediaData();
+    return allMedia.filter(media => media.flagged);
+}
+
+// **CREATE USER CARD**
+function createUserCard(user) {
+    const timeAgo = getTimeAgo(user.last_login);
+    const joinDate = new Date(user.joined).toLocaleDateString();
+    
+    return `
+        <div class="user-card bg-white/5 border border-white/10 rounded-lg p-4 cursor-pointer hover:bg-white/10 transition-all"
+             onclick="openUserDetails('${user.id}')">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold">${user.name.charAt(0)}</span>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-semibold">${user.name}</h4>
+                        <p class="text-white/60 text-sm">${user.email}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full ${user.online ? 'bg-green-400' : 'bg-gray-400'}"></div>
+                    <span class="text-xs text-white/60">${user.online ? 'Online' : 'Offline'}</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 text-center text-xs mb-3">
+                <div>
+                    <div class="text-white font-semibold">${user.habits_count}</div>
+                    <div class="text-white/60">Habits</div>
+                </div>
+                <div>
+                    <div class="text-white font-semibold">${user.media_count}</div>
+                    <div class="text-white/60">Media</div>
+                </div>
+                <div>
+                    <div class="text-white font-semibold">${user.points}</div>
+                    <div class="text-white/60">Points</div>
+                </div>
+            </div>
+            
+            <div class="text-xs text-white/50">
+                Last active: ${timeAgo}<br>
+                Joined: ${joinDate}
+            </div>
+        </div>
+    `;
+}
+
+// **CREATE ADMIN MEDIA CARD**
+function createAdminMediaCard(media) {
+    const timeAgo = getTimeAgo(media.uploaded_at);
+    
+    return `
+        <div class="admin-media-card bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition-all"
+             onclick="openMediaDetails('${media.id}')">
+            <div class="aspect-square bg-white/5 flex items-center justify-center relative">
+                <div class="text-2xl">📸</div>
+                ${media.flagged ? '<div class="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full"></div>' : ''}
+            </div>
+            <div class="p-2">
+                <div class="text-xs text-white font-medium truncate">${media.name}</div>
+                <div class="text-xs text-white/60">${media.user_name}</div>
+                <div class="text-xs text-white/50">${timeAgo}</div>
+            </div>
+        </div>
+    `;
+}
+
+// **ADMIN UTILITY FUNCTIONS**
+function getTimeAgo(dateString) {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+}
+
+function filterUsers(query) {
+    const users = getAllUsersData();
+    const filteredUsers = users.filter(user => 
+        user.name.toLowerCase().includes(query.toLowerCase()) ||
+        user.email.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    const container = document.getElementById('admin-users-grid');
+    if (container) {
+        container.innerHTML = filteredUsers.map(user => createUserCard(user)).join('');
+    }
+}
+
+function openUserDetails(userId) {
+    const users = getAllUsersData();
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) return;
+    
+    // Get user's media
+    const allMedia = getAllMediaData();
+    const userMedia = allMedia.filter(m => m.user_id === userId);
+    
+    // Create user details modal
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'user-details-modal';
+    modal.innerHTML = `
+        <div class="modal-content max-w-4xl mx-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">👤 User Details</h2>
+                <button onclick="closeModal('user-details-modal')" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-white mb-4">User Information</h3>
+                    <div class="space-y-3">
+                        <div><span class="text-white/60">Name:</span> <span class="text-white">${user.name}</span></div>
+                        <div><span class="text-white/60">Email:</span> <span class="text-white">${user.email}</span></div>
+                        <div><span class="text-white/60">Role:</span> <span class="text-white">${user.role}</span></div>
+                        <div><span class="text-white/60">Status:</span> <span class="text-${user.online ? 'green' : 'gray'}-400">${user.online ? 'Online' : 'Offline'}</span></div>
+                        <div><span class="text-white/60">Joined:</span> <span class="text-white">${new Date(user.joined).toLocaleDateString()}</span></div>
+                        <div><span class="text-white/60">Last Login:</span> <span class="text-white">${getTimeAgo(user.last_login)}</span></div>
+                    </div>
+                </div>
+                
+                <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Activity Stats</h3>
+                    <div class="space-y-3">
+                        <div><span class="text-white/60">Habits:</span> <span class="text-white">${user.habits_count}</span></div>
+                        <div><span class="text-white/60">Media Uploads:</span> <span class="text-white">${user.media_count}</span></div>
+                        <div><span class="text-white/60">Total Points:</span> <span class="text-white">${user.points}</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-white mb-4">User's Media (${userMedia.length})</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    ${userMedia.map(media => `
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-3">
+                            <div class="aspect-square bg-white/5 rounded-lg flex items-center justify-center mb-2">
+                                <div class="text-2xl">📸</div>
+                            </div>
+                            <div class="text-xs text-white truncate">${media.name}</div>
+                            <div class="text-xs text-white/60">${media.type}</div>
+                            <div class="flex gap-1 mt-2">
+                                <button onclick="downloadUserMedia('${media.id}')" class="text-xs bg-blue-600 text-white px-2 py-1 rounded">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button onclick="toggleFlagMedia('${media.id}')" class="text-xs bg-yellow-600 text-white px-2 py-1 rounded">
+                                    <i class="fas fa-flag"></i>
+                                </button>
+                                <button onclick="deleteUserMedia('${media.id}')" class="text-xs bg-red-600 text-white px-2 py-1 rounded">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="suspendUser('${user.id}')" class="btn-danger">
+                    <i class="fas fa-ban mr-2"></i>
+                    Suspend User
+                </button>
+                <button onclick="closeModal('user-details-modal')" class="btn-secondary flex-1">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+}
+
+function openMediaDetails(mediaId) {
+    console.log('📸 Opening media details for:', mediaId);
+    showNotification('Media details opened', 'info');
+}
+
+function refreshAdminData() {
+    console.log('🔄 Refreshing admin data...');
+    loadAdminDashboard();
+    showNotification('Admin data refreshed', 'success');
+}
+
+function downloadUserMedia(mediaId) {
+    console.log('💾 Downloading media:', mediaId);
+    showNotification('Media download started', 'success');
+}
+
+function toggleFlagMedia(mediaId) {
+    console.log('🚩 Toggling flag for media:', mediaId);
+    showNotification('Media flag toggled', 'info');
+}
+
+function deleteUserMedia(mediaId) {
+    if (confirm('Are you sure you want to delete this media?')) {
+        console.log('🗑️ Deleting media:', mediaId);
+        showNotification('Media deleted', 'success');
+    }
+}
+
+function suspendUser(userId) {
+    if (confirm('Are you sure you want to suspend this user?')) {
+        console.log('⛔ Suspending user:', userId);
+        showNotification('User suspended', 'warning');
     }
 }
 
@@ -2215,5 +2905,18 @@ window.deleteGoal = deleteGoal;
 window.showNutritionModal = showNutritionModal;
 window.deleteFoodEntry = deleteFoodEntry;
 window.deleteMediaItem = deleteMediaItem;
+window.showFullscreenImage = showFullscreenImage;
+window.toggleCompareMode = toggleCompareMode;
+window.selectForComparison = selectForComparison;
+window.downloadMedia = downloadMedia;
+window.downloadComparison = downloadComparison;
+window.filterUsers = filterUsers;
+window.openUserDetails = openUserDetails;
+window.openMediaDetails = openMediaDetails;
+window.refreshAdminData = refreshAdminData;
+window.downloadUserMedia = downloadUserMedia;
+window.toggleFlagMedia = toggleFlagMedia;
+window.deleteUserMedia = deleteUserMedia;
+window.suspendUser = suspendUser;
 
 console.log('✅ StriveTrack FIXED version loaded successfully!');

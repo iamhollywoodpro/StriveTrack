@@ -1799,6 +1799,55 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Mobile-specific day cell improvements */
+        @media (max-width: 768px) {
+            .week-calendar {
+                gap: 6px;
+                margin: 12px 0;
+            }
+            
+            .day-cell {
+                padding: 8px 4px;
+                min-height: 65px;
+                font-size: 14px;
+            }
+            
+            .day-cell .text-xs {
+                font-size: 11px;
+            }
+            
+            .day-cell .text-lg {
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .week-calendar {
+                gap: 4px;
+                margin: 10px 0;
+            }
+            
+            .day-cell {
+                padding: 6px 2px;
+                min-height: 60px;
+                font-size: 12px;
+                border-radius: 6px;
+            }
+            
+            .day-cell .text-xs {
+                font-size: 10px;
+            }
+            
+            .day-cell .text-lg {
+                font-size: 14px;
+            }
         }
         
         .day-cell.completed {

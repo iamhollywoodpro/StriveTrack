@@ -684,20 +684,26 @@ function handleMediaUpload() {
         uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
     }
     
-    // Simulate upload progress
+    // Simulate upload progress with smooth animation
     let progress = 0;
     const interval = setInterval(() => {
-        progress += Math.random() * 15;
+        progress += Math.random() * 12 + 3; // More consistent progress increments
         if (progress > 100) progress = 100;
         
-        if (progressBar) progressBar.style.width = `${progress}%`;
+        if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+            progressBar.style.transition = 'width 0.3s ease-out'; // Smooth animation
+        }
         if (percentage) percentage.textContent = `${Math.round(progress)}%`;
         
         if (progress >= 100) {
             clearInterval(interval);
-            completeUpload(files, mediaType);
+            // Add a slight delay to ensure 100% is visible
+            setTimeout(() => {
+                completeUpload(files, mediaType);
+            }, 300);
         }
-    }, 200);
+    }, 150); // Slightly faster updates
 }
 
 // **FIXED: Media upload with proper file storage**
@@ -743,18 +749,35 @@ function finishUpload(uploadedItems) {
     // **FIX: Update points immediately and show success**
     updatePointsDisplay();
     
-    // Show success and close modal
+    // Show completion state in progress bar
+    const progressContainer = document.getElementById('upload-progress-container');
+    const uploadBtn = document.getElementById('upload-btn');
+    
+    if (progressContainer) {
+        progressContainer.innerHTML = `
+            <div class="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-center">
+                <i class="fas fa-check-circle text-green-400 text-2xl mb-2"></i>
+                <div class="text-green-400 font-semibold">Upload Complete!</div>
+                <div class="text-white/70 text-sm">${uploadedItems.length} file(s) uploaded successfully</div>
+            </div>
+        `;
+    }
+    
+    if (uploadBtn) {
+        uploadBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Complete!';
+        uploadBtn.className = 'btn-primary bg-green-600 hover:bg-green-700';
+    }
+    
+    // Show success notification
     showNotification(`Successfully uploaded ${uploadedItems.length} file(s)! 📸 +${uploadedItems.length * 50} pts`, 'success');
     
+    // Auto-close modal after showing completion
     setTimeout(() => {
         closeModal('media-upload-modal');
-    }, 1000);
-    
-    // Refresh progress gallery and check achievements
-    setTimeout(() => {
+        // Refresh progress gallery and check achievements
         loadProgressGallery();
         checkAndUnlockAchievements();
-    }, 1200);
+    }, 2000); // Longer delay to show completion state
     
     console.log('✅ Upload completed successfully with', uploadedItems.length, 'files');
 }
@@ -989,21 +1012,7 @@ function loadProgressGallery() {
     
     if (emptyState) emptyState.classList.add('hidden');
     
-    // **FIX: Add compare mode button before displaying media**
-    const progressSection = document.getElementById('progress-section');
-    if (progressSection && !document.getElementById('compare-mode-btn')) {
-        // Add compare button if it doesn't exist
-        const uploadBtn = document.getElementById('upload-media-btn');
-        if (uploadBtn && uploadBtn.parentElement) {
-            const compareBtn = document.createElement('button');
-            compareBtn.id = 'compare-mode-btn';
-            compareBtn.className = 'px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors';
-            compareBtn.innerHTML = '<i class="fas fa-images mr-2"></i>Compare Mode';
-            compareBtn.onclick = toggleCompareMode;
-            
-            uploadBtn.parentElement.insertBefore(compareBtn, uploadBtn);
-        }
-    }
+    // Compare mode is now handled per-image via hover buttons (no top-level button needed)
     
     // Display media items
     if (container) {
@@ -1047,22 +1056,22 @@ function createMediaCard(item) {
                     ${typeIcons[item.type]} ${item.type.toUpperCase()}
                 </div>
                 
-                <!-- Always show action buttons on hover -->
-                <div class="media-actions absolute top-2 left-2 opacity-0 hover:opacity-100 transition-opacity duration-200 flex gap-1">
-                    <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-600 text-white p-2 rounded" title="View fullscreen">
-                        <i class="fas fa-expand text-xs"></i>
+                <!-- Media action overlay - shows on hover -->
+                <div class="media-actions-overlay absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3" style="border-radius: 12px 12px 0 0;">
+                    <button onclick="event.stopPropagation(); showFullscreenImage('${item.id}')" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="View Fullscreen">
+                        <i class="fas fa-expand text-lg"></i>
                     </button>
                     ${isInCompareMode ? `
-                        <button onclick="event.stopPropagation(); selectForComparison('${item.id}')" class="bg-purple-600 text-white p-2 rounded" title="Select for comparison">
-                            <i class="fas fa-check text-xs"></i>
+                        <button onclick="event.stopPropagation(); selectForComparison('${item.id}')" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="Select for Comparison">
+                            <i class="fas fa-check text-lg"></i>
                         </button>
                     ` : `
-                        <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-600 text-white p-2 rounded" title="Compare">
-                            <i class="fas fa-images text-xs"></i>
+                        <button onclick="event.stopPropagation(); toggleCompareMode(); selectForComparison('${item.id}');" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="Compare Photos">
+                            <i class="fas fa-plus text-lg"></i>
                         </button>
                     `}
-                    <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-600 text-white p-2 rounded" title="Delete media">
-                        <i class="fas fa-trash text-xs"></i>
+                    <button onclick="event.stopPropagation(); deleteMediaItem('${item.id}')" class="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110" title="Delete Media">
+                        <i class="fas fa-trash text-lg"></i>
                     </button>
                 </div>
             </div>

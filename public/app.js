@@ -2741,6 +2741,10 @@ function openUserDetails(userId) {
                     <i class="fas fa-ban mr-2"></i>
                     Suspend User
                 </button>
+                <button onclick="confirmDeleteUser('${user.id}')" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete Account
+                </button>
                 <button onclick="closeModal('user-details-modal')" class="btn-secondary flex-1">
                     Close
                 </button>
@@ -2822,14 +2826,21 @@ function suspendUser(userId) {
 }
 
 // Admin delete user function
-function confirmDeleteUser() {
-    console.log('🗑️ Admin delete user function called');
+function confirmDeleteUser(userId) {
+    console.log('🗑️ Admin delete user function called for user:', userId);
     if (confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) {
         if (confirm('This will delete ALL user data including habits, media, and progress. Are you absolutely sure?')) {
-            console.log('🗑️ User deletion confirmed by admin');
-            showNotification('User account deleted successfully', 'success');
+            console.log('🗑️ User deletion confirmed by admin for user:', userId);
+            
+            // In a real app, this would make an API call to delete the user
+            // For demo purposes, we'll just show success and refresh
+            showNotification(`User account ${userId} deleted successfully`, 'success');
             closeModal('user-details-modal');
-            loadAdminDashboard(); // Refresh the admin dashboard
+            
+            // Refresh the admin dashboard to update the user list
+            setTimeout(() => {
+                loadAdminDashboard();
+            }, 1000);
         }
     }
 }
@@ -3280,32 +3291,51 @@ function showNutritionModal() {
 
 function handleNutritionForm(event) {
     event.preventDefault();
+    console.log('🍎 Nutrition form submitted');
+    
+    // Get form values using the actual HTML field IDs
+    const nameEl = document.getElementById('food-name');
+    const mealTypeEl = document.getElementById('meal-type');
+    const caloriesEl = document.getElementById('calories');
+    const proteinEl = document.getElementById('protein');
+    const carbsEl = document.getElementById('carbs');
+    const fatEl = document.getElementById('fat');
+    
+    if (!nameEl || !caloriesEl) {
+        console.log('❌ Required nutrition form elements not found');
+        showNotification('Error: Required form fields missing', 'error');
+        return;
+    }
     
     const formData = {
         id: 'food_' + Date.now(),
-        name: document.getElementById('food-name').value,
-        quantity: parseFloat(document.getElementById('food-quantity').value),
-        unit: document.getElementById('food-unit').value,
-        meal_type: document.getElementById('meal-type').value,
-        calories: parseFloat(document.getElementById('food-calories').value),
-        protein: parseFloat(document.getElementById('food-protein').value) || 0,
-        carbs: parseFloat(document.getElementById('food-carbs').value) || 0,
-        fat: parseFloat(document.getElementById('food-fat').value) || 0,
+        name: nameEl.value,
+        quantity: 1, // Default quantity since field doesn't exist in HTML
+        unit: 'serving', // Default unit since field doesn't exist in HTML
+        meal_type: mealTypeEl ? mealTypeEl.value : 'other',
+        calories: parseFloat(caloriesEl.value) || 0,
+        protein: proteinEl ? parseFloat(proteinEl.value) || 0 : 0,
+        carbs: carbsEl ? parseFloat(carbsEl.value) || 0 : 0,
+        fat: fatEl ? parseFloat(fatEl.value) || 0 : 0,
         date: new Date().toISOString().split('T')[0],
         logged_at: new Date().toISOString()
     };
+    
+    console.log('🍎 Creating food entry:', formData);
     
     // Save to localStorage
     const foodLog = JSON.parse(localStorage.getItem('food_log') || '[]');
     foodLog.push(formData);
     localStorage.setItem('food_log', JSON.stringify(foodLog));
     
+    console.log('🍎 Food log updated, entries count:', foodLog.length);
+    
     // Close modal and refresh
     closeModal('nutrition-modal');
     loadNutrition();
     
     showNotification(`Added ${formData.name} to your food log! 🍎`, 'success');
-    console.log('✅ Food entry added:', formData);
+    console.log('✅ Food entry added successfully:', formData);
 }
 
 function addSampleFoodEntry() {

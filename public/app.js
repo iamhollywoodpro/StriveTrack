@@ -574,6 +574,153 @@ function openCreateHabitModal() {
     showModal('create-habit-modal');
 }
 
+// **EMOJI GENERATION FUNCTIONS**
+
+// Auto-generate emoji based on food name
+function getFoodEmoji(foodName) {
+    const name = foodName.toLowerCase();
+    
+    // Fruits
+    if (name.includes('apple')) return '🍎';
+    if (name.includes('banana')) return '🍌';
+    if (name.includes('orange') || name.includes('citrus')) return '🍊';
+    if (name.includes('grape')) return '🍇';
+    if (name.includes('strawberry') || name.includes('berry')) return '🍓';
+    if (name.includes('peach')) return '🍑';
+    if (name.includes('cherry')) return '🍒';
+    if (name.includes('pineapple')) return '🍍';
+    if (name.includes('mango')) return '🥭';
+    if (name.includes('avocado')) return '🥑';
+    if (name.includes('coconut')) return '🥥';
+    if (name.includes('kiwi')) return '🥝';
+    
+    // Vegetables
+    if (name.includes('carrot')) return '🥕';
+    if (name.includes('broccoli')) return '🥦';
+    if (name.includes('corn')) return '🌽';
+    if (name.includes('tomato')) return '🍅';
+    if (name.includes('cucumber')) return '🥒';
+    if (name.includes('pepper') || name.includes('capsicum')) return '🌶️';
+    if (name.includes('potato')) return '🥔';
+    if (name.includes('onion')) return '🧅';
+    if (name.includes('garlic')) return '🧄';
+    if (name.includes('lettuce') || name.includes('salad') || name.includes('green')) return '🥬';
+    if (name.includes('spinach') || name.includes('leafy')) return '🥬';
+    
+    // Proteins
+    if (name.includes('chicken') || name.includes('poultry')) return '🍗';
+    if (name.includes('beef') || name.includes('steak') || name.includes('meat')) return '🥩';
+    if (name.includes('fish') || name.includes('salmon') || name.includes('tuna')) return '🐟';
+    if (name.includes('egg')) return '🥚';
+    if (name.includes('cheese')) return '🧀';
+    if (name.includes('milk') || name.includes('dairy')) return '🥛';
+    if (name.includes('yogurt') || name.includes('yoghurt')) return '🥛';
+    
+    // Carbs and grains
+    if (name.includes('bread') || name.includes('toast')) return '🍞';
+    if (name.includes('rice')) return '🍚';
+    if (name.includes('pasta') || name.includes('noodle')) return '🍝';
+    if (name.includes('pizza')) return '🍕';
+    if (name.includes('burger') || name.includes('hamburger')) return '🍔';
+    if (name.includes('sandwich') || name.includes('sub')) return '🥪';
+    if (name.includes('taco')) return '🌮';
+    if (name.includes('burrito')) return '🌯';
+    
+    // Snacks and treats
+    if (name.includes('cookie') || name.includes('biscuit')) return '🍪';
+    if (name.includes('cake') || name.includes('cupcake')) return '🧁';
+    if (name.includes('ice cream') || name.includes('icecream')) return '🍦';
+    if (name.includes('chocolate')) return '🍫';
+    if (name.includes('candy') || name.includes('sweet')) return '🍬';
+    if (name.includes('donut') || name.includes('doughnut')) return '🍩';
+    if (name.includes('pretzel')) return '🥨';
+    if (name.includes('popcorn')) return '🍿';
+    
+    // Beverages
+    if (name.includes('water')) return '💧';
+    if (name.includes('coffee')) return '☕';
+    if (name.includes('tea')) return '🍵';
+    if (name.includes('juice')) return '🧃';
+    if (name.includes('soda') || name.includes('cola')) return '🥤';
+    if (name.includes('beer')) return '🍺';
+    if (name.includes('wine')) return '🍷';
+    if (name.includes('smoothie')) return '🥤';
+    
+    // Nuts and seeds
+    if (name.includes('nut') || name.includes('almond') || name.includes('walnut')) return '🥜';
+    
+    // Meal types
+    if (name.includes('soup')) return '🍲';
+    if (name.includes('stew')) return '🍲';
+    if (name.includes('curry')) return '🍛';
+    if (name.includes('sushi')) return '🍣';
+    
+    // Default fallback
+    return '🍽️';
+}
+
+// Auto-generate emoji based on goal name
+function getGoalEmoji(goalName) {
+    const name = goalName.toLowerCase();
+    
+    // Fitness and exercise goals
+    if (name.includes('weight loss') || name.includes('lose weight') || name.includes('fat loss')) return '⚖️';
+    if (name.includes('muscle') || name.includes('gain weight') || name.includes('bulk')) return '💪';
+    if (name.includes('strength') || name.includes('lift') || name.includes('bench press')) return '🏋️';
+    if (name.includes('run') || name.includes('marathon') || name.includes('cardio')) return '🏃';
+    if (name.includes('walk') || name.includes('steps')) return '🚶';
+    if (name.includes('swim') || name.includes('pool')) return '🏊';
+    if (name.includes('bike') || name.includes('cycle') || name.includes('cycling')) return '🚴';
+    if (name.includes('yoga') || name.includes('flexibility')) return '🧘';
+    if (name.includes('gym') || name.includes('fitness') || name.includes('workout')) return '💪';
+    
+    // Health goals
+    if (name.includes('water') || name.includes('hydration')) return '💧';
+    if (name.includes('sleep') || name.includes('rest')) return '😴';
+    if (name.includes('meditation') || name.includes('mindfulness')) return '🧘';
+    if (name.includes('stress') || name.includes('relax')) return '😌';
+    
+    // Career and education
+    if (name.includes('learn') || name.includes('study') || name.includes('education')) return '📚';
+    if (name.includes('job') || name.includes('career') || name.includes('work')) return '💼';
+    if (name.includes('skill') || name.includes('course')) return '🎓';
+    if (name.includes('certification') || name.includes('degree')) return '🏆';
+    if (name.includes('promotion') || name.includes('raise')) return '📈';
+    
+    // Financial goals
+    if (name.includes('money') || name.includes('save') || name.includes('savings')) return '💰';
+    if (name.includes('budget') || name.includes('expense')) return '📊';
+    if (name.includes('invest') || name.includes('investment')) return '📈';
+    if (name.includes('debt') || name.includes('loan')) return '💳';
+    
+    // Personal development
+    if (name.includes('read') || name.includes('book')) return '📖';
+    if (name.includes('write') || name.includes('journal')) return '✍️';
+    if (name.includes('hobby') || name.includes('creative')) return '🎨';
+    if (name.includes('travel') || name.includes('trip') || name.includes('vacation')) return '✈️';
+    if (name.includes('language') || name.includes('speak')) return '🗣️';
+    
+    // Social and relationships
+    if (name.includes('friend') || name.includes('social') || name.includes('relationship')) return '👥';
+    if (name.includes('family') || name.includes('parent')) return '👨‍👩‍👧‍👦';
+    if (name.includes('date') || name.includes('dating')) return '💕';
+    
+    // Home and lifestyle
+    if (name.includes('clean') || name.includes('organize') || name.includes('declutter')) return '🧹';
+    if (name.includes('cook') || name.includes('cooking') || name.includes('recipe')) return '👨‍🍳';
+    if (name.includes('garden') || name.includes('plant')) return '🌱';
+    if (name.includes('home') || name.includes('house')) return '🏠';
+    
+    // Time-based goals
+    if (name.includes('daily') || name.includes('everyday')) return '📅';
+    if (name.includes('week') || name.includes('weekly')) return '📆';
+    if (name.includes('month') || name.includes('monthly')) return '🗓️';
+    if (name.includes('year') || name.includes('annual')) return '📊';
+    
+    // Default fallback
+    return '🎯';
+}
+
 // Auto-generate emoji based on habit name
 function getHabitEmoji(habitName) {
     const name = habitName.toLowerCase();
@@ -1290,9 +1437,14 @@ function handleMediaClick(mediaId, event) {
     }
 }
 
-// **FULLSCREEN IMAGE VIEWER**
+// **FULLSCREEN IMAGE VIEWER - FIXED FOR USER-SPECIFIC STORAGE**
 function showFullscreenImage(mediaId) {
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    if (!currentUser || !currentUser.id) {
+        showNotification('Please log in to view media', 'error');
+        return;
+    }
+    const userPrefix = `user_${currentUser.id}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     const item = media.find(m => m.id === mediaId);
     
     if (!item || !item.url) {
@@ -1406,7 +1558,12 @@ function toggleCompareMode() {
 }
 
 function selectForComparison(mediaId) {
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    if (!currentUser || !currentUser.id) {
+        showNotification('Please log in to compare media', 'error');
+        return;
+    }
+    const userPrefix = `user_${currentUser.id}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     const item = media.find(m => m.id === mediaId);
     
     if (!item) return;
@@ -1536,7 +1693,62 @@ function showComparison() {
     console.log('🔄 Showing comparison between:', item1.name, 'and', item2.name);
 }
 
-// **MEDIA DOWNLOAD FUNCTION**
+// **MEDIA DOWNLOAD AND DELETE FUNCTIONS**
+function downloadMedia(mediaId) {
+    if (!currentUser || !currentUser.id) {
+        showNotification('Please log in to download media', 'error');
+        return;
+    }
+    const userPrefix = `user_${currentUser.id}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item || !item.url) {
+        showNotification('Media item not found', 'error');
+        return;
+    }
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = item.url;
+    link.download = item.name || `media_${Date.now()}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification(`Downloaded: ${item.name}`, 'success');
+    console.log('📥 Downloaded media:', item.name);
+}
+
+function deleteMediaItem(mediaId) {
+    if (!currentUser || !currentUser.id) {
+        showNotification('Please log in to delete media', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this media item?')) {
+        return;
+    }
+    
+    const userPrefix = `user_${currentUser.id}`;
+    let media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item) {
+        showNotification('Media item not found', 'error');
+        return;
+    }
+    
+    // Remove from media array
+    media = media.filter(m => m.id !== mediaId);
+    localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+    
+    // Refresh gallery
+    loadProgressGallery();
+    
+    showNotification(`Deleted: ${item.name}`, 'success');
+    console.log('🗑️ Deleted media:', item.name);
+}
 function downloadMedia(mediaId) {
     const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
     const item = media.find(m => m.id === mediaId);
@@ -2151,12 +2363,15 @@ function getAchievementDefinitions() {
 
 // **CHECK AND UNLOCK ACHIEVEMENTS**
 function checkAndUnlockAchievements() {
+    if (!currentUser || !currentUser.id) return [];
+    
     const definitions = getAchievementDefinitions();
-    const userAchievements = JSON.parse(localStorage.getItem('user_achievements') || '{}');
+    const userPrefix = `user_${currentUser.id}`;
+    const userAchievements = JSON.parse(localStorage.getItem(`${userPrefix}_achievements`) || '{}');
     const habits = getLocalHabits();
     const completions = getLocalCompletions();
     const totalPoints = calculateTotalPoints();
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     
     // Calculate user stats
     const stats = {
@@ -2195,7 +2410,7 @@ function checkAndUnlockAchievements() {
     });
     
     // Save achievements
-    localStorage.setItem('user_achievements', JSON.stringify(userAchievements));
+    localStorage.setItem(`${userPrefix}_achievements`, JSON.stringify(userAchievements));
     
     // Show notifications for newly unlocked achievements
     newlyUnlocked.forEach((achievement, index) => {
@@ -2215,11 +2430,13 @@ function displayAchievements(definitions) {
         return;
     }
     
-    const userAchievements = JSON.parse(localStorage.getItem('user_achievements') || '{}');
+    if (!currentUser || !currentUser.id) return;
+    const userPrefix = `user_${currentUser.id}`;
+    const userAchievements = JSON.parse(localStorage.getItem(`${userPrefix}_achievements`) || '{}');
     const habits = getLocalHabits();
     const completions = getLocalCompletions();
     const totalPoints = calculateTotalPoints();
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     
     // Calculate current stats for progress
     const stats = {
@@ -2343,7 +2560,9 @@ function showAchievementNotification(achievement) {
 
 // **UPDATE ACHIEVEMENT STATS**
 function updateAchievementStats() {
-    const userAchievements = JSON.parse(localStorage.getItem('user_achievements') || '{}');
+    if (!currentUser || !currentUser.id) return;
+    const userPrefix = `user_${currentUser.id}`;
+    const userAchievements = JSON.parse(localStorage.getItem(`${userPrefix}_achievements`) || '{}');
     const unlockedCount = Object.values(userAchievements).filter(a => a.unlocked).length;
     const totalCount = Object.keys(getAchievementDefinitions()).length;
     const totalPoints = calculateTotalPoints();
@@ -2574,9 +2793,31 @@ function loadAdminDashboard() {
     }
 }
 
-// **GENERATE DEMO USER DATA**
+// **GET REAL USER DATA FROM USER REGISTRY**
 function getAllUsersData() {
-    const demoUsers = [
+    // Get users from real registry
+    const allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
+    const userList = Object.values(allUsers).map(user => {
+        const userPrefix = `user_${user.id}`;
+        const habits = JSON.parse(localStorage.getItem(`${userPrefix}_habits`) || '[]');
+        const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+        const points = localStorage.getItem(`${userPrefix}_points`) || '0';
+        
+        // Determine if user is online (logged in within last 5 minutes)
+        const isOnline = user.lastLogin && (new Date().getTime() - user.lastLogin) < 300000;
+        
+        return {
+            ...user,
+            online: isOnline,
+            habits_count: habits.length,
+            media_count: media.length,
+            points: parseInt(points)
+        };
+    });
+    
+    // If no real users exist, show demo data for display purposes
+    if (userList.length === 0) {
+        const demoUsers = [
         {
             id: 'admin',
             name: 'Admin',
@@ -2637,29 +2878,38 @@ function getAllUsersData() {
             points: 980,
             joined: '2024-03-12'
         }
-    ];
-    
-    // Add current user if not admin
-    if (currentUser && currentUser.role !== 'admin') {
-        const userHabits = getLocalHabits();
-        const userMedia = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
-        const userPoints = calculateTotalPoints();
-        
-        demoUsers.push({
-            id: currentUser.id,
-            name: currentUser.name,
-            email: currentUser.email,
-            role: 'user',
-            online: true,
-            last_login: new Date().toISOString(),
-            habits_count: userHabits.length,
-            media_count: userMedia.length,
-            points: userPoints,
-            joined: new Date().toISOString().split('T')[0]
-        });
+        ];
+        return demoUsers;
     }
     
-    return demoUsers;
+    return userList;
+}
+
+// **GET ALL MEDIA DATA FOR ADMIN OVERSIGHT**
+function getAllMediaData() {
+    const allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
+    let allMedia = [];
+    
+    // Collect media from all users
+    Object.keys(allUsers).forEach(userId => {
+        const userPrefix = `user_${userId}`;
+        const userMedia = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+        
+        // Add user info to each media item
+        userMedia.forEach(media => {
+            allMedia.push({
+                ...media,
+                userId: userId,
+                userName: allUsers[userId].name || allUsers[userId].email,
+                userEmail: allUsers[userId].email
+            });
+        });
+    });
+    
+    // Sort by upload date (newest first)
+    allMedia.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+    
+    return allMedia;
 }
 
 // **GENERATE DEMO MEDIA DATA**
@@ -2764,24 +3014,181 @@ function createUserCard(user) {
     `;
 }
 
-// **CREATE ADMIN MEDIA CARD**
+// **CREATE ADMIN MEDIA CARD WITH ENHANCED FUNCTIONALITY**
 function createAdminMediaCard(media) {
     const timeAgo = getTimeAgo(media.uploaded_at);
+    const isImage = media.file_type && media.file_type.startsWith('image/');
     
     return `
-        <div class="admin-media-card bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition-all"
-             onclick="openMediaDetails('${media.id}')">
-            <div class="aspect-square bg-white/5 flex items-center justify-center relative">
-                <div class="text-2xl">📸</div>
+        <div class="admin-media-card bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:bg-white/10 transition-all relative">
+            <!-- Media Preview -->
+            <div class="aspect-square bg-white/5 flex items-center justify-center relative cursor-pointer"
+                 onclick="showAdminMediaFullscreen('${media.id}', '${media.userId}')">
+                ${media.url && isImage ? 
+                    `<img src="${media.url}" alt="${media.name}" class="w-full h-full object-cover">` :
+                    `<div class="text-2xl">${isImage ? '🖼️' : '🎥'}</div>`
+                }
                 ${media.flagged ? '<div class="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full"></div>' : ''}
+                
+                <!-- Type indicator -->
+                <div class="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1 py-0.5 rounded">
+                    ${media.type}
+                </div>
             </div>
+            
+            <!-- Media Info -->
             <div class="p-2">
                 <div class="text-xs text-white font-medium truncate">${media.name}</div>
-                <div class="text-xs text-white/60">${media.user_name}</div>
+                <div class="text-xs text-white/60">${media.userName || 'Unknown User'}</div>
                 <div class="text-xs text-white/50">${timeAgo}</div>
+                <div class="text-xs text-white/40">${(media.size / (1024 * 1024)).toFixed(1)}MB</div>
+            </div>
+            
+            <!-- Admin Actions -->
+            <div class="absolute top-1 left-1 flex gap-1">
+                <button onclick="event.stopPropagation(); downloadAdminMedia('${media.id}', '${media.userId}')" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded text-xs" 
+                        title="Download">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button onclick="event.stopPropagation(); flagAdminMedia('${media.id}', '${media.userId}')" 
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white p-1 rounded text-xs" 
+                        title="Flag">
+                    <i class="fas fa-flag"></i>
+                </button>
+                <button onclick="event.stopPropagation(); deleteAdminMedia('${media.id}', '${media.userId}')" 
+                        class="bg-red-500 hover:bg-red-600 text-white p-1 rounded text-xs" 
+                        title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
     `;
+}
+
+// **ADMIN MEDIA MANAGEMENT FUNCTIONS**
+function showAdminMediaFullscreen(mediaId, userId) {
+    const userPrefix = `user_${userId}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item || !item.url) {
+        showNotification('Media item not found', 'error');
+        return;
+    }
+    
+    // Create fullscreen modal with admin actions
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'admin-fullscreen-modal';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 95vw; max-height: 95vh; padding: 0; background: transparent; border: none;">
+            <div class="flex items-center justify-between p-4 bg-black/50 backdrop-blur-sm">
+                <div class="text-white">
+                    <h3 class="text-lg font-semibold">${item.name}</h3>
+                    <p class="text-white/70 text-sm">${item.type.toUpperCase()} • Uploaded by: ${item.userName || 'Unknown'}</p>
+                    <p class="text-white/60 text-xs">${new Date(item.uploaded_at).toLocaleDateString()} • ${(item.size / (1024 * 1024)).toFixed(2)} MB</p>
+                </div>
+                <button class="text-white/70 hover:text-white text-2xl p-2 hover:bg-white/10 rounded-lg transition-all duration-200" onclick="document.getElementById('admin-fullscreen-modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-center" style="max-height: 80vh;">
+                <img src="${item.url}" alt="${item.name}" class="max-w-full max-h-full object-contain">
+            </div>
+            <div class="flex justify-center gap-4 p-4 bg-black/50 backdrop-blur-sm">
+                <button onclick="downloadAdminMedia('${mediaId}', '${userId}')" class="btn-secondary">
+                    <i class="fas fa-download mr-2"></i>
+                    Download
+                </button>
+                <button onclick="flagAdminMedia('${mediaId}', '${userId}')" class="btn-warning">
+                    <i class="fas fa-flag mr-2"></i>
+                    ${item.flagged ? 'Unflag' : 'Flag'}
+                </button>
+                <button onclick="deleteAdminMedia('${mediaId}', '${userId}'); document.getElementById('admin-fullscreen-modal').remove();" class="btn-danger">
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+    
+    console.log('🔍 Admin viewing media:', item.name, 'from user:', userId);
+}
+
+function downloadAdminMedia(mediaId, userId) {
+    const userPrefix = `user_${userId}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item || !item.url) {
+        showNotification('Media item not found', 'error');
+        return;
+    }
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = item.url;
+    link.download = `${userId}_${item.name}` || `media_${Date.now()}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification(`Downloaded: ${item.name}`, 'success');
+    console.log('📥 Admin downloaded media:', item.name, 'from user:', userId);
+}
+
+function flagAdminMedia(mediaId, userId) {
+    const userPrefix = `user_${userId}`;
+    let media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    const itemIndex = media.findIndex(m => m.id === mediaId);
+    
+    if (itemIndex === -1) {
+        showNotification('Media item not found', 'error');
+        return;
+    }
+    
+    // Toggle flagged status
+    media[itemIndex].flagged = !media[itemIndex].flagged;
+    localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+    
+    const action = media[itemIndex].flagged ? 'flagged' : 'unflagged';
+    showNotification(`Media ${action} successfully`, 'success');
+    
+    // Refresh admin dashboard
+    loadAdminDashboard();
+    
+    console.log('🚩 Admin', action, 'media:', media[itemIndex].name, 'from user:', userId);
+}
+
+function deleteAdminMedia(mediaId, userId) {
+    if (!confirm('Are you sure you want to delete this media item? This action cannot be undone.')) {
+        return;
+    }
+    
+    const userPrefix = `user_${userId}`;
+    let media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    const item = media.find(m => m.id === mediaId);
+    
+    if (!item) {
+        showNotification('Media item not found', 'error');
+        return;
+    }
+    
+    // Remove from media array
+    media = media.filter(m => m.id !== mediaId);
+    localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+    
+    showNotification(`Deleted: ${item.name}`, 'success');
+    
+    // Refresh admin dashboard
+    loadAdminDashboard();
+    
+    console.log('🗑️ Admin deleted media:', item.name, 'from user:', userId);
 }
 
 // **ADMIN UTILITY FUNCTIONS**
@@ -3154,7 +3561,7 @@ function createGoalCard(goal) {
             <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
-                        <span class="text-2xl">${getCategoryIcon(goal.category)}</span>
+                        <span class="text-2xl">${goal.emoji || getGoalEmoji(goal.name)}</span>
                         <h4 class="text-white font-bold text-lg">${goal.name}</h4>
                         ${isCompleted ? '<span class="text-green-400 text-sm">✓ Completed</span>' : ''}
                         ${isOverdue ? '<span class="text-red-400 text-sm">⚠ Overdue</span>' : ''}
@@ -3297,6 +3704,7 @@ function handleGoalForm(event) {
         target_value: parseFloat(document.getElementById('goal-target').value),
         unit: document.getElementById('goal-unit').value,
         due_date: document.getElementById('goal-due-date').value,
+        emoji: getGoalEmoji(document.getElementById('goal-name').value), // Auto-generate emoji
         completed: false,
         created_at: new Date().toISOString()
     };
@@ -3451,8 +3859,8 @@ function loadFoodLog() {
         <div class="bg-white/5 border border-white/10 rounded-lg p-4 mb-3">
             <div class="flex items-center justify-between mb-2">
                 <div>
-                    <h4 class="text-white font-semibold">${entry.name}</h4>
-                    <p class="text-white/60 text-sm">${entry.meal_type} • ${entry.quantity} ${entry.unit}</p>
+                    <h4 class="text-white font-semibold">${entry.emoji || getFoodEmoji(entry.name)} ${entry.name}</h4>
+                    <p class="text-white/60 text-sm">${entry.meal_type} • ${entry.quantity || 1} ${entry.unit || 'serving'}</p>
                 </div>
                 <div class="text-right">
                     <div class="text-white font-bold">${entry.calories} cal</div>
@@ -3557,6 +3965,7 @@ function handleNutritionForm(event) {
         protein: proteinEl ? parseFloat(proteinEl.value) || 0 : 0,
         carbs: carbsEl ? parseFloat(carbsEl.value) || 0 : 0,
         fat: fatEl ? parseFloat(fatEl.value) || 0 : 0,
+        emoji: getFoodEmoji(nameEl.value), // Auto-generate emoji
         date: new Date().toISOString().split('T')[0],
         logged_at: new Date().toISOString()
     };
@@ -3619,12 +4028,273 @@ function deleteFoodEntry(entryId) {
     showNotification('Food entry deleted', 'info');
 }
 
+// **SOCIAL HUB IMPLEMENTATION**
 function loadSocialHub() {
     console.log('👥 Loading social hub...');
-    const container = document.getElementById('social-container');
-    if (container) {
-        container.innerHTML = '<div class="text-center text-white p-8">👥 Social features coming soon!</div>';
+    
+    if (!currentUser || !currentUser.id) {
+        showNotification('Please log in to access social features', 'error');
+        return;
     }
+    
+    const container = document.getElementById('social-container');
+    if (!container) return;
+    
+    const friends = getUserFriends();
+    const pendingInvites = getPendingInvites();
+    
+    container.innerHTML = `
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">👥 Social Hub</h2>
+                    <p class="text-white/70">Connect with friends and compete together</p>
+                </div>
+                <button onclick="showInviteFriendsModal()" class="btn-primary">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Invite Friends
+                </button>
+            </div>
+            
+            <!-- Social Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-2">👥</div>
+                    <div class="text-xl font-bold text-white">${friends.length}</div>
+                    <div class="text-white/60 text-sm">Friends</div>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-2">📧</div>
+                    <div class="text-xl font-bold text-yellow-400">${pendingInvites.length}</div>
+                    <div class="text-white/60 text-sm">Pending Invites</div>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-2">🏆</div>
+                    <div class="text-xl font-bold text-green-400">0</div>
+                    <div class="text-white/60 text-sm">Active Competitions</div>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                    <div class="text-2xl mb-2">💬</div>
+                    <div class="text-xl font-bold text-blue-400">0</div>
+                    <div class="text-white/60 text-sm">Messages</div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Friends List -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-6">Friends (${friends.length})</h3>
+                    <div id="friends-list" class="space-y-3">
+                        ${friends.length === 0 ? 
+                            `<div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
+                                <div class="text-4xl mb-3">😔</div>
+                                <h4 class="text-white font-semibold mb-2">No Friends Yet</h4>
+                                <p class="text-white/60 mb-4">Invite friends to start your fitness journey together!</p>
+                                <button onclick="showInviteFriendsModal()" class="btn-primary btn-sm">
+                                    <i class="fas fa-user-plus mr-2"></i>
+                                    Invite Your First Friend
+                                </button>
+                            </div>` :
+                            friends.map(friend => createFriendCard(friend)).join('')
+                        }
+                    </div>
+                </div>
+                
+                <!-- Social Wall / Activity Feed -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-6">Activity Feed</h3>
+                    <div id="social-wall" class="space-y-3">
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                    ${currentUser.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="text-white font-semibold">${currentUser.name}</div>
+                                    <div class="text-white/60 text-sm">Just now</div>
+                                </div>
+                            </div>
+                            <p class="text-white/80 mb-3">Welcome to StriveTrack Social! 🎉 Start inviting friends to see their activities here.</p>
+                            <div class="flex gap-4 text-sm">
+                                <button class="text-white/60 hover:text-white flex items-center gap-1">
+                                    <i class="fas fa-heart"></i> Like
+                                </button>
+                                <button class="text-white/60 hover:text-white flex items-center gap-1">
+                                    <i class="fas fa-comment"></i> Comment
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
+                            <div class="text-2xl mb-3">📢</div>
+                            <p class="text-white/60">Friend activities will appear here once you connect with others!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Competition Section -->
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-white mb-6">Competitions & Challenges</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="text-2xl">🏆</div>
+                            <div>
+                                <h4 class="text-white font-bold">Weekly Step Challenge</h4>
+                                <p class="text-white/60 text-sm">Coming Soon</p>
+                            </div>
+                        </div>
+                        <p class="text-white/70 mb-4">Compete with friends to see who can get the most steps this week!</p>
+                        <button class="btn-secondary btn-sm" disabled>
+                            <i class="fas fa-plus mr-2"></i>
+                            Create Challenge
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="text-2xl">💪</div>
+                            <div>
+                                <h4 class="text-white font-bold">Habit Streak Battle</h4>
+                                <p class="text-white/60 text-sm">Coming Soon</p>
+                            </div>
+                        </div>
+                        <p class="text-white/70 mb-4">Challenge friends to maintain the longest habit streaks!</p>
+                        <button class="btn-secondary btn-sm" disabled>
+                            <i class="fas fa-plus mr-2"></i>
+                            Start Battle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// **SOCIAL HUB HELPER FUNCTIONS**
+function getUserFriends() {
+    if (!currentUser || !currentUser.id) return [];
+    const userPrefix = `user_${currentUser.id}`;
+    return JSON.parse(localStorage.getItem(`${userPrefix}_friends`) || '[]');
+}
+
+function getPendingInvites() {
+    if (!currentUser || !currentUser.id) return [];
+    const userPrefix = `user_${currentUser.id}`;
+    return JSON.parse(localStorage.getItem(`${userPrefix}_pending_invites`) || '[]');
+}
+
+function createFriendCard(friend) {
+    const isOnline = friend.lastSeen && (new Date().getTime() - friend.lastSeen) < 300000; // 5 minutes
+    
+    return `
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                        ${friend.name.charAt(0).toUpperCase()}
+                    </div>
+                    ${isOnline ? '<div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>' : ''}
+                </div>
+                <div>
+                    <div class="text-white font-semibold">${friend.name}</div>
+                    <div class="text-white/60 text-sm">${friend.points || 0} points</div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="startChat('${friend.id}')" class="btn-secondary btn-sm">
+                    <i class="fas fa-comment"></i>
+                </button>
+                <button onclick="challengeFriend('${friend.id}')" class="btn-primary btn-sm">
+                    <i class="fas fa-trophy"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function showInviteFriendsModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'invite-friends-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-white">Invite Friends</h3>
+                <button class="text-white/70 hover:text-white text-xl" onclick="closeModal('invite-friends-modal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-white/90 text-sm font-medium mb-2">Invite by Email</label>
+                <div class="flex gap-3">
+                    <input type="email" id="friend-email" placeholder="friend@example.com" class="input-field flex-1">
+                    <button onclick="sendFriendInvite()" class="btn-primary">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Send Invite
+                    </button>
+                </div>
+                <p class="text-white/60 text-sm mt-2">Your friend will receive an email with a link to join StriveTrack</p>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-white/90 text-sm font-medium mb-2">Share Invite Link</label>
+                <div class="flex gap-3">
+                    <input type="text" id="invite-link" value="https://strivetrack.app/invite/${currentUser.id}" class="input-field flex-1" readonly>
+                    <button onclick="copyInviteLink()" class="btn-secondary">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <p class="text-white/60 text-sm mt-2">Share this link on social media or messaging apps</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+}
+
+function sendFriendInvite() {
+    const email = document.getElementById('friend-email').value;
+    if (!email || !email.includes('@')) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    // Simulate sending invite
+    showNotification(`Invite sent to ${email}! 📧`, 'success');
+    document.getElementById('friend-email').value = '';
+    
+    // Add to pending invites
+    const userPrefix = `user_${currentUser.id}`;
+    const pendingInvites = JSON.parse(localStorage.getItem(`${userPrefix}_pending_invites`) || '[]');
+    pendingInvites.push({
+        email: email,
+        sentAt: new Date().toISOString(),
+        status: 'pending'
+    });
+    localStorage.setItem(`${userPrefix}_pending_invites`, JSON.stringify(pendingInvites));
+    
+    console.log('📧 Friend invite sent to:', email);
+}
+
+function copyInviteLink() {
+    const linkInput = document.getElementById('invite-link');
+    linkInput.select();
+    document.execCommand('copy');
+    showNotification('Invite link copied to clipboard! 📋', 'success');
+}
+
+function startChat(friendId) {
+    showNotification('Chat feature coming soon! 💬', 'info');
+    console.log('💬 Starting chat with friend:', friendId);
+}
+
+function challengeFriend(friendId) {
+    showNotification('Friend challenges coming soon! 🏆', 'info');
+    console.log('🏆 Challenging friend:', friendId);
 }
 
 // Make functions globally accessible

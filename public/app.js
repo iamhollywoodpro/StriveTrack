@@ -1368,10 +1368,9 @@ async function loadDashboardData() {
         syncUserPointsFromServer() // CRITICAL FIX: Sync points from server
     ]);
     
-    // Load simple habits instead
-    if (window.loadSimpleHabits) {
-        window.loadSimpleHabits();
-    }
+    // Initialize and load simple habits instead
+    console.log('🎯 Loading simple habits in dashboard...');
+    initSimpleHabits();
     
     updateDashboardStats();
 }
@@ -4344,9 +4343,8 @@ function showSection(section) {
     if (section === 'habits') {
         updateCurrentWeekDisplay();
         // loadHabits(); // DISABLED: Using simple habit system
-        if (window.loadSimpleHabits) {
-            window.loadSimpleHabits();
-        }
+        console.log('🎯 Switching to habits section, initializing simple habits...');
+        initSimpleHabits();
     } else if (section === 'progress') {
         loadMedia();
         // Set up compare mode event listener
@@ -9424,3 +9422,205 @@ function filterUsers() {
     
     renderUserGrid(filteredUsers);
 }
+
+// ===== SIMPLE HABIT SYSTEM - INTEGRATED =====
+// This replaces the complex habit system with something that actually works
+
+// Simple habit storage
+let simpleHabits = [];
+
+// Simple habit creation
+function createSimpleHabit(name, category = 'general') {
+    const habit = {
+        id: Date.now().toString(),
+        name: name,
+        category: category,
+        created: new Date().toISOString(),
+        completions: {}
+    };
+    
+    simpleHabits.push(habit);
+    saveSimpleHabits();
+    showSimpleNotification('Habit created: ' + name);
+    displaySimpleHabits();
+    return habit;
+}
+
+// Save habits to localStorage
+function saveSimpleHabits() {
+    localStorage.setItem('simple_habits', JSON.stringify(simpleHabits));
+}
+
+// Load habits from localStorage
+function loadSimpleHabits() {
+    simpleHabits = JSON.parse(localStorage.getItem('simple_habits') || '[]');
+    displaySimpleHabits();
+}
+
+// Display habits in the container
+function displaySimpleHabits() {
+    console.log('🎯 SIMPLE: Displaying habits, count:', simpleHabits.length);
+    
+    const container = document.getElementById('habits-container');
+    const emptyState = document.getElementById('habits-empty-state');
+    
+    console.log('🎯 SIMPLE: Container found:', !!container, 'Empty state found:', !!emptyState);
+    
+    if (!container) {
+        console.error('🎯 SIMPLE: habits-container not found!');
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    if (simpleHabits.length === 0) {
+        console.log('🎯 SIMPLE: No habits, showing empty state');
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    console.log('🎯 SIMPLE: Hiding empty state, creating habit cards');
+    if (emptyState) emptyState.classList.add('hidden');
+    
+    simpleHabits.forEach((habit, index) => {
+        console.log(`🎯 SIMPLE: Creating card ${index} for habit:`, habit.name);
+        const habitCard = createSimpleHabitCard(habit);
+        container.appendChild(habitCard);
+    });
+    
+    console.log('🎯 SIMPLE: Finished displaying habits, container children:', container.children.length);
+}
+
+// Create a habit card element
+function createSimpleHabitCard(habit) {
+    const card = document.createElement('div');
+    card.className = 'habit-card';
+    
+    const today = new Date().toISOString().split('T')[0];
+    const isCompleted = habit.completions[today] || false;
+    
+    card.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-white font-semibold text-lg">${habit.name}</h3>
+                <p class="text-white/60 text-sm">Category: ${habit.category}</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button 
+                    onclick="toggleSimpleHabit('${habit.id}')" 
+                    class="px-4 py-2 rounded-lg font-medium transition-colors ${
+                        isCompleted 
+                            ? 'bg-green-600 text-white' 
+                            : 'bg-white/20 text-white hover:bg-white/30'
+                    }">
+                    ${isCompleted ? '✓ Completed' : 'Mark Complete'}
+                </button>
+                <button 
+                    onclick="deleteSimpleHabit('${habit.id}')" 
+                    class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Delete
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+// Toggle habit completion
+function toggleSimpleHabit(habitId) {
+    const today = new Date().toISOString().split('T')[0];
+    const habit = simpleHabits.find(h => h.id === habitId);
+    
+    if (habit) {
+        habit.completions[today] = !habit.completions[today];
+        saveSimpleHabits();
+        displaySimpleHabits();
+        
+        const action = habit.completions[today] ? 'completed' : 'uncompleted';
+        showSimpleNotification(`Habit ${action}: ${habit.name}`);
+    }
+}
+
+// Delete a habit
+function deleteSimpleHabit(habitId) {
+    if (confirm('Are you sure you want to delete this habit?')) {
+        simpleHabits = simpleHabits.filter(h => h.id !== habitId);
+        saveSimpleHabits();
+        displaySimpleHabits();
+        showSimpleNotification('Habit deleted');
+    }
+}
+
+// Simple notification system
+function showSimpleNotification(message) {
+    // Remove any existing notifications
+    const existing = document.querySelector('.simple-notification');
+    if (existing) existing.remove();
+    
+    const notification = document.createElement('div');
+    notification.className = 'simple-notification fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Initialize simple habit system - called when dashboard loads
+function initSimpleHabits() {
+    console.log('🎯 SIMPLE: Initializing Simple Habit System');
+    
+    // Load existing habits
+    loadSimpleHabits();
+    
+    // Set up form handler
+    const form = document.getElementById('create-habit-form');
+    if (form) {
+        console.log('🎯 SIMPLE: Setting up form handler');
+        
+        // Remove existing listeners
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('🎯 SIMPLE: Form submitted');
+            
+            const nameInput = document.getElementById('habit-name');
+            const categoryInput = document.getElementById('habit-category');
+            
+            if (nameInput && nameInput.value.trim()) {
+                const name = nameInput.value.trim();
+                const category = categoryInput ? categoryInput.value : 'general';
+                
+                console.log('🎯 SIMPLE: Creating habit:', name, category);
+                createSimpleHabit(name, category);
+                
+                // Close modal and reset form
+                const modal = document.getElementById('create-habit-modal');
+                if (modal) modal.classList.add('hidden');
+                
+                newForm.reset();
+            } else {
+                console.log('🎯 SIMPLE: No name provided');
+            }
+        });
+    } else {
+        console.log('🎯 SIMPLE: Form not found yet');
+    }
+    
+    console.log('✅ SIMPLE: Simple Habit System Ready');
+}
+
+// Make functions globally available
+window.createSimpleHabit = createSimpleHabit;
+window.toggleSimpleHabit = toggleSimpleHabit;
+window.deleteSimpleHabit = deleteSimpleHabit;
+window.loadSimpleHabits = loadSimpleHabits;
+window.initSimpleHabits = initSimpleHabits;
+window.displaySimpleHabits = displaySimpleHabits;

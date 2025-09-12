@@ -286,3 +286,661 @@ Traceback (most recent call last):
   File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
     self.socket.bind(self.server_address)
 OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+10.12.170.2 - - [12/Sep/2025 16:27:00] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:27:00] "GET /app.js HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:27:01] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:27:17] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:27:17] "GET /app.js HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:27:18] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:29:07] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:29:07] "GET /app.js HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:29:07] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:31:04] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:31:04] "GET /app.js?v=1737299999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:31:04] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:38:26] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:38:27] "GET /app.js?v=1737299999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:38:27] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:38:45] "GET /?email=iamhollywoodpro%40protonmail.com&password=iampassword%401981 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:42:05] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:42:05] "GET /app.js?v=1737299999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:42:05] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:44:59] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:44:59] "GET /app.js?v=1737299999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:45:00] "GET /favicon.ico HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/usr/local/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/usr/local/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/usr/local/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/usr/local/lib/python3.12/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 98] Address already in use
+10.12.170.2 - - [12/Sep/2025 16:52:42] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:52:42] "GET /app.js?v=1737299999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:52:43] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:53:43] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:53:43] "GET /app.js?v=1737301999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:53:43] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:54:33] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:54:33] "GET /app.js?v=1737301999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:54:46] "GET /?email=iamhollywoodpro%40protonmail.com&password=iampassword%401981 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:54:46] "GET /app.js?v=1737301999 HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 16:57:37] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:57:37] "GET /app.js?v=1737301999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:57:37] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:58:50] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:58:50] "GET /app.js?v=1737302999 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:59:07] "GET /?email=iamhollywoodpro%40protonmail.com&password=iampassword%401981 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 16:59:07] "GET /app.js?v=1737302999 HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 17:03:12] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:03:13] "GET /app.js?v=clean HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:03:25] "GET /?email=iamhollywoodpro%40protonmail.com&password=iampassword%401981 HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:03:25] "GET /app.js?v=clean HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 17:04:14] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:04:15] "GET /app.js?v=clean HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:04:15] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:05:15] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:05:15] "GET /app.js?v=fixed-login HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:05:16] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:05:37] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:05:37] "GET /app.js?v=fixed-login HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:05:57] "GET / HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 17:05:57] "GET /app.js?v=fixed-login HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 17:07:58] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:07:58] "GET /app.js?v=fixed-login HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:07:59] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:09:47] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:09:47] "GET /app.js?v=navigation-fixed HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:09:48] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:10:29] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:10:29] "GET /app.js?v=navigation-fixed HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:22:14] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:22:14] "GET /app.js?v=navigation-fixed HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:22:15] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:24:00] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:24:00] "GET /app.js?v=all-features-fixed HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:24:01] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:49:27] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:49:28] "GET /app.js?v=all-features-fixed HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:49:28] "GET /favicon.ico HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:49:55] "GET / HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 17:51:21] "GET /?media_type=progress&file=1000026264.heic&description= HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 17:52:28] "GET / HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 17:52:28] "GET /app.js?v=all-features-fixed HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 18:03:21] "GET / HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 18:03:21] "GET /app.js?v=all-features-fixed HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 18:03:36] "GET / HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 18:03:36] "GET /app.js?v=all-features-fixed HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 18:05:15] "GET / HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 18:05:15] "GET /app.js?v=all-features-fixed HTTP/1.1" 304 -
+10.12.170.2 - - [12/Sep/2025 18:15:37] "GET / HTTP/1.1" 200 -
+10.12.170.2 - - [12/Sep/2025 18:15:37] "GET /app.js?v=all-features-fixed HTTP/1.1" 200 -

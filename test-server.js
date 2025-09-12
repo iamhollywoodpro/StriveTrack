@@ -27,7 +27,17 @@ const mimeTypes = {
 };
 
 const server = createServer((req, res) => {
-  let filePath = join(PUBLIC_DIR, req.url === '/' ? 'index-cloud.html' : req.url);
+  // Remove query parameters from URL for file path
+  const url = req.url.split('?')[0];
+  
+  // Handle login attempts - redirect to main page
+  if (url.includes('email=') || url.includes('password=')) {
+    res.writeHead(302, { 'Location': '/' });
+    res.end();
+    return;
+  }
+  
+  let filePath = join(PUBLIC_DIR, url === '/' ? 'index.html' : url);
   
   // Security check - prevent directory traversal
   if (!filePath.startsWith(PUBLIC_DIR)) {
@@ -37,8 +47,8 @@ const server = createServer((req, res) => {
   }
 
   // Handle service files from parent directories
-  if (req.url.startsWith('/config/') || req.url.startsWith('/services/')) {
-    filePath = join(__dirname, req.url.slice(1));
+  if (url.startsWith('/config/') || url.startsWith('/services/')) {
+    filePath = join(__dirname, url.slice(1));
   }
 
   const ext = extname(filePath).toLowerCase();

@@ -1715,7 +1715,16 @@ function showComparison() {
     
     const closeComparison = () => {
         modal.remove();
-        toggleCompareMode(); // Exit compare mode
+        // Clean exit without gallery reload (avoid white flash)
+        window.compareMode = false;
+        compareSelection = [];
+        // Clear any remaining visual selections
+        document.querySelectorAll('[data-media-id]').forEach(el => {
+            el.style.border = '';
+            el.style.boxShadow = '';
+            el.style.transform = '';
+        });
+        console.log('🔄 Closed comparison modal (smooth)');
     };
     
     if (closeBtn) {

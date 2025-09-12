@@ -502,6 +502,250 @@ class SupabaseSocialService {
     }
 }
 
+// **ADMIN SERVICE - Enhanced admin functions for dashboard**
+class SupabaseAdminService {
+    // Get all platform users with statistics
+    static async getAllUsersWithStats() {
+        try {
+            const { data: users, error } = await supabase
+                .from('users')
+                .select(`
+                    *,
+                    habits(count),
+                    media(count),
+                    goals(count)
+                `);
+            
+            if (error) throw error;
+            
+            // Calculate additional stats for each user
+            const usersWithStats = await Promise.all(users.map(async (user) => {
+                // Calculate total points
+                const points = await calculateUserPoints(user.id);
+                
+                // Check online status (active within last 5 minutes)
+                const lastActive = user.last_active ? new Date(user.last_active) : null;
+                const isOnline = lastActive && (new Date() - lastActive) < 5 * 60 * 1000;
+                
+                return {
+                    ...user,
+                    points,
+                    online: isOnline,
+                    habits_count: user.habits?.[0]?.count || 0,
+                    media_count: user.media?.[0]?.count || 0,
+                    goals_count: user.goals?.[0]?.count || 0,
+                    joined: user.created_at
+                };
+            }));
+            
+            return usersWithStats;
+        } catch (error) {
+            console.error('❌ Error fetching users with stats:', error);
+            return [];
+        }
+    }
+    
+    // Get all platform media with user info
+    static async getAllMediaWithUserInfo() {
+        try {
+            const { data, error } = await supabase
+                .from('media')
+                .select(`
+                    *,
+                    users(id, name, email)
+                `)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error('❌ Error fetching all media:', error);
+            return [];
+        }
+    }
+    
+    // Get platform statistics
+    static async getPlatformStats() {
+        try {
+            // Get user counts
+            const { count: totalUsers } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true });
+            
+            // Get online users (active within last 5 minutes)
+            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+            const { count: onlineUsers } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true })
+                .gte('last_active', fiveMinutesAgo);
+            
+            // Get media count
+            const { count: totalMedia } = await supabase
+                .from('media')
+                .select('*', { count: 'exact', head: true });
+            
+            // Get flagged content count (assuming we have a flagged field)
+            const { count: flaggedContent } = await supabase
+                .from('media')
+                .select('*', { count: 'exact', head: true })
+                .eq('flagged', true);
+            
+            return {
+                totalUsers: totalUsers || 0,
+                onlineUsers: onlineUsers || 0,
+                totalMedia: totalMedia || 0,
+                flaggedContent: flaggedContent || 0
+            };
+        } catch (error) {
+            console.error('❌ Error fetching platform stats:', error);
+            return {
+                totalUsers: 0,
+                onlineUsers: 0,
+                totalMedia: 0,
+                flaggedContent: 0
+            };
+        }
+    }
+    
+    // Delete user with all related data
+    static async deleteUserComplete(userId) {
+        try {
+            // Delete user (CASCADE will handle related data)
+            const { error } = await supabase
+                .from('users')
+                .delete()
+                .eq('id', userId);
+            
+            if (error) throw error;
+            
+            console.log('✅ User and all related data deleted from Supabase:', userId);
+            return true;
+        } catch (error) {
+            console.error('❌ Error deleting user:', error);
+            throw error;
+        }
+    }
+    
+    // Suspend/unsuspend user
+    static async suspendUser(userId, suspended = true) {
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .update({ suspended: suspended })
+                .eq('id', userId)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('❌ Error suspending user:', error);
+            throw error;
+        }
+    }
+    
+    // Update user role
+    static async updateUserRole(userId, role) {
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .update({ role: role })
+                .eq('id', userId)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('❌ Error updating user role:', error);
+            throw error;
+        }
+    }
+    
+    // Flag/unflag media content
+    static async flagMedia(mediaId, flagged = true, reason = null) {
+        try {
+            const updates = { flagged: flagged };
+            if (reason) updates.flag_reason = reason;
+            
+            const { data, error } = await supabase
+                .from('media')
+                .update(updates)
+                .eq('id', mediaId)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('❌ Error flagging media:', error);
+            throw error;
+        }
+    }
+    
+    // Get recent user activity
+    static async getRecentActivity(limit = 50) {
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('id, name, email, last_active, created_at')
+                .order('last_active', { ascending: false, nullsFirst: false })
+                .limit(limit);
+            
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error('❌ Error fetching recent activity:', error);
+            return [];
+        }
+    }
+    
+    // Export user data
+    static async exportUserData(userId) {
+        try {
+            // Get user with all related data
+            const { data: user, error: userError } = await supabase
+                .from('users')
+                .select(`
+                    *,
+                    habits(*),
+                    goals(*),
+                    media(*),
+                    nutrition_logs(*),
+                    achievements(*)
+                `)
+                .eq('id', userId)
+                .single();
+            
+            if (userError) throw userError;
+            
+            // Format data for export
+            const exportData = {
+                user_info: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    points: user.points,
+                    created_at: user.created_at,
+                    last_login: user.last_login
+                },
+                habits: user.habits || [],
+                goals: user.goals || [],
+                media: user.media || [],
+                nutrition_logs: user.nutrition_logs || [],
+                achievements: user.achievements || [],
+                export_date: new Date().toISOString()
+            };
+            
+            return exportData;
+        } catch (error) {
+            console.error('❌ Error exporting user data:', error);
+            throw error;
+        }
+    }
+}
+
 // **POINTS CALCULATION**
 async function calculateUserPoints(userId) {
     const { data, error } = await supabase
@@ -525,6 +769,7 @@ window.SupabaseServices = {
     media: SupabaseMediaService,
     achievements: SupabaseAchievementsService,
     social: SupabaseSocialService,
+    admin: SupabaseAdminService,  // ✅ NEW: Admin service for enhanced dashboard
     calculatePoints: calculateUserPoints
 };
 

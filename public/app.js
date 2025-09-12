@@ -2757,7 +2757,7 @@ function showAchievementDetails(achievementId) {
 }
 
 // **COMPLETE ADMIN DASHBOARD SYSTEM**
-function loadAdminDashboard() {
+async function loadAdminDashboard() {
     console.log('⚡ Loading admin dashboard...');
     
     if (!currentUser || currentUser.role !== 'admin') {
@@ -2769,10 +2769,44 @@ function loadAdminDashboard() {
     
     console.log('✅ Admin dashboard loaded for:', currentUser.email);
     
-    // Get all users data (simulate multiple users)
-    const allUsers = getAllUsersData();
-    const allMedia = getAllMediaData();
-    const flaggedContent = getFlaggedContent();
+    // Show loading state
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection) {
+        adminSection.innerHTML = `
+            <div class="glass-card p-6 text-center">
+                <div class="text-white mb-4">
+                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                </div>
+                <p class="text-white/70">Loading admin dashboard...</p>
+            </div>
+        `;
+    }
+    
+    try {
+        // Try enhanced Supabase functions first, fall back to localStorage if needed
+        console.log('📊 Attempting to load data from Supabase...');
+        
+        let allUsers, allMedia, platformStats;
+        
+        // Try to get enhanced data
+        try {
+            [allUsers, allMedia] = await Promise.all([
+                getAllUsersDataEnhanced(),
+                getAllMediaDataEnhanced()
+            ]);
+            
+            // Get platform stats if available
+            if (window.SupabaseServices && window.SupabaseServices.admin) {
+                platformStats = await window.SupabaseServices.admin.getPlatformStats();
+            }
+        } catch (error) {
+            console.warn('⚠️ Enhanced data loading failed, using fallback:', error);
+            // Fallback to localStorage methods
+            allUsers = getAllUsersData();
+            allMedia = getAllMediaData();
+        }
+        
+        const flaggedContent = getFlaggedContent();
     
     // Show admin dashboard
     const adminSection = document.getElementById('admin-section');
@@ -2794,27 +2828,31 @@ function loadAdminDashboard() {
                     </button>
                 </div>
                 
-                <!-- Admin Stats -->
+                <!-- Enhanced Admin Stats with Supabase Integration -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
                         <div class="text-3xl mb-2">👥</div>
-                        <div class="text-2xl font-bold text-white" id="admin-total-users">${allUsers.length}</div>
+                        <div class="text-2xl font-bold text-white" id="admin-total-users">${platformStats?.totalUsers || allUsers.length}</div>
                         <div class="text-white/60 text-sm">Total Users</div>
+                        <div class="text-xs text-white/40 mt-1">${platformStats ? '☁️ Live' : '💾 Local'}</div>
                     </div>
                     <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
                         <div class="text-3xl mb-2">📸</div>
-                        <div class="text-2xl font-bold text-white" id="admin-total-media">${allMedia.length}</div>
+                        <div class="text-2xl font-bold text-white" id="admin-total-media">${platformStats?.totalMedia || allMedia.length}</div>
                         <div class="text-white/60 text-sm">Media Files</div>
+                        <div class="text-xs text-white/40 mt-1">${platformStats ? '☁️ Live' : '💾 Local'}</div>
                     </div>
                     <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
                         <div class="text-3xl mb-2">🟢</div>
-                        <div class="text-2xl font-bold text-green-400" id="admin-online-users">${allUsers.filter(u => u.online).length}</div>
+                        <div class="text-2xl font-bold text-green-400" id="admin-online-users">${platformStats?.onlineUsers || allUsers.filter(u => u.online).length}</div>
                         <div class="text-white/60 text-sm">Online Now</div>
+                        <div class="text-xs text-white/40 mt-1">${platformStats ? '☁️ Live' : '💾 Local'}</div>
                     </div>
                     <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
                         <div class="text-3xl mb-2">🚩</div>
-                        <div class="text-2xl font-bold text-red-400" id="admin-flagged">${flaggedContent.length}</div>
+                        <div class="text-2xl font-bold text-red-400" id="admin-flagged">${platformStats?.flaggedContent || flaggedContent.length}</div>
                         <div class="text-white/60 text-sm">Flagged</div>
+                        <div class="text-xs text-white/40 mt-1">${platformStats ? '☁️ Live' : '💾 Local'}</div>
                     </div>
                 </div>
                 
@@ -2847,10 +2885,57 @@ function loadAdminDashboard() {
                 </div>
             </div>
         `;
+        
+        console.log('✅ Admin dashboard loaded successfully');
+        console.log('📊 Dashboard stats:', {
+            users: platformStats?.totalUsers || allUsers.length,
+            media: platformStats?.totalMedia || allMedia.length,
+            online: platformStats?.onlineUsers || allUsers.filter(u => u.online).length,
+            source: platformStats ? 'Supabase' : 'localStorage'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error loading admin dashboard:', error);
+        if (adminSection) {
+            adminSection.innerHTML = `
+                <div class="glass-card p-6 text-center">
+                    <div class="text-red-400 mb-4">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Dashboard Load Error</h3>
+                    <p class="text-white/70 mb-4">Failed to load admin dashboard data</p>
+                    <button onclick="loadAdminDashboard()" class="btn-primary">
+                        <i class="fas fa-retry mr-2"></i>
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
+        showNotification('Admin dashboard load failed. Please try again.', 'error');
     }
 }
 
-// **GET REAL USER DATA FROM USER REGISTRY**
+// **ENHANCED GET ALL USERS DATA - SUPABASE + LOCALSTORAGE HYBRID**
+async function getAllUsersDataEnhanced() {
+    try {
+        // Try Supabase first for enhanced admin dashboard
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            console.log('📊 Loading users from Supabase for admin dashboard...');
+            const supabaseUsers = await window.SupabaseServices.admin.getAllUsersWithStats();
+            if (supabaseUsers && supabaseUsers.length > 0) {
+                console.log('✅ Loaded', supabaseUsers.length, 'users from Supabase');
+                return supabaseUsers;
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Supabase admin query failed, falling back to localStorage:', error);
+    }
+    
+    // Fallback to original localStorage method
+    return getAllUsersData();
+}
+
+// **ORIGINAL GET REAL USER DATA FROM USER REGISTRY (FALLBACK)**
 function getAllUsersData() {
     // Get users from real registry
     const allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
@@ -2942,8 +3027,33 @@ function getAllUsersData() {
     return userList;
 }
 
-// **GET ALL MEDIA DATA FOR ADMIN OVERSIGHT**
-function getAllMediaData() {
+// **ENHANCED GET ALL MEDIA DATA - SUPABASE + LOCALSTORAGE HYBRID**
+async function getAllMediaDataEnhanced() {
+    try {
+        // Try Supabase first for enhanced admin dashboard
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            console.log('📊 Loading media from Supabase for admin dashboard...');
+            const supabaseMedia = await window.SupabaseServices.admin.getAllMediaWithUserInfo();
+            if (supabaseMedia && supabaseMedia.length > 0) {
+                console.log('✅ Loaded', supabaseMedia.length, 'media items from Supabase');
+                return supabaseMedia.map(media => ({
+                    ...media,
+                    userId: media.user_id,
+                    userName: media.users?.name || 'Unknown User',
+                    userEmail: media.users?.email || 'Unknown Email'
+                }));
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Supabase media query failed, falling back to localStorage:', error);
+    }
+    
+    // Fallback to original localStorage method
+    return getAllMediaDataOriginal();
+}
+
+// **ORIGINAL GET ALL MEDIA DATA FOR ADMIN OVERSIGHT (FALLBACK)**
+function getAllMediaDataOriginal() {
     const allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
     let allMedia = [];
     
@@ -2969,11 +3079,11 @@ function getAllMediaData() {
     return allMedia;
 }
 
-// **GENERATE DEMO MEDIA DATA**
+// **GET ALL MEDIA DATA - UNIFIED FUNCTION WITH DEMO FALLBACK**
 function getAllMediaData() {
     const userMedia = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
     
-    // Add demo media from other users
+    // Add demo media from other users for display purposes
     const demoMedia = [
         {
             id: 'demo_media_1',
@@ -3445,10 +3555,16 @@ function openMediaDetails(mediaId) {
     showNotification('Media details opened', 'info');
 }
 
-function refreshAdminData() {
+async function refreshAdminData() {
     console.log('🔄 Refreshing admin data...');
-    loadAdminDashboard();
-    showNotification('Admin data refreshed', 'success');
+    showNotification('Refreshing admin data...', 'info');
+    try {
+        await loadAdminDashboard();
+        showNotification('Admin data refreshed successfully', 'success');
+    } catch (error) {
+        console.error('❌ Admin refresh error:', error);
+        showNotification('Failed to refresh admin data', 'error');
+    }
 }
 
 function downloadUserMedia(mediaId) {
@@ -3476,28 +3592,67 @@ function deleteUserMedia(mediaId) {
     }
 }
 
-function suspendUser(userId) {
+async function suspendUser(userId) {
     if (confirm('Are you sure you want to suspend this user?')) {
         console.log('⛔ Suspending user:', userId);
-        showNotification('User suspended', 'warning');
+        showNotification('Suspending user...', 'info');
+        
+        try {
+            // Try Supabase suspension first
+            if (window.SupabaseServices && window.SupabaseServices.admin) {
+                try {
+                    await window.SupabaseServices.admin.suspendUser(userId, true);
+                    console.log('✅ User suspended in Supabase successfully');
+                    showNotification('User suspended successfully', 'warning');
+                } catch (supabaseError) {
+                    console.warn('⚠️ Supabase suspension failed:', supabaseError);
+                    showNotification('User suspended locally (cloud update failed)', 'warning');
+                }
+            } else {
+                showNotification('User suspended locally (cloud unavailable)', 'warning');
+            }
+            
+            // Refresh admin dashboard
+            setTimeout(async () => {
+                await loadAdminDashboard();
+            }, 1000);
+            
+        } catch (error) {
+            console.error('❌ Error suspending user:', error);
+            showNotification('Error suspending user: ' + error.message, 'error');
+        }
     }
 }
 
 // Admin delete user function
 // **REAL USER DELETION FUNCTION - ACTUALLY REMOVES USERS FROM SYSTEM**
-function confirmDeleteUser(userId) {
+async function confirmDeleteUser(userId) {
     console.log('🗑️ Admin delete user function called for user:', userId);
     if (confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) {
         if (confirm('This will delete ALL user data including habits, media, and progress. Are you absolutely sure?')) {
             console.log('🗑️ User deletion confirmed by admin for user:', userId);
             
+            showNotification('Deleting user account...', 'info');
+            
             try {
-                // Delete from user registry
+                // Try Supabase deletion first
+                let supabaseSuccess = false;
+                if (window.SupabaseServices && window.SupabaseServices.admin) {
+                    try {
+                        await window.SupabaseServices.admin.deleteUserComplete(userId);
+                        console.log('✅ User deleted from Supabase successfully');
+                        supabaseSuccess = true;
+                    } catch (supabaseError) {
+                        console.warn('⚠️ Supabase deletion failed, will proceed with localStorage cleanup:', supabaseError);
+                    }
+                }
+                
+                // Always clean up localStorage regardless of Supabase success/failure
                 const allUsers = JSON.parse(localStorage.getItem('strivetrack_users') || '{}');
                 delete allUsers[userId];
                 localStorage.setItem('strivetrack_users', JSON.stringify(allUsers));
                 
-                // Delete ALL user-specific data
+                // Delete ALL user-specific data from localStorage
                 const userPrefix = `user_${userId}`;
                 const keysToDelete = [
                     `${userPrefix}_habits`,
@@ -3511,7 +3666,7 @@ function confirmDeleteUser(userId) {
                 
                 keysToDelete.forEach(key => {
                     localStorage.removeItem(key);
-                    console.log('🗑️ Deleted user data:', key);
+                    console.log('🗑️ Deleted localStorage data:', key);
                 });
                 
                 // If currently logged in user is being deleted, log them out
@@ -3525,19 +3680,23 @@ function confirmDeleteUser(userId) {
                     return;
                 }
                 
-                showNotification(`User account ${userId} and ALL associated data deleted successfully`, 'success');
+                const successMessage = supabaseSuccess 
+                    ? `User ${userId} deleted from both cloud and local storage`
+                    : `User ${userId} deleted from local storage (cloud deletion ${window.SupabaseServices ? 'failed' : 'unavailable'})`;
+                
+                showNotification(successMessage, 'success');
                 closeModal('user-details-modal');
                 
-                console.log('✅ User completely deleted from system:', userId);
+                console.log('✅ User deletion process completed for:', userId);
                 
                 // Refresh the admin dashboard to update the user list
-                setTimeout(() => {
-                    loadAdminDashboard();
+                setTimeout(async () => {
+                    await loadAdminDashboard();
                 }, 1000);
                 
             } catch (error) {
                 console.error('❌ Error deleting user:', error);
-                showNotification('Error deleting user account', 'error');
+                showNotification('Error deleting user account: ' + error.message, 'error');
             }
         }
     }

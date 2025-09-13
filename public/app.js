@@ -2885,8 +2885,9 @@ async function loadAdminDashboard() {
                 </div>
             </div>
         `;
+    }
         
-        console.log('✅ Admin dashboard loaded successfully');
+    console.log('✅ Admin dashboard loaded successfully');
         console.log('📊 Dashboard stats:', {
             users: platformStats?.totalUsers || allUsers.length,
             media: platformStats?.totalMedia || allMedia.length,

@@ -1196,10 +1196,13 @@ function completeUpload(files, mediaType) {
             localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
             
             console.log('📸 Media item saved:', mediaItem.name, `(${filesProcessed}/${files.length})`);
+            console.log('📸 Total media in storage now:', media.length);
+            console.log('📸 Storage key:', `${userPrefix}_media`);
             
             // If this is the last file, complete the upload
             if (filesProcessed === files.length) {
                 console.log('📸 All files processed, finishing upload...');
+                console.log('📸 Final uploaded items:', uploadedItems.map(item => ({ id: item.id, name: item.name })));
                 setTimeout(() => {
                     finishUpload(uploadedItems);
                 }, 300); // Small delay to show completion status
@@ -1259,9 +1262,14 @@ function finishUpload(uploadedItems) {
                     <div class="w-full bg-white/20 rounded-full h-2 mb-3">
                         <div class="bg-green-400 h-2 rounded-full animate-pulse" style="width: 100%"></div>
                     </div>
-                    <button onclick="closeModal('media-upload-modal')" class="btn-secondary text-sm px-4 py-2">
-                        <i class="fas fa-times mr-1"></i>Close Now
-                    </button>
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="loadProgressGallery(); showTab('progress');" class="btn-primary text-sm px-4 py-2">
+                            <i class="fas fa-images mr-1"></i>View Gallery
+                        </button>
+                        <button onclick="closeModal('media-upload-modal')" class="btn-secondary text-sm px-4 py-2">
+                            <i class="fas fa-times mr-1"></i>Close Now
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1275,6 +1283,24 @@ function finishUpload(uploadedItems) {
     
     // Show success notification
     showNotification(`Successfully uploaded ${uploadedItems.length} file(s)! 📸 +${uploadedItems.length * 50} pts`, 'success');
+    
+    // Immediately refresh the progress gallery to show new uploads
+    console.log('🔄 Refreshing progress gallery immediately after upload...');
+    setTimeout(() => {
+        // Check if we're currently viewing the progress section
+        const currentSection = getCurrentTab();
+        console.log('📍 Current tab:', currentSection);
+        
+        // Always refresh the gallery data
+        loadProgressGallery();
+        checkAndUnlockAchievements();
+        
+        // If not on progress tab, suggest switching
+        if (currentSection !== 'progress') {
+            console.log('💡 User not on progress tab, media uploaded but might not be visible');
+            showNotification('📸 Media uploaded! Switch to Progress tab to view.', 'info');
+        }
+    }, 500); // Small delay to ensure UI update completes
     
     // Enhanced auto-close with countdown
     let countdown = 3;
@@ -1593,6 +1619,7 @@ function loadProgressGallery() {
     console.log('📸 Loading progress gallery...');
     
     if (!currentUser || !currentUser.id) {
+        console.log('❌ No current user, showing empty state');
         const container = document.getElementById('media-container');
         const emptyState = document.getElementById('media-empty-state');
         if (container) container.style.display = 'none';
@@ -1601,6 +1628,7 @@ function loadProgressGallery() {
     }
     const userPrefix = `user_${currentUser.id}`;
     const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    console.log('📸 Loaded media from storage:', media.length, 'items for user:', currentUser.id);
     const container = document.getElementById('media-container');
     const emptyState = document.getElementById('media-empty-state');
     
@@ -1632,8 +1660,20 @@ function loadProgressGallery() {
     
     // Display media items
     if (container) {
-        const mediaHtml = media.map(item => createMediaCard(item)).join('');
-        container.innerHTML = mediaHtml;
+        console.log('🎨 Updating gallery container with', media.length, 'items');
+        
+        // Force clear and reload to ensure fresh content
+        container.innerHTML = '';
+        
+        if (media.length > 0) {
+            const mediaHtml = media.map(item => createMediaCard(item)).join('');
+            container.innerHTML = mediaHtml;
+            console.log('✅ Gallery updated with new content');
+        } else {
+            console.log('📭 No media items to display');
+        }
+    } else {
+        console.log('❌ Media container not found');
     }
     
     console.log('📸 Gallery loaded - Total:', totalUploads, 'Before:', beforePhotos, 'Progress:', progressPhotos, 'After:', afterPhotos);

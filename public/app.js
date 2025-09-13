@@ -1173,8 +1173,9 @@ function completeUpload(files, mediaType) {
         const reader = new FileReader();
         
         reader.onload = function(e) {
+            const mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             const mediaItem = {
-                id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                id: mediaId,
                 type: mediaType,
                 name: file.name,
                 uploaded_at: new Date().toISOString(),
@@ -1182,6 +1183,8 @@ function completeUpload(files, mediaType) {
                 size: file.size,
                 file_type: file.type
             };
+            
+            console.log('🆔 Generated media ID:', mediaId, 'Type:', typeof mediaId);
             
             media.push(mediaItem);
             uploadedItems.push(mediaItem);
@@ -1697,7 +1700,7 @@ function createMediaCard(item) {
     const isImage = item.file_type && item.file_type.startsWith('image/');
     const isInCompareMode = document.body.classList.contains('compare-mode');
     
-    console.log('📸 Creating media card for:', item.name, 'URL exists:', !!item.url, 'Is image:', isImage);
+    console.log('📸 Creating media card for:', item.name, 'ID:', item.id, 'ID type:', typeof item.id, 'URL exists:', !!item.url, 'Is image:', isImage);
     
     return `
         <div class="media-item relative bg-white/5 border border-white/10 rounded-lg overflow-hidden" data-media-id="${item.id}" data-media-type="${item.type}">
@@ -1789,7 +1792,7 @@ function showFullscreenImage(mediaId) {
                     <i class="fas fa-download mr-2"></i>
                     Download
                 </button>
-                <button onclick="deleteMediaItem('${item.id}'); closeModal('fullscreen-image-modal');" class="btn-danger">
+                <button onclick="handleDeleteFromFullscreen('${item.id}')" class="btn-danger">
                     <i class="fas fa-trash mr-2"></i>
                     Delete
                 </button>
@@ -2092,6 +2095,7 @@ function downloadMedia(mediaId) {
 
 function deleteMediaItem(mediaId) {
     console.log('🗑️ Attempting to delete media item:', mediaId);
+    console.log('🔍 Media ID type:', typeof mediaId, 'Value:', JSON.stringify(mediaId));
     
     if (!currentUser || !currentUser.id) {
         showNotification('Please log in to delete media', 'error');
@@ -2105,45 +2109,58 @@ function deleteMediaItem(mediaId) {
     const userPrefix = `user_${currentUser.id}`;
     let media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     console.log('📊 Current media count:', media.length);
+    console.log('📊 All media IDs:', media.map(m => ({ id: m.id, name: m.name })));
+    
     const item = media.find(m => m.id === mediaId);
+    console.log('🔍 Found item:', !!item, item ? item.name : 'not found');
     
     if (!item) {
+        console.error('❌ Media item not found for ID:', mediaId);
+        console.error('❌ Available IDs:', media.map(m => m.id));
         showNotification('Media item not found', 'error');
         return;
     }
     
+    console.log('✅ Deleting media item:', item.name);
+    
     // Remove from media array
+    const originalLength = media.length;
     media = media.filter(m => m.id !== mediaId);
+    const newLength = media.length;
+    
+    console.log('📊 Media count before deletion:', originalLength, 'after:', newLength);
+    
     localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
     
-    // Refresh gallery - reload the progress section
-    if (getCurrentTab() === 'progress') {
+    // Always refresh gallery to ensure UI consistency
+    console.log('🔄 Refreshing gallery after deletion...');
+    setTimeout(() => {
         loadProgressGallery();
-    }
+        
+        // Update points display
+        updatePointsDisplay();
+    }, 100);
     
     showNotification(`Deleted: ${item.name}`, 'success');
     console.log('🗑️ Deleted media:', item.name);
 }
-function downloadMedia(mediaId) {
-    const media = JSON.parse(localStorage.getItem('strivetrack_media') || '[]');
-    const item = media.find(m => m.id === mediaId);
+
+// Handle deletion from fullscreen modal
+function handleDeleteFromFullscreen(mediaId) {
+    console.log('🗑️ Handling delete from fullscreen for:', mediaId);
     
-    if (!item || !item.url) {
-        showNotification('Media not found', 'error');
-        return;
-    }
+    // First delete the media item
+    deleteMediaItem(mediaId);
     
-    // Create download link
-    const link = document.createElement('a');
-    link.href = item.url;
-    link.download = item.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showNotification('Download started!', 'success');
-    console.log('💾 Downloaded:', item.name);
+    // Then close the fullscreen modal
+    setTimeout(() => {
+        const modal = document.getElementById('fullscreen-image-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }, 100); // Small delay to ensure deletion completes
 }
+// REMOVED DUPLICATE - Using the correct downloadMedia function above
 
 function downloadComparison() {
     showNotification('Comparison download feature coming soon!', 'info');

@@ -3710,6 +3710,107 @@
                     </div>
                 </div>
 
+                <!-- System Health Monitoring -->
+                <div class="glass-card p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">System Health Monitor</h3>
+                        <div class="flex items-center gap-3">
+                            <div id="system-status-indicator" class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                                <span class="text-green-400 text-sm font-medium">All Systems Operational</span>
+                            </div>
+                            <button onclick="refreshSystemHealth()" class="btn-secondary text-sm">
+                                <i class="fas fa-sync mr-2"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- System Metrics Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                        <!-- Database Status -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-2" id="db-status-icon">🟢</div>
+                            <div class="text-sm font-bold text-white" id="db-status-text">Database</div>
+                            <div class="text-xs text-white/60" id="db-response-time">< 50ms</div>
+                        </div>
+                        
+                        <!-- Storage Status -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-2" id="storage-status-icon">☁️</div>
+                            <div class="text-sm font-bold text-white" id="storage-status-text">Storage</div>
+                            <div class="text-xs text-white/60" id="storage-usage">85% used</div>
+                        </div>
+                        
+                        <!-- API Status -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-2" id="api-status-icon">⚡</div>
+                            <div class="text-sm font-bold text-white" id="api-status-text">API</div>
+                            <div class="text-xs text-white/60" id="api-response-time">< 200ms</div>
+                        </div>
+                        
+                        <!-- Server Load -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-2" id="server-load-icon">🖥️</div>
+                            <div class="text-sm font-bold text-white" id="server-load-text">Server</div>
+                            <div class="text-xs text-white/60" id="server-cpu-usage">12% CPU</div>
+                        </div>
+                        
+                        <!-- Memory Usage -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-2" id="memory-status-icon">💾</div>
+                            <div class="text-sm font-bold text-white" id="memory-status-text">Memory</div>
+                            <div class="text-xs text-white/60" id="memory-usage">68% used</div>
+                        </div>
+                        
+                        <!-- Uptime -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-2" id="uptime-icon">⏱️</div>
+                            <div class="text-sm font-bold text-white" id="uptime-text">Uptime</div>
+                            <div class="text-xs text-white/60" id="uptime-value">99.9%</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Charts -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Response Time Chart -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                            <h4 class="text-lg font-semibold text-white mb-4">Response Times (Last 24h)</h4>
+                            <div class="h-48">
+                                <canvas id="response-time-chart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Error Rate Chart -->
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                            <h4 class="text-lg font-semibold text-white mb-4">Error Rate (Last 24h)</h4>
+                            <div class="h-48">
+                                <canvas id="error-rate-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Service Status Table -->
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-4">
+                        <h4 class="text-lg font-semibold text-white mb-4">Service Status</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-white/70 border-b border-white/10">
+                                        <th class="text-left p-2">Service</th>
+                                        <th class="text-left p-2">Status</th>
+                                        <th class="text-left p-2">Last Check</th>
+                                        <th class="text-left p-2">Response Time</th>
+                                        <th class="text-left p-2">Uptime</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="service-status-table">
+                                    <!-- Service status rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Enhanced Users Management -->
                 <div class="glass-card p-6">
                     <!-- Users Header with Bulk Controls -->

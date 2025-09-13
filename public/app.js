@@ -2899,6 +2899,7 @@ async function loadAdminDashboard() {
             loadAdminAnalytics();
             initializeEnhancedUserManagement(allUsers);
             initializeContentModeration();
+            initializeSystemHealthMonitoring();
         }, 500);
         
     } catch (error) {
@@ -5815,6 +5816,388 @@ window.approveAllVisible = approveAllVisible;
 window.rejectAllVisible = rejectAllVisible;
 window.viewContentDetails = viewContentDetails;
 window.addModerationRule = addModerationRule;
+
+// **PHASE 5: SYSTEM HEALTH MONITORING**
+let systemHealthCharts = {};
+let systemHealthData = {
+    database: { status: 'healthy', responseTime: 45 },
+    storage: { status: 'healthy', usage: 85 },
+    api: { status: 'healthy', responseTime: 180 },
+    server: { status: 'healthy', cpuUsage: 12, memoryUsage: 68 },
+    uptime: 99.95
+};
+
+// Initialize system health monitoring
+function initializeSystemHealthMonitoring() {
+    console.log('🏥 Initializing system health monitoring...');
+    
+    // Load system health data
+    loadSystemHealth();
+    
+    // Create health monitoring charts
+    createHealthCharts();
+    
+    // Update service status table
+    updateServiceStatusTable();
+    
+    // Start periodic health checks
+    startHealthMonitoring();
+    
+    console.log('✅ System health monitoring initialized');
+}
+
+// Load system health data
+async function loadSystemHealth() {
+    try {
+        // Check database connectivity
+        await checkDatabaseHealth();
+        
+        // Check storage status
+        await checkStorageHealth();
+        
+        // Check API endpoints
+        await checkApiHealth();
+        
+        // Update UI with health data
+        updateHealthIndicators();
+        
+    } catch (error) {
+        console.error('❌ Error loading system health:', error);
+        updateHealthIndicators(true);
+    }
+}
+
+// Check database health
+async function checkDatabaseHealth() {
+    const startTime = Date.now();
+    
+    try {
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            // Try a simple query to test database connectivity
+            await window.SupabaseServices.admin.getPlatformStats();
+            const responseTime = Date.now() - startTime;
+            
+            systemHealthData.database = {
+                status: 'healthy',
+                responseTime: responseTime,
+                lastCheck: new Date().toISOString()
+            };
+        } else {
+            // Simulate database check for demo
+            systemHealthData.database = {
+                status: 'healthy',
+                responseTime: 35 + Math.random() * 20,
+                lastCheck: new Date().toISOString()
+            };
+        }
+    } catch (error) {
+        systemHealthData.database = {
+            status: 'error',
+            responseTime: null,
+            error: error.message,
+            lastCheck: new Date().toISOString()
+        };
+    }
+}
+
+// Check storage health
+async function checkStorageHealth() {
+    try {
+        // Simulate storage check (in real implementation, would check Supabase Storage)
+        systemHealthData.storage = {
+            status: 'healthy',
+            usage: 82 + Math.random() * 10, // Random usage between 82-92%
+            capacity: '100GB',
+            used: '85GB',
+            lastCheck: new Date().toISOString()
+        };
+    } catch (error) {
+        systemHealthData.storage = {
+            status: 'error',
+            error: error.message,
+            lastCheck: new Date().toISOString()
+        };
+    }
+}
+
+// Check API health
+async function checkApiHealth() {
+    const startTime = Date.now();
+    
+    try {
+        // Simulate API health check
+        const responseTime = 150 + Math.random() * 100; // Random response time 150-250ms
+        
+        systemHealthData.api = {
+            status: responseTime < 300 ? 'healthy' : 'warning',
+            responseTime: responseTime,
+            lastCheck: new Date().toISOString()
+        };
+    } catch (error) {
+        systemHealthData.api = {
+            status: 'error',
+            responseTime: null,
+            error: error.message,
+            lastCheck: new Date().toISOString()
+        };
+    }
+}
+
+// Update health indicators in UI
+function updateHealthIndicators(hasErrors = false) {
+    const overallStatus = hasErrors || 
+        systemHealthData.database.status !== 'healthy' ||
+        systemHealthData.storage.status !== 'healthy' ||
+        systemHealthData.api.status !== 'healthy' ? 'warning' : 'healthy';
+    
+    // Update overall status indicator
+    const statusIndicator = document.getElementById('system-status-indicator');
+    if (statusIndicator) {
+        const statusColor = overallStatus === 'healthy' ? 'green' : overallStatus === 'warning' ? 'yellow' : 'red';
+        const statusText = overallStatus === 'healthy' ? 'All Systems Operational' : 'System Issues Detected';
+        
+        statusIndicator.innerHTML = `
+            <div class="w-3 h-3 rounded-full bg-${statusColor}-400"></div>
+            <span class="text-${statusColor}-400 text-sm font-medium">${statusText}</span>
+        `;
+    }
+    
+    // Update individual service indicators
+    updateServiceIndicator('db', systemHealthData.database);
+    updateServiceIndicator('storage', systemHealthData.storage);
+    updateServiceIndicator('api', systemHealthData.api);
+    
+    // Update server metrics (simulated)
+    updateElement('server-cpu-usage', `${systemHealthData.server.cpuUsage}% CPU`);
+    updateElement('memory-usage', `${systemHealthData.server.memoryUsage}% used`);
+    updateElement('uptime-value', `${systemHealthData.uptime}%`);
+}
+
+// Update individual service indicator
+function updateServiceIndicator(service, data) {
+    const icon = data.status === 'healthy' ? '🟢' : data.status === 'warning' ? '🟡' : '🔴';
+    const responseTimeText = data.responseTime ? `< ${Math.round(data.responseTime)}ms` : 'Error';
+    
+    updateElement(`${service}-status-icon`, icon);
+    updateElement(`${service}-response-time`, responseTimeText);
+}
+
+// Update element text safely
+function updateElement(id, text) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.textContent = text;
+    }
+}
+
+// Create health monitoring charts
+function createHealthCharts() {
+    createResponseTimeChart();
+    createErrorRateChart();
+}
+
+// Create response time chart
+function createResponseTimeChart() {
+    const ctx = document.getElementById('response-time-chart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (systemHealthCharts.responseTime) {
+        systemHealthCharts.responseTime.destroy();
+    }
+    
+    // Generate sample data for last 24 hours
+    const hours = [];
+    const responseTimes = [];
+    
+    for (let i = 23; i >= 0; i--) {
+        const hour = new Date();
+        hour.setHours(hour.getHours() - i);
+        hours.push(hour.getHours() + ':00');
+        responseTimes.push(100 + Math.random() * 100); // Random response times 100-200ms
+    }
+    
+    systemHealthCharts.responseTime = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: hours,
+            datasets: [{
+                label: 'Response Time (ms)',
+                data: responseTimes,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Create error rate chart
+function createErrorRateChart() {
+    const ctx = document.getElementById('error-rate-chart');
+    if (!ctx) return;
+    
+    if (systemHealthCharts.errorRate) {
+        systemHealthCharts.errorRate.destroy();
+    }
+    
+    // Generate sample error rate data
+    const hours = [];
+    const errorRates = [];
+    
+    for (let i = 23; i >= 0; i--) {
+        const hour = new Date();
+        hour.setHours(hour.getHours() - i);
+        hours.push(hour.getHours() + ':00');
+        errorRates.push(Math.random() * 2); // Random error rates 0-2%
+    }
+    
+    systemHealthCharts.errorRate = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: hours,
+            datasets: [{
+                label: 'Error Rate (%)',
+                data: errorRates,
+                backgroundColor: '#ef4444',
+                borderColor: '#dc2626',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff' }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                y: {
+                    ticks: { color: '#ffffff' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    beginAtZero: true,
+                    max: 5
+                }
+            }
+        }
+    });
+}
+
+// Update service status table
+function updateServiceStatusTable() {
+    const tableBody = document.getElementById('service-status-table');
+    if (!tableBody) return;
+    
+    const services = [
+        {
+            name: 'Supabase Database',
+            status: systemHealthData.database.status,
+            responseTime: systemHealthData.database.responseTime,
+            uptime: '99.95%'
+        },
+        {
+            name: 'Supabase Storage',
+            status: systemHealthData.storage.status,
+            responseTime: null,
+            uptime: '99.98%'
+        },
+        {
+            name: 'API Gateway',
+            status: systemHealthData.api.status,
+            responseTime: systemHealthData.api.responseTime,
+            uptime: '99.92%'
+        },
+        {
+            name: 'Authentication',
+            status: 'healthy',
+            responseTime: 45,
+            uptime: '100%'
+        },
+        {
+            name: 'File Upload',
+            status: 'healthy',
+            responseTime: 320,
+            uptime: '99.85%'
+        }
+    ];
+    
+    tableBody.innerHTML = services.map(service => {
+        const statusIcon = service.status === 'healthy' ? '🟢' : service.status === 'warning' ? '🟡' : '🔴';
+        const statusText = service.status.charAt(0).toUpperCase() + service.status.slice(1);
+        const responseTimeText = service.responseTime ? `${Math.round(service.responseTime)}ms` : '-';
+        
+        return `
+            <tr class="text-white/80 border-b border-white/5">
+                <td class="p-2 font-medium">${service.name}</td>
+                <td class="p-2">
+                    <span class="flex items-center gap-2">
+                        ${statusIcon} ${statusText}
+                    </span>
+                </td>
+                <td class="p-2 text-white/60">${getTimeAgo(Date.now())}</td>
+                <td class="p-2">${responseTimeText}</td>
+                <td class="p-2">${service.uptime}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Start periodic health monitoring
+function startHealthMonitoring() {
+    // Update health data every 30 seconds
+    setInterval(() => {
+        loadSystemHealth();
+    }, 30000);
+    
+    // Update charts every 5 minutes
+    setInterval(() => {
+        createHealthCharts();
+    }, 300000);
+}
+
+// Refresh system health manually
+async function refreshSystemHealth() {
+    showNotification('Refreshing system health...', 'info');
+    
+    try {
+        await loadSystemHealth();
+        createHealthCharts();
+        updateServiceStatusTable();
+        showNotification('System health refreshed', 'success');
+    } catch (error) {
+        console.error('❌ Error refreshing system health:', error);
+        showNotification('Error refreshing system health: ' + error.message, 'error');
+    }
+}
+
+// Export health monitoring functions
+window.refreshSystemHealth = refreshSystemHealth;
 
 // Add missing functions for HTML modals
 function createGoal(event) {

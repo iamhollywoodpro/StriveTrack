@@ -682,7 +682,258 @@ class SupabaseAdminService {
             throw error;
         }
     }
+
+    // **SUPABASE STORAGE FUNCTIONS FOR MEDIA**
+    static async uploadMediaFile(file, userId, mediaType) {
+        try {
+            console.log('☁️ Uploading file to Supabase Storage:', file.name);
+            
+            // Generate unique filename
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}/${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+            
+            // Upload file to Supabase Storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('media-uploads')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error('❌ Storage upload error:', uploadError);
+                throw uploadError;
+            }
+
+            console.log('✅ File uploaded to storage:', uploadData.path);
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('media-uploads')
+                .getPublicUrl(fileName);
+
+            // Save media record to database
+            const mediaRecord = {
+                id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                user_id: userId,
+                filename: file.name,
+                storage_path: fileName,
+                public_url: publicUrl,
+                media_type: mediaType,
+                file_size: file.size,
+                file_type: file.type,
+                created_at: new Date().toISOString(),
+                flagged: false
+            };
+
+            const { data: dbData, error: dbError } = await supabase
+                .from('media_uploads')
+                .insert([mediaRecord])
+                .select()
+                .single();
+
+            if (dbError) {
+                console.error('❌ Database insert error:', dbError);
+                // Clean up uploaded file if database insert fails
+                await supabase.storage.from('media-uploads').remove([fileName]);
+                throw dbError;
+            }
+
+            console.log('✅ Media record saved to database:', dbData.id);
+
+            return {
+                ...dbData,
+                url: publicUrl // For compatibility with existing code
+            };
+
+        } catch (error) {
+            console.error('❌ Error uploading media to cloud:', error);
+            throw error;
+        }
+    }
+
+    static async getUserMedia(userId) {
+        try {
+            const { data, error } = await supabase
+                .from('media_uploads')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Add url field for compatibility with existing code
+            return data.map(item => ({
+                ...item,
+                url: item.public_url,
+                type: item.media_type,
+                name: item.filename,
+                uploaded_at: item.created_at,
+                size: item.file_size,
+                file_type: item.file_type
+            }));
+
+        } catch (error) {
+            console.error('❌ Error fetching user media:', error);
+            throw error;
+        }
+    }
+
+    static async deleteMediaFile(mediaId, userId) {
+        try {
+            // First get the media record to know the storage path
+            const { data: mediaRecord, error: fetchError } = await supabase
+                .from('media_uploads')
+                .select('storage_path, user_id')
+                .eq('id', mediaId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            // Security check: only allow deletion by owner or admin
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const isAdmin = currentUser.email === 'iamhollywoodpro@protonmail.com';
+            const isOwner = mediaRecord.user_id === userId;
+
+            if (!isAdmin && !isOwner) {
+                throw new Error('Unauthorized: Cannot delete this media');
+            }
+
+            // Delete from storage
+            const { error: storageError } = await supabase.storage
+                .from('media-uploads')
+                .remove([mediaRecord.storage_path]);
+
+            if (storageError) {
+                console.warn('⚠️ Storage deletion warning:', storageError);
+                // Continue with database deletion even if storage deletion fails
+            }
+
+            // Delete from database
+            const { error: dbError } = await supabase
+                .from('media_uploads')
+                .delete()
+                .eq('id', mediaId);
+
+            if (dbError) throw dbError;
+
+            console.log('✅ Media deleted from cloud:', mediaId);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Error deleting media from cloud:', error);
+            throw error;
+        }
+    }
     
+    // **ADMIN FUNCTIONS FOR MANAGING ALL USER MEDIA**
+    static async getAllUserMediaForAdmin() {
+        try {
+            const { data, error } = await supabase
+                .from('media_uploads')
+                .select(`
+                    *,
+                    users(id, name, email)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            return (data || []).map(item => ({
+                ...item,
+                url: item.public_url,
+                type: item.media_type,
+                name: item.filename,
+                uploaded_at: item.created_at,
+                size: item.file_size,
+                file_type: item.file_type,
+                user: item.users
+            }));
+
+        } catch (error) {
+            console.error('❌ Error fetching all user media for admin:', error);
+            throw error;
+        }
+    }
+
+    static async adminDeleteUserMedia(mediaId) {
+        try {
+            // Admin can delete any media - get the record first
+            const { data: mediaRecord, error: fetchError } = await supabase
+                .from('media_uploads')
+                .select('storage_path, user_id, filename, users(name, email)')
+                .eq('id', mediaId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            // Delete from storage
+            const { error: storageError } = await supabase.storage
+                .from('media-uploads')
+                .remove([mediaRecord.storage_path]);
+
+            if (storageError) {
+                console.warn('⚠️ Storage deletion warning:', storageError);
+            }
+
+            // Delete from database
+            const { error: dbError } = await supabase
+                .from('media_uploads')
+                .delete()
+                .eq('id', mediaId);
+
+            if (dbError) throw dbError;
+
+            console.log('✅ Admin deleted media:', mediaRecord.filename, 'from user:', mediaRecord.users.email);
+            return {
+                success: true,
+                deletedFile: mediaRecord.filename,
+                fromUser: mediaRecord.users.email
+            };
+
+        } catch (error) {
+            console.error('❌ Admin error deleting media:', error);
+            throw error;
+        }
+    }
+
+    static async getMediaStorageStats() {
+        try {
+            // Get storage usage statistics
+            const { data, error } = await supabase
+                .from('media_uploads')
+                .select('file_size, user_id, users(name, email)');
+
+            if (error) throw error;
+
+            const stats = {
+                totalFiles: data.length,
+                totalSize: data.reduce((sum, item) => sum + (item.file_size || 0), 0),
+                userStats: {}
+            };
+
+            // Calculate per-user statistics
+            data.forEach(item => {
+                const userId = item.user_id;
+                if (!stats.userStats[userId]) {
+                    stats.userStats[userId] = {
+                        user: item.users,
+                        fileCount: 0,
+                        totalSize: 0
+                    };
+                }
+                stats.userStats[userId].fileCount++;
+                stats.userStats[userId].totalSize += item.file_size || 0;
+            });
+
+            return stats;
+
+        } catch (error) {
+            console.error('❌ Error getting storage stats:', error);
+            throw error;
+        }
+    }
+
     // Get recent user activity
     static async getRecentActivity(limit = 50) {
         try {

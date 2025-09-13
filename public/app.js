@@ -1201,68 +1201,96 @@ function completeUpload(files, mediaType) {
     Array.from(files).forEach((file, index) => {
         const reader = new FileReader();
         
-        reader.onload = function(e) {
-            const mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            const mediaItem = {
-                id: mediaId,
-                type: mediaType,
-                name: file.name,
-                uploaded_at: new Date().toISOString(),
-                url: e.target.result, // Base64 data URL - will persist
-                size: file.size,
-                file_type: file.type
-            };
-            
-            console.log('🆔 Generated media ID:', mediaId, 'Type:', typeof mediaId);
-            
-            media.push(mediaItem);
-            uploadedItems.push(mediaItem);
-            filesProcessed++;
-            
-            // Update status with current progress
-            if (uploadFileInfo) {
-                uploadFileInfo.textContent = `Processed ${filesProcessed}/${files.length} files`;
-            }
-            
-            // Save updated media array to user-specific storage with quota check
+        // **NEW: Upload to Supabase Storage instead of localStorage**
+        reader.onload = async function(e) {
             try {
-                localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
-            } catch (error) {
-                if (error.name === 'QuotaExceededError') {
-                    console.error('❌ LocalStorage quota exceeded!');
-                    showNotification('Storage full! Please delete some old media files to continue.', 'error');
-                    
-                    // Try to free up space by removing oldest media items
-                    if (media.length > 10) {
-                        console.log('🧹 Attempting to free up space by removing oldest media...');
-                        const sortedMedia = media.sort((a, b) => new Date(a.uploaded_at) - new Date(b.uploaded_at));
-                        const mediaToKeep = sortedMedia.slice(-10); // Keep only last 10 items
-                        
-                        try {
-                            localStorage.setItem(`${userPrefix}_media`, JSON.stringify(mediaToKeep));
-                            showNotification('Cleaned up old media files. Please try uploading again.', 'info');
-                        } catch (retryError) {
-                            console.error('❌ Failed to free up space:', retryError);
-                            showNotification('Storage critically full. Please manually delete media files.', 'error');
-                        }
-                    }
-                    return; // Don't continue with upload
-                } else {
-                    throw error; // Re-throw if it's not a quota error
+                console.log('☁️ Uploading to cloud storage:', file.name);
+                
+                // Update status
+                if (uploadFileInfo) {
+                    uploadFileInfo.textContent = `Uploading ${file.name} to cloud...`;
                 }
-            }
-            
-            console.log('📸 Media item saved:', mediaItem.name, `(${filesProcessed}/${files.length})`);
-            console.log('📸 Total media in storage now:', media.length);
-            console.log('📸 Storage key:', `${userPrefix}_media`);
-            
-            // If this is the last file, complete the upload
-            if (filesProcessed === files.length) {
-                console.log('📸 All files processed, finishing upload...');
-                console.log('📸 Final uploaded items:', uploadedItems.map(item => ({ id: item.id, name: item.name })));
-                setTimeout(() => {
-                    finishUpload(uploadedItems);
-                }, 300); // Small delay to show completion status
+                
+                // Upload to Supabase Storage
+                const cloudMediaItem = await window.SupabaseServices.admin.uploadMediaFile(
+                    file, 
+                    currentUser.id, 
+                    mediaType
+                );
+                
+                console.log('✅ Cloud upload successful:', cloudMediaItem);
+                
+                // Create compatible item for existing UI code
+                const mediaItem = {
+                    id: cloudMediaItem.id,
+                    type: mediaType,
+                    name: file.name,
+                    uploaded_at: cloudMediaItem.created_at,
+                    url: cloudMediaItem.url,
+                    size: file.size,
+                    file_type: file.type,
+                    cloud_stored: true // Flag to indicate cloud storage
+                };
+                
+                uploadedItems.push(mediaItem);
+                filesProcessed++;
+                
+                // Update status with current progress
+                if (uploadFileInfo) {
+                    uploadFileInfo.textContent = `Uploaded ${filesProcessed}/${files.length} files to cloud`;
+                }
+                
+                console.log('📸 Cloud media item:', mediaItem.name, `(${filesProcessed}/${files.length})`);
+                
+                // If this is the last file, complete the upload
+                if (filesProcessed === files.length) {
+                    console.log('📸 All files uploaded to cloud, finishing...');
+                    setTimeout(() => {
+                        finishUpload(uploadedItems);
+                    }, 300);
+                }
+                
+            } catch (cloudError) {
+                console.error('❌ Cloud upload failed:', cloudError);
+                
+                // Fallback to localStorage if cloud upload fails
+                console.log('📦 Falling back to local storage for:', file.name);
+                
+                const mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const mediaItem = {
+                    id: mediaId,
+                    type: mediaType,
+                    name: file.name,
+                    uploaded_at: new Date().toISOString(),
+                    url: e.target.result, // Base64 data URL - fallback
+                    size: file.size,
+                    file_type: file.type,
+                    cloud_stored: false // Flag for local storage
+                };
+                
+                media.push(mediaItem);
+                uploadedItems.push(mediaItem);
+                filesProcessed++;
+                
+                // Save to localStorage as fallback
+                try {
+                    localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+                } catch (storageError) {
+                    console.error('❌ Both cloud and local storage failed:', storageError);
+                    showNotification(`Upload failed: ${file.name}`, 'error');
+                    return;
+                }
+                
+                if (uploadFileInfo) {
+                    uploadFileInfo.textContent = `Processed ${filesProcessed}/${files.length} files (local backup)`;
+                }
+                
+                // If this is the last file, complete the upload
+                if (filesProcessed === files.length) {
+                    setTimeout(() => {
+                        finishUpload(uploadedItems);
+                    }, 300);
+                }
             }
         };
         
@@ -1683,9 +1711,45 @@ function loadProgressGallery() {
         if (emptyState) emptyState.style.display = 'block';
         return;
     }
-    const userPrefix = `user_${currentUser.id}`;
-    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
-    console.log('📸 Loaded media from storage:', media.length, 'items for user:', currentUser.id);
+    let media = [];
+    
+    try {
+        // **NEW: Load from Supabase first, fallback to localStorage**
+        console.log('☁️ Loading media from cloud for user:', currentUser.id);
+        
+        if (window.SupabaseServices && window.SupabaseServices.admin) {
+            const cloudMedia = await window.SupabaseServices.admin.getUserMedia(currentUser.id);
+            console.log('☁️ Loaded from cloud:', cloudMedia.length, 'items');
+            media = cloudMedia;
+            
+            // Also load localStorage media as backup (for media uploaded before cloud integration)
+            const userPrefix = `user_${currentUser.id}`;
+            const localMedia = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+            
+            if (localMedia.length > 0) {
+                console.log('📦 Found local media backup:', localMedia.length, 'items');
+                // Merge local media (mark as non-cloud)
+                const localMediaMarked = localMedia.map(item => ({
+                    ...item,
+                    cloud_stored: false
+                }));
+                media = [...media, ...localMediaMarked];
+            }
+        } else {
+            // Fallback to localStorage only
+            console.log('📦 Supabase unavailable, loading from localStorage');
+            const userPrefix = `user_${currentUser.id}`;
+            media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading cloud media, using localStorage:', error);
+        // Fallback to localStorage
+        const userPrefix = `user_${currentUser.id}`;
+        media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    }
+    
+    console.log('📸 Total media loaded:', media.length, 'items for user:', currentUser.id);
     const container = document.getElementById('media-container');
     const emptyState = document.getElementById('media-empty-state');
     
@@ -2177,14 +2241,30 @@ function deleteMediaItem(mediaId) {
     
     console.log('✅ Deleting media item:', item.name);
     
-    // Remove from media array
-    const originalLength = media.length;
-    media = media.filter(m => m.id !== mediaId);
-    const newLength = media.length;
-    
-    console.log('📊 Media count before deletion:', originalLength, 'after:', newLength);
-    
-    localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+    try {
+        // **NEW: Delete from cloud storage if it's a cloud item**
+        if (item.cloud_stored !== false && window.SupabaseServices && window.SupabaseServices.admin) {
+            console.log('☁️ Deleting from cloud storage:', mediaId);
+            await window.SupabaseServices.admin.deleteMediaFile(mediaId, currentUser.id);
+            console.log('✅ Successfully deleted from cloud');
+        } else {
+            console.log('📦 Deleting from localStorage:', mediaId);
+            // Remove from localStorage media array
+            let media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+            const originalLength = media.length;
+            media = media.filter(m => m.id !== mediaId);
+            const newLength = media.length;
+            
+            console.log('📊 Local media count before deletion:', originalLength, 'after:', newLength);
+            localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+        }
+    } catch (error) {
+        console.error('❌ Error deleting from cloud, trying localStorage:', error);
+        // Fallback: remove from localStorage
+        let media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+        media = media.filter(m => m.id !== mediaId);
+        localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+    }
     
     // Always refresh gallery to ensure UI consistency
     console.log('🔄 Refreshing gallery after deletion...');
@@ -3335,9 +3415,32 @@ async function loadAdminDashboard() {
                     </div>
                 </div>
                 
-                <!-- Recent Media Uploads -->
+                <!-- Cloud Storage Management -->
                 <div class="mb-8">
-                    <h3 class="text-xl font-bold text-white mb-6">Recent Media Uploads</h3>
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">☁️ Cloud Media Management</h3>
+                        <div class="flex gap-2">
+                            <button onclick="loadAllUserMedia()" class="btn-primary text-sm px-4 py-2">
+                                <i class="fas fa-cloud-download-alt mr-2"></i>Load All Media
+                            </button>
+                            <button onclick="showStorageStats()" class="btn-secondary text-sm px-4 py-2">
+                                <i class="fas fa-chart-bar mr-2"></i>Storage Stats
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="cloud-storage-stats" class="mb-6">
+                        <!-- Storage stats will be loaded here -->
+                    </div>
+                    
+                    <div id="all-user-media-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        <!-- All user media will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Recent Media Uploads (Local Fallback) -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-white mb-6">📦 Local Media Backup</h3>
                     <div id="admin-recent-media" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         ${allMedia.slice(0, 12).map(media => createAdminMediaCard(media)).join('')}
                     </div>
@@ -3360,6 +3463,7 @@ async function loadAdminDashboard() {
             initializeEnhancedUserManagement(allUsers);
             initializeContentModeration();
             initializeSystemHealthMonitoring();
+            loadAllUserMedia(); // Load cloud media
         }, 500);
         
     } catch (error) {
@@ -3380,6 +3484,197 @@ async function loadAdminDashboard() {
             `;
         }
         showNotification('Admin dashboard load failed. Please try again.', 'error');
+    }
+}
+
+// **ADMIN CLOUD MEDIA MANAGEMENT FUNCTIONS**
+async function loadAllUserMedia() {
+    console.log('☁️ Loading all user media for admin...');
+    
+    try {
+        if (!window.SupabaseServices || !window.SupabaseServices.admin) {
+            console.error('❌ Supabase services not available');
+            return;
+        }
+        
+        const allUserMedia = await window.SupabaseServices.admin.getAllUserMediaForAdmin();
+        console.log('☁️ Loaded all user media:', allUserMedia.length, 'files');
+        
+        const container = document.getElementById('all-user-media-grid');
+        if (container) {
+            if (allUserMedia.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center p-8 text-white/60">
+                        <i class="fas fa-cloud text-4xl mb-4"></i>
+                        <p>No cloud media found</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = allUserMedia.map(media => createAdminCloudMediaCard(media)).join('');
+            }
+        }
+        
+        // Update storage stats
+        showStorageStats();
+        
+    } catch (error) {
+        console.error('❌ Error loading all user media:', error);
+        const container = document.getElementById('all-user-media-grid');
+        if (container) {
+            container.innerHTML = `
+                <div class="col-span-full text-center p-8 text-red-400">
+                    <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                    <p>Failed to load cloud media</p>
+                    <button onclick="loadAllUserMedia()" class="btn-primary mt-4">Retry</button>
+                </div>
+            `;
+        }
+    }
+}
+
+async function showStorageStats() {
+    console.log('📊 Loading storage statistics...');
+    
+    try {
+        if (!window.SupabaseServices || !window.SupabaseServices.admin) {
+            return;
+        }
+        
+        const stats = await window.SupabaseServices.admin.getMediaStorageStats();
+        console.log('📊 Storage stats:', stats);
+        
+        const container = document.getElementById('cloud-storage-stats');
+        if (container) {
+            const totalSizeMB = (stats.totalSize / (1024 * 1024)).toFixed(2);
+            const userStatsArray = Object.values(stats.userStats).sort((a, b) => b.totalSize - a.totalSize);
+            
+            container.innerHTML = `
+                <div class="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-xl p-6">
+                    <h4 class="text-white font-bold text-lg mb-4">☁️ Storage Overview</h4>
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-400">${stats.totalFiles}</div>
+                            <div class="text-white/60 text-sm">Total Files</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-400">${totalSizeMB} MB</div>
+                            <div class="text-white/60 text-sm">Storage Used</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-400">${Object.keys(stats.userStats).length}</div>
+                            <div class="text-white/60 text-sm">Active Users</div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="text-white font-semibold mb-3">Top Storage Users:</h5>
+                    <div class="space-y-2">
+                        ${userStatsArray.slice(0, 5).map(userStat => `
+                            <div class="flex items-center justify-between bg-white/5 rounded-lg p-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-xs font-bold">${userStat.user.name.charAt(0).toUpperCase()}</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-white font-medium">${userStat.user.name}</div>
+                                        <div class="text-white/50 text-xs">${userStat.user.email}</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-white font-semibold">${userStat.fileCount} files</div>
+                                    <div class="text-white/60 text-sm">${(userStat.totalSize / (1024 * 1024)).toFixed(2)} MB</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading storage stats:', error);
+    }
+}
+
+function createAdminCloudMediaCard(media) {
+    const uploadDate = new Date(media.uploaded_at).toLocaleDateString();
+    const isImage = media.file_type && media.file_type.startsWith('image/');
+    const sizeMB = (media.size / (1024 * 1024)).toFixed(2);
+    
+    return `
+        <div class="relative bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-lg overflow-hidden">
+            <!-- Admin Badge -->
+            <div class="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                ADMIN
+            </div>
+            
+            <!-- Delete Button -->
+            <div class="absolute top-2 right-2 z-10">
+                <button onclick="adminDeleteMedia('${media.id}', '${media.name}', '${media.user.email}')" 
+                        class="bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full transition-all">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            </div>
+            
+            <!-- Media Preview -->
+            <div class="media-preview relative" style="height: 120px;" onclick="window.open('${media.url}', '_blank')">
+                ${media.url && isImage ? 
+                    `<img src="${media.url}" alt="${media.name}" class="w-full h-full object-cover cursor-pointer">` :
+                    `<div class="w-full h-full flex items-center justify-center text-white/40 text-3xl bg-white/5 cursor-pointer">
+                        ${isImage ? '🖼️' : '🎥'}
+                    </div>`
+                }
+            </div>
+            
+            <!-- Media Info -->
+            <div class="p-3 bg-black/30">
+                <div class="text-white font-medium text-sm truncate mb-1">${media.name}</div>
+                <div class="text-white/60 text-xs mb-2">${uploadDate} • ${sizeMB} MB</div>
+                
+                <!-- User Info -->
+                <div class="flex items-center gap-2 pt-2 border-t border-white/10">
+                    <div class="w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">${media.user.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div class="text-white/70 text-xs truncate">${media.user.email}</div>
+                </div>
+                
+                <!-- Media Type Badge -->
+                <div class="mt-2">
+                    <span class="bg-${media.type === 'before' ? 'blue' : media.type === 'progress' ? 'purple' : 'green'}-500/20 
+                               text-${media.type === 'before' ? 'blue' : media.type === 'progress' ? 'purple' : 'green'}-400 
+                               text-xs px-2 py-1 rounded-full">
+                        ${media.type.toUpperCase()}
+                    </span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function adminDeleteMedia(mediaId, filename, userEmail) {
+    const confirmMessage = `⚠️ ADMIN DELETE CONFIRMATION ⚠️\n\nDelete "${filename}" from user ${userEmail}?\n\nThis action cannot be undone and will permanently remove the file from cloud storage.`;
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    try {
+        console.log('🗑️ Admin deleting media:', mediaId, 'from user:', userEmail);
+        
+        const result = await window.SupabaseServices.admin.adminDeleteUserMedia(mediaId);
+        console.log('✅ Admin deletion successful:', result);
+        
+        showNotification(`Deleted: ${result.deletedFile} from ${result.fromUser}`, 'success');
+        
+        // Refresh the admin media display
+        loadAllUserMedia();
+        
+        // Reload admin dashboard to update stats
+        loadAdminDashboard();
+        
+    } catch (error) {
+        console.error('❌ Admin deletion failed:', error);
+        showNotification(`Failed to delete ${filename}: ${error.message}`, 'error');
     }
 }
 

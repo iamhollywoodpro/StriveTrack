@@ -80,18 +80,19 @@ CREATE TABLE nutrition_logs (
 
 -- Media uploads table
 CREATE TABLE media_uploads (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    name VARCHAR(300) NOT NULL,
+    id TEXT PRIMARY KEY, -- Using TEXT for compatibility with existing JS IDs
+    user_id TEXT NOT NULL, -- Using TEXT for user IDs to match localStorage format
+    filename VARCHAR(300) NOT NULL,
     file_type VARCHAR(100) NOT NULL,
     file_size BIGINT NOT NULL,
     media_type VARCHAR(50) NOT NULL, -- before, progress, after
     storage_path TEXT NOT NULL, -- Supabase Storage path
     public_url TEXT, -- Public URL from Supabase Storage
     flagged BOOLEAN DEFAULT false,
+    flag_reason TEXT,
     flagged_at TIMESTAMP WITH TIME ZONE,
-    flagged_by UUID REFERENCES users(id),
-    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    flagged_by TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- User achievements table
@@ -178,6 +179,23 @@ CREATE INDEX idx_user_friends_user_id ON user_friends(user_id);
 CREATE INDEX idx_social_posts_user_id ON social_posts(user_id);
 CREATE INDEX idx_social_posts_created_at ON social_posts(created_at);
 
+-- **SUPABASE STORAGE SETUP FOR MEDIA UPLOADS**
+-- Create storage bucket for media uploads (run this in Supabase Dashboard -> Storage)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('media-uploads', 'media-uploads', true);
+
+-- Storage policies for media uploads bucket (run after bucket creation)
+-- CREATE POLICY "Users can upload to their own folder" ON storage.objects 
+-- FOR INSERT WITH CHECK (bucket_id = 'media-uploads');
+
+-- CREATE POLICY "Users can view all media" ON storage.objects 
+-- FOR SELECT USING (bucket_id = 'media-uploads');
+
+-- CREATE POLICY "Users can delete their own media" ON storage.objects 
+-- FOR DELETE USING (bucket_id = 'media-uploads');
+
+-- CREATE POLICY "Admins can manage all media" ON storage.objects 
+-- FOR ALL USING (bucket_id = 'media-uploads');
+
 -- Row Level Security (RLS) policies
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE habits ENABLE ROW LEVEL SECURITY;
@@ -217,7 +235,11 @@ CREATE POLICY "Users can manage their own nutrition logs" ON nutrition_logs
 
 -- RLS Policies for media uploads
 CREATE POLICY "Users can manage their own media" ON media_uploads
-    FOR ALL USING (auth.uid() = user_id);
+    FOR ALL USING (user_id = auth.uid()::text OR flagged_by = auth.uid()::text);
+
+-- Admin policy for media uploads (iamhollywoodpro@protonmail.com can manage all media)
+CREATE POLICY "Admin can manage all media" ON media_uploads
+    FOR ALL USING (auth.jwt() ->> 'email' = 'iamhollywoodpro@protonmail.com');
 
 -- RLS Policies for achievements
 CREATE POLICY "Users can manage their own achievements" ON user_achievements

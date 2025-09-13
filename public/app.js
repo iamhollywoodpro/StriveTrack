@@ -1070,6 +1070,23 @@ function handleMediaUpload() {
         uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
     }
     
+    // Clear any existing safety timeout
+    if (window.uploadSafetyTimeout) {
+        clearTimeout(window.uploadSafetyTimeout);
+    }
+    
+    // Set up a safety timeout in case upload gets stuck
+    window.uploadSafetyTimeout = setTimeout(() => {
+        console.warn('⚠️ Upload safety timeout triggered - forcing completion');
+        if (window.uploadInterval) {
+            clearInterval(window.uploadInterval);
+            window.uploadInterval = null;
+        }
+        
+        // Force complete upload with current files
+        completeUpload(files, mediaType);
+    }, 15000); // 15 second safety timeout
+    
     // Update initial status
     if (uploadStatus) uploadStatus.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''}...`;
     if (uploadFileInfo) {
@@ -1121,12 +1138,11 @@ function handleMediaUpload() {
             // Ensure 100% is visible before completion
             if (progressBar) progressBar.style.width = '100%';
             if (percentage) percentage.textContent = '100%';
-            if (uploadStatus) uploadStatus.textContent = 'Upload complete!';
-            if (uploadFileInfo) uploadFileInfo.textContent = 'All files processed successfully';
+            if (uploadStatus) uploadStatus.textContent = 'Processing files...';
+            if (uploadFileInfo) uploadFileInfo.textContent = 'Saving to storage...';
             
-            setTimeout(() => {
-                completeUpload(files, mediaType);
-            }, 800);
+            // Immediately start file processing
+            completeUpload(files, mediaType);
         }
     }, 150); // Slightly faster updates for smoother animation
 }
@@ -1139,13 +1155,23 @@ function completeUpload(files, mediaType) {
         showNotification('Please log in to upload media', 'error');
         return;
     }
+    
     const userPrefix = `user_${currentUser.id}`;
     const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     const uploadedItems = [];
+    let filesProcessed = 0;
+    
+    // Update progress status
+    const uploadStatus = document.getElementById('upload-status');
+    const uploadFileInfo = document.getElementById('upload-file-info');
+    
+    if (uploadStatus) uploadStatus.textContent = 'Processing files...';
+    if (uploadFileInfo) uploadFileInfo.textContent = `Processing ${files.length} file${files.length > 1 ? 's' : ''}...`;
     
     // Process each file
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file, index) => {
         const reader = new FileReader();
+        
         reader.onload = function(e) {
             const mediaItem = {
                 id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -1159,15 +1185,37 @@ function completeUpload(files, mediaType) {
             
             media.push(mediaItem);
             uploadedItems.push(mediaItem);
+            filesProcessed++;
+            
+            // Update status with current progress
+            if (uploadFileInfo) {
+                uploadFileInfo.textContent = `Processed ${filesProcessed}/${files.length} files`;
+            }
             
             // Save updated media array to user-specific storage
             localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
             
-            console.log('📸 Media item saved:', mediaItem.name);
+            console.log('📸 Media item saved:', mediaItem.name, `(${filesProcessed}/${files.length})`);
             
             // If this is the last file, complete the upload
-            if (uploadedItems.length === files.length) {
-                finishUpload(uploadedItems);
+            if (filesProcessed === files.length) {
+                console.log('📸 All files processed, finishing upload...');
+                setTimeout(() => {
+                    finishUpload(uploadedItems);
+                }, 300); // Small delay to show completion status
+            }
+        };
+        
+        reader.onerror = function(error) {
+            console.error('❌ Error reading file:', file.name, error);
+            filesProcessed++;
+            
+            // Still check if all files are processed (including errors)
+            if (filesProcessed === files.length) {
+                console.log('📸 All files processed (with some errors), finishing upload...');
+                setTimeout(() => {
+                    finishUpload(uploadedItems);
+                }, 300);
             }
         };
         
@@ -1176,12 +1224,25 @@ function completeUpload(files, mediaType) {
 }
 
 function finishUpload(uploadedItems) {
+    console.log('🎉 finishUpload called with', uploadedItems.length, 'items');
+    
+    // Clear safety timeout since upload completed successfully
+    if (window.uploadSafetyTimeout) {
+        clearTimeout(window.uploadSafetyTimeout);
+        window.uploadSafetyTimeout = null;
+    }
+    
     // **FIX: Update points immediately and show success**
     updatePointsDisplay();
     
     // Show enhanced completion state in progress bar
     const progressContainer = document.getElementById('upload-progress-container');
     const uploadBtn = document.getElementById('upload-btn');
+    
+    console.log('🎨 Updating UI elements:', { 
+        progressContainer: !!progressContainer, 
+        uploadBtn: !!uploadBtn 
+    });
     
     if (progressContainer) {
         // Enhanced success animation
@@ -1195,9 +1256,12 @@ function finishUpload(uploadedItems) {
                 <div class="text-green-300 font-semibold">+${uploadedItems.length * 50} Points Earned!</div>
                 <div class="text-white/50 text-sm mt-3">Modal will close automatically...</div>
                 <div class="mt-4">
-                    <div class="w-full bg-white/20 rounded-full h-2">
+                    <div class="w-full bg-white/20 rounded-full h-2 mb-3">
                         <div class="bg-green-400 h-2 rounded-full animate-pulse" style="width: 100%"></div>
                     </div>
+                    <button onclick="closeModal('media-upload-modal')" class="btn-secondary text-sm px-4 py-2">
+                        <i class="fas fa-times mr-1"></i>Close Now
+                    </button>
                 </div>
             </div>
         `;
@@ -1214,16 +1278,20 @@ function finishUpload(uploadedItems) {
     
     // Enhanced auto-close with countdown
     let countdown = 3;
+    console.log('⏱️ Starting countdown for modal close');
+    
     window.countdownInterval = setInterval(() => {
         const countdownElement = progressContainer?.querySelector('.text-white\/50');
         if (countdownElement) {
             countdownElement.textContent = `Modal closing in ${countdown}s...`;
         }
         countdown--;
+        console.log('⏱️ Countdown:', countdown);
         
         if (countdown < 0) {
             clearInterval(window.countdownInterval);
             window.countdownInterval = null;
+            console.log('🚪 Closing modal now...');
             
             // Smooth fade out before closing
             const modal = document.getElementById('media-upload-modal');
@@ -1233,6 +1301,7 @@ function finishUpload(uploadedItems) {
                 modal.style.transition = 'all 0.3s ease-out';
                 
                 setTimeout(() => {
+                    console.log('🗑️ Removing modal from DOM');
                     modal.remove();
                     // Refresh progress gallery and check achievements
                     loadProgressGallery();
@@ -1287,12 +1356,21 @@ function resetUploadState() {
     if (window.uploadInterval) {
         clearInterval(window.uploadInterval);
         window.uploadInterval = null;
+        console.log('🔄 Cleared upload interval');
     }
     
     // Clear any countdown intervals
     if (window.countdownInterval) {
         clearInterval(window.countdownInterval);
         window.countdownInterval = null;
+        console.log('🔄 Cleared countdown interval');
+    }
+    
+    // Clear safety timeout
+    if (window.uploadSafetyTimeout) {
+        clearTimeout(window.uploadSafetyTimeout);
+        window.uploadSafetyTimeout = null;
+        console.log('🔄 Cleared safety timeout');
     }
     
     // Reset global upload state variables

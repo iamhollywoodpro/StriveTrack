@@ -922,15 +922,30 @@ function openMediaUploadModal() {
                 </div>
             </div>
             
-            <!-- Upload Progress -->
+            <!-- Enhanced Upload Progress -->
             <div id="upload-progress-container" class="hidden mb-6">
-                <div class="bg-white/5 border border-white/10 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-white/90 font-medium">Uploading...</span>
-                        <span id="upload-percentage" class="text-white/70">0%</span>
+                <div class="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-6 backdrop-blur-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center animate-pulse">
+                                <i class="fas fa-upload text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <span class="text-white font-semibold text-lg">Uploading Media</span>
+                                <div class="text-white/60 text-sm" id="upload-status">Processing files...</div>
+                            </div>
+                        </div>
+                        <span id="upload-percentage" class="text-white font-bold text-2xl">0%</span>
                     </div>
-                    <div class="w-full bg-white/10 rounded-full h-2">
-                        <div id="upload-progress-bar" class="bg-purple-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                    <div class="w-full bg-white/20 rounded-full h-4 overflow-hidden shadow-inner">
+                        <div id="upload-progress-bar" 
+                             class="bg-gradient-to-r from-purple-500 to-blue-500 h-4 rounded-full transition-all duration-300 ease-out shadow-lg relative" 
+                             style="width: 0%">
+                            <div class="absolute inset-0 bg-white/30 animate-pulse rounded-full"></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <span class="text-white/50 text-sm" id="upload-file-info">Preparing upload...</span>
                     </div>
                 </div>
             </div>
@@ -965,16 +980,61 @@ function handleFileSelection() {
     if (files.length > 0) {
         console.log('📸 Selected', files.length, 'file(s)');
         
-        // Update upload area to show selected files
+        // Update upload area to show selected files with enhanced display
         const uploadArea = document.querySelector('.upload-area');
-        if (uploadArea && files.length === 1) {
-            const file = files[0];
-            uploadArea.innerHTML = `
-                <div class="text-3xl mb-3">📎</div>
-                <h3 class="text-white font-semibold mb-1">${file.name}</h3>
-                <p class="text-white/60 mb-2">${(file.size / (1024 * 1024)).toFixed(2)} MB</p>
-                <p class="text-green-400 text-sm">Ready to upload!</p>
-            `;
+        if (uploadArea) {
+            if (files.length === 1) {
+                const file = files[0];
+                uploadArea.innerHTML = `
+                    <div class="text-4xl mb-4">📎</div>
+                    <h3 class="text-white font-bold text-lg mb-2">${file.name}</h3>
+                    <div class="flex items-center justify-center gap-4 mb-3">
+                        <div class="text-center">
+                            <p class="text-white/60 text-sm">Size</p>
+                            <p class="text-white font-semibold">${(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-white/60 text-sm">Type</p>
+                            <p class="text-white font-semibold">${file.type.split('/')[0] || 'file'}</p>
+                        </div>
+                    </div>
+                    <div class="bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-2">
+                        <p class="text-green-400 font-semibold text-sm flex items-center justify-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Ready to upload!
+                        </p>
+                    </div>
+                `;
+            } else {
+                // Multiple files selected
+                const totalSize = Array.from(files).reduce((sum, file) => sum + file.size, 0);
+                uploadArea.innerHTML = `
+                    <div class="text-4xl mb-4">📁</div>
+                    <h3 class="text-white font-bold text-lg mb-2">${files.length} Files Selected</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-3">
+                        <div class="text-center">
+                            <p class="text-white/60 text-sm">Total Size</p>
+                            <p class="text-white font-semibold">${(totalSize / (1024 * 1024)).toFixed(2)} MB</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-white/60 text-sm">Files</p>
+                            <p class="text-white font-semibold">${files.length} items</p>
+                        </div>
+                    </div>
+                    <div class="bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-2">
+                        <p class="text-green-400 font-semibold text-sm flex items-center justify-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Ready to upload!
+                        </p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Reset progress container if it was previously shown
+        const progressContainer = document.getElementById('upload-progress-container');
+        if (progressContainer && !progressContainer.classList.contains('hidden')) {
+            progressContainer.classList.add('hidden');
         }
     }
 }
@@ -990,6 +1050,8 @@ function handleMediaUpload() {
     const uploadBtn = document.getElementById('upload-btn');
     const progressBar = document.getElementById('upload-progress-bar');
     const percentage = document.getElementById('upload-percentage');
+    const uploadStatus = document.getElementById('upload-status');
+    const uploadFileInfo = document.getElementById('upload-file-info');
     
     if (!fileInput || !fileInput.files.length) {
         showNotification('Please select files to upload first.', 'warning');
@@ -1001,39 +1063,72 @@ function handleMediaUpload() {
     
     console.log('📸 Uploading', files.length, 'file(s) as type:', mediaType);
     
-    // Show progress UI
+    // Show progress UI with enhanced status
     if (progressContainer) progressContainer.classList.remove('hidden');
     if (uploadBtn) {
         uploadBtn.disabled = true;
         uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
     }
     
-    // Simulate upload progress with smooth animation
+    // Update initial status
+    if (uploadStatus) uploadStatus.textContent = `Uploading ${files.length} file${files.length > 1 ? 's' : ''}...`;
+    if (uploadFileInfo) {
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        const sizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
+        uploadFileInfo.textContent = `Total size: ${sizeInMB} MB`;
+    }
+    
+    // Simulate upload progress with smooth animation and status updates
     let progress = 0;
-    const interval = setInterval(() => {
-        progress += Math.random() * 8 + 4; // More consistent progress increments
+    const statusMessages = [
+        'Validating files...',
+        'Processing images...',
+        'Optimizing quality...',
+        'Uploading to server...',
+        'Finalizing upload...'
+    ];
+    let statusIndex = 0;
+    
+    // Store interval globally for cleanup
+    window.uploadInterval = setInterval(() => {
+        progress += Math.random() * 6 + 3; // Slightly slower for better UX
         if (progress > 100) progress = 100;
         
+        // Update progress bar with smooth animation
         if (progressBar) {
-            // Force reflow to ensure animation works
-            progressBar.style.transition = 'none';
-            progressBar.offsetHeight; // Trigger reflow
-            progressBar.style.transition = 'width 0.4s ease-out';
             progressBar.style.width = `${progress}%`;
         }
         if (percentage) percentage.textContent = `${Math.round(progress)}%`;
         
+        // Update status messages based on progress
+        if (uploadStatus && progress > statusIndex * 20) {
+            if (statusIndex < statusMessages.length) {
+                uploadStatus.textContent = statusMessages[statusIndex];
+                statusIndex++;
+            }
+        }
+        
+        // Update file info with current progress
+        if (uploadFileInfo && files.length > 0) {
+            const currentFileIndex = Math.min(Math.floor(progress / (100 / files.length)), files.length - 1);
+            const currentFile = files[currentFileIndex];
+            uploadFileInfo.textContent = `Processing: ${currentFile.name}`;
+        }
+        
         if (progress >= 100) {
-            clearInterval(interval);
+            clearInterval(window.uploadInterval);
+            window.uploadInterval = null;
             // Ensure 100% is visible before completion
             if (progressBar) progressBar.style.width = '100%';
             if (percentage) percentage.textContent = '100%';
+            if (uploadStatus) uploadStatus.textContent = 'Upload complete!';
+            if (uploadFileInfo) uploadFileInfo.textContent = 'All files processed successfully';
             
             setTimeout(() => {
                 completeUpload(files, mediaType);
-            }, 500);
+            }, 800);
         }
-    }, 200); // Balanced update speed
+    }, 150); // Slightly faster updates for smoother animation
 }
 
 // **FIXED: Media upload with proper file storage**
@@ -1084,38 +1179,68 @@ function finishUpload(uploadedItems) {
     // **FIX: Update points immediately and show success**
     updatePointsDisplay();
     
-    // Show completion state in progress bar
+    // Show enhanced completion state in progress bar
     const progressContainer = document.getElementById('upload-progress-container');
     const uploadBtn = document.getElementById('upload-btn');
     
     if (progressContainer) {
+        // Enhanced success animation
         progressContainer.innerHTML = `
-            <div class="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-center">
-                <i class="fas fa-check-circle text-green-400 text-2xl mb-2"></i>
-                <div class="text-green-400 font-semibold">Upload Complete!</div>
-                <div class="text-white/70 text-sm">${uploadedItems.length} file(s) uploaded successfully</div>
+            <div class="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-6 backdrop-blur-sm text-center animate-pulse">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                    <i class="fas fa-check text-white text-2xl"></i>
+                </div>
+                <div class="text-green-400 font-bold text-xl mb-2">Upload Successful! 🎉</div>
+                <div class="text-white/80 text-lg mb-2">${uploadedItems.length} file${uploadedItems.length > 1 ? 's' : ''} uploaded</div>
+                <div class="text-green-300 font-semibold">+${uploadedItems.length * 50} Points Earned!</div>
+                <div class="text-white/50 text-sm mt-3">Modal will close automatically...</div>
+                <div class="mt-4">
+                    <div class="w-full bg-white/20 rounded-full h-2">
+                        <div class="bg-green-400 h-2 rounded-full animate-pulse" style="width: 100%"></div>
+                    </div>
+                </div>
             </div>
         `;
     }
     
     if (uploadBtn) {
         uploadBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Complete!';
-        uploadBtn.className = 'btn-primary bg-green-600 hover:bg-green-700';
+        uploadBtn.className = 'btn-primary bg-green-600 hover:bg-green-700 animate-pulse';
+        uploadBtn.disabled = true;
     }
     
     // Show success notification
     showNotification(`Successfully uploaded ${uploadedItems.length} file(s)! 📸 +${uploadedItems.length * 50} pts`, 'success');
     
-    // Auto-close modal after showing completion
-    setTimeout(() => {
-        const modal = document.getElementById('media-upload-modal');
-        if (modal) {
-            modal.remove();
+    // Enhanced auto-close with countdown
+    let countdown = 3;
+    window.countdownInterval = setInterval(() => {
+        const countdownElement = progressContainer?.querySelector('.text-white\/50');
+        if (countdownElement) {
+            countdownElement.textContent = `Modal closing in ${countdown}s...`;
         }
-        // Refresh progress gallery and check achievements
-        loadProgressGallery();
-        checkAndUnlockAchievements();
-    }, 2500); // Adequate time to see completion
+        countdown--;
+        
+        if (countdown < 0) {
+            clearInterval(window.countdownInterval);
+            window.countdownInterval = null;
+            
+            // Smooth fade out before closing
+            const modal = document.getElementById('media-upload-modal');
+            if (modal) {
+                modal.style.opacity = '0';
+                modal.style.transform = 'scale(0.95)';
+                modal.style.transition = 'all 0.3s ease-out';
+                
+                setTimeout(() => {
+                    modal.remove();
+                    // Refresh progress gallery and check achievements
+                    loadProgressGallery();
+                    checkAndUnlockAchievements();
+                }, 300);
+            }
+        }
+    }, 1000);
     
     console.log('✅ Upload completed successfully with', uploadedItems.length, 'files');
 }
@@ -1132,6 +1257,72 @@ function setupMediaUploadButtons() {
     
     console.log('✅ Media upload buttons connected:', uploadButtons.length);
 }
+
+// **MODAL MANAGEMENT FUNCTIONS**
+function closeModal(modalId) {
+    console.log('❌ Closing modal:', modalId);
+    
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // Add smooth fade-out animation
+        modal.style.opacity = '0';
+        modal.style.transform = 'scale(0.95)';
+        modal.style.transition = 'all 0.3s ease-out';
+        
+        setTimeout(() => {
+            modal.remove();
+            
+            // Reset any upload states if it's the media upload modal
+            if (modalId === 'media-upload-modal') {
+                resetUploadState();
+            }
+        }, 300);
+    }
+}
+
+function resetUploadState() {
+    console.log('🔄 Resetting upload state...');
+    
+    // Clear any upload intervals that might be running
+    if (window.uploadInterval) {
+        clearInterval(window.uploadInterval);
+        window.uploadInterval = null;
+    }
+    
+    // Clear any countdown intervals
+    if (window.countdownInterval) {
+        clearInterval(window.countdownInterval);
+        window.countdownInterval = null;
+    }
+    
+    // Reset global upload state variables
+    window.isUploading = false;
+    
+    console.log('✅ Upload state reset complete');
+}
+
+// Enhanced modal close for ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        // Find any open modals and close them
+        const openModals = document.querySelectorAll('.modal:not(.hidden)');
+        openModals.forEach(modal => {
+            if (modal.id) {
+                closeModal(modal.id);
+            }
+        });
+    }
+});
+
+// Enhanced modal background click to close
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal')) {
+        // Clicked on modal background, close it
+        if (e.target.id) {
+            closeModal(e.target.id);
+        }
+    }
+});
 
 // **UTILITY FUNCTIONS**
 

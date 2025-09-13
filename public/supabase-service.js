@@ -512,7 +512,7 @@ class SupabaseAdminService {
                 .select(`
                     *,
                     habits(count),
-                    media(count),
+                    media_uploads(count),
                     goals(count)
                 `);
             
@@ -549,7 +549,7 @@ class SupabaseAdminService {
     static async getAllMediaWithUserInfo() {
         try {
             const { data, error } = await supabase
-                .from('media')
+                .from('media_uploads')
                 .select(`
                     *,
                     users(id, name, email)
@@ -581,12 +581,12 @@ class SupabaseAdminService {
             
             // Get media count
             const { count: totalMedia } = await supabase
-                .from('media')
+                .from('media_uploads')
                 .select('*', { count: 'exact', head: true });
             
             // Get flagged content count (assuming we have a flagged field)
             const { count: flaggedContent } = await supabase
-                .from('media')
+                .from('media_uploads')
                 .select('*', { count: 'exact', head: true })
                 .eq('flagged', true);
             
@@ -669,7 +669,7 @@ class SupabaseAdminService {
             if (reason) updates.flag_reason = reason;
             
             const { data, error } = await supabase
-                .from('media')
+                .from('media_uploads')
                 .update(updates)
                 .eq('id', mediaId)
                 .select()
@@ -768,7 +768,7 @@ class SupabaseAdminService {
             
             // Get content stats
             const { data: mediaStats, error: mediaError } = await supabase
-                .from('media')
+                .from('media_uploads')
                 .select('media_type, created_at')
                 .order('created_at');
             
@@ -779,7 +779,7 @@ class SupabaseAdminService {
                     id,
                     habits(count),
                     goals(count),
-                    media(count)
+                    media_uploads(count)
                 `);
             
             if (userGrowthError || activityError || mediaError || engagementError) {

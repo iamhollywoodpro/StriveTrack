@@ -857,6 +857,15 @@ async function handleProfileUpdate(event) {
 function openMediaUploadModal() {
     console.log('📸 Opening media upload modal');
     
+    // Check storage before opening modal
+    const storage = checkStorageUsage();
+    if (storage.percentage > 95) {
+        const confirm = window.confirm('Storage is nearly full! Would you like to clean up old media files first?');
+        if (confirm) {
+            cleanOldMedia(5);
+        }
+    }
+    
     // Create dynamic upload modal
     const modal = document.createElement('div');
     modal.id = 'media-upload-modal';
@@ -965,6 +974,11 @@ function openMediaUploadModal() {
     
     document.body.appendChild(modal);
     modal.classList.remove('hidden');
+    
+    // Show storage info
+    setTimeout(() => {
+        showStorageInfo();
+    }, 100);
     
     // Set up file input change handler
     const fileInput = document.getElementById('media-file-input');
@@ -1156,6 +1170,21 @@ function completeUpload(files, mediaType) {
         return;
     }
     
+    // Check storage usage before upload
+    const storageUsed = JSON.stringify(localStorage).length;
+    const storageLimit = 5 * 1024 * 1024; // 5MB approximate limit
+    const totalFileSize = Array.from(files).reduce((sum, file) => sum + file.size, 0);
+    
+    console.log('💾 Storage check:', {
+        current: (storageUsed / 1024 / 1024).toFixed(2) + 'MB',
+        newFiles: (totalFileSize / 1024 / 1024).toFixed(2) + 'MB',
+        limit: (storageLimit / 1024 / 1024).toFixed(2) + 'MB'
+    });
+    
+    if (storageUsed > storageLimit * 0.8) {
+        showNotification('Storage nearly full! Consider deleting old media.', 'warning');
+    }
+    
     const userPrefix = `user_${currentUser.id}`;
     const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
     const uploadedItems = [];
@@ -1195,8 +1224,33 @@ function completeUpload(files, mediaType) {
                 uploadFileInfo.textContent = `Processed ${filesProcessed}/${files.length} files`;
             }
             
-            // Save updated media array to user-specific storage
-            localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+            // Save updated media array to user-specific storage with quota check
+            try {
+                localStorage.setItem(`${userPrefix}_media`, JSON.stringify(media));
+            } catch (error) {
+                if (error.name === 'QuotaExceededError') {
+                    console.error('❌ LocalStorage quota exceeded!');
+                    showNotification('Storage full! Please delete some old media files to continue.', 'error');
+                    
+                    // Try to free up space by removing oldest media items
+                    if (media.length > 10) {
+                        console.log('🧹 Attempting to free up space by removing oldest media...');
+                        const sortedMedia = media.sort((a, b) => new Date(a.uploaded_at) - new Date(b.uploaded_at));
+                        const mediaToKeep = sortedMedia.slice(-10); // Keep only last 10 items
+                        
+                        try {
+                            localStorage.setItem(`${userPrefix}_media`, JSON.stringify(mediaToKeep));
+                            showNotification('Cleaned up old media files. Please try uploading again.', 'info');
+                        } catch (retryError) {
+                            console.error('❌ Failed to free up space:', retryError);
+                            showNotification('Storage critically full. Please manually delete media files.', 'error');
+                        }
+                    }
+                    return; // Don't continue with upload
+                } else {
+                    throw error; // Re-throw if it's not a quota error
+                }
+            }
             
             console.log('📸 Media item saved:', mediaItem.name, `(${filesProcessed}/${files.length})`);
             console.log('📸 Total media in storage now:', media.length);
@@ -2159,6 +2213,85 @@ function handleDeleteFromFullscreen(mediaId) {
             modal.remove();
         }
     }, 100); // Small delay to ensure deletion completes
+}
+
+// **STORAGE MANAGEMENT UTILITIES**
+function checkStorageUsage() {
+    if (!currentUser || !currentUser.id) return { used: 0, percentage: 0 };
+    
+    const userPrefix = `user_${currentUser.id}`;
+    const mediaData = localStorage.getItem(`${userPrefix}_media`) || '[]';
+    const storageUsed = new Blob([mediaData]).size;
+    const storageLimit = 5 * 1024 * 1024; // 5MB limit
+    
+    return {
+        used: storageUsed,
+        limit: storageLimit,
+        percentage: (storageUsed / storageLimit) * 100,
+        remaining: storageLimit - storageUsed
+    };
+}
+
+function cleanOldMedia(keepCount = 10) {
+    if (!currentUser || !currentUser.id) return false;
+    
+    const userPrefix = `user_${currentUser.id}`;
+    const media = JSON.parse(localStorage.getItem(`${userPrefix}_media`) || '[]');
+    
+    if (media.length <= keepCount) {
+        console.log('📊 No cleanup needed, media count:', media.length);
+        return false;
+    }
+    
+    // Sort by upload date and keep only the most recent
+    const sortedMedia = media.sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at));
+    const mediaToKeep = sortedMedia.slice(0, keepCount);
+    const removedCount = media.length - mediaToKeep.length;
+    
+    localStorage.setItem(`${userPrefix}_media`, JSON.stringify(mediaToKeep));
+    
+    console.log(`🧹 Cleaned up ${removedCount} old media files, kept ${mediaToKeep.length}`);
+    showNotification(`Cleaned up ${removedCount} old media files to free space`, 'info');
+    
+    return true;
+}
+
+function showStorageInfo() {
+    const storage = checkStorageUsage();
+    const storageInfoHtml = `
+        <div class="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4 mb-4">
+            <h4 class="text-white font-semibold mb-2">📊 Storage Usage</h4>
+            <div class="w-full bg-white/20 rounded-full h-3 mb-2">
+                <div class="bg-blue-500 h-3 rounded-full" style="width: ${Math.min(storage.percentage, 100)}%"></div>
+            </div>
+            <div class="text-white/80 text-sm">
+                Used: ${(storage.used / 1024 / 1024).toFixed(2)}MB / ${(storage.limit / 1024 / 1024).toFixed(2)}MB (${storage.percentage.toFixed(1)}%)
+            </div>
+            ${storage.percentage > 80 ? `
+                <div class="text-orange-400 text-sm mt-2">
+                    ⚠️ Storage nearly full! Consider deleting old media.
+                </div>
+                <button onclick="cleanOldMedia(5); showStorageInfo();" class="btn-secondary mt-2 text-xs px-3 py-1">
+                    🧹 Clean Old Media
+                </button>
+            ` : ''}
+        </div>
+    `;
+    
+    // Add to upload modal if open
+    const uploadModal = document.getElementById('media-upload-modal');
+    if (uploadModal) {
+        const existingInfo = uploadModal.querySelector('.storage-info');
+        if (existingInfo) {
+            existingInfo.innerHTML = storageInfoHtml;
+        } else {
+            const modalContent = uploadModal.querySelector('.modal-content');
+            const storageDiv = document.createElement('div');
+            storageDiv.className = 'storage-info';
+            storageDiv.innerHTML = storageInfoHtml;
+            modalContent.insertBefore(storageDiv, modalContent.children[1]);
+        }
+    }
 }
 // REMOVED DUPLICATE - Using the correct downloadMedia function above
 
